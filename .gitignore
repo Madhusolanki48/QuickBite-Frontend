@@ -1,0 +1,27 @@
+# Frontend build output and cache
+frontend/.angular/
+frontend/dist/
+frontend/out-tsc/
+frontend/coverage/
+frontend/tmp/
+
+# Installed dependencies
+frontend/node_modules/
+
+# Local environment files
+frontend/.env
+frontend/.env.*
+
+# Editor and IDE settings
+frontend/.vscode/
+frontend/.idea/
+frontend/.history/
+frontend/.settings/
+
+# Logs and temp files
+frontend/*.log
+frontend/*.tsbuildinfo
+
+# OS files
+**/.DS_Store
+**/Thumbs.db
