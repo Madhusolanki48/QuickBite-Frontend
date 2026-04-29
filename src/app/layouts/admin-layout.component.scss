@@ -1,0 +1,18 @@
+:host {
+  display: block;
+}
+
+.admin-banner {
+  margin: 0 0.75rem;
+  padding: 1.2rem 1.3rem;
+}
+
+.admin-banner .role-banner__copy {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-banner .role-banner__copy h1,
+.admin-banner .role-banner__copy p {
+  margin: 0;
+}

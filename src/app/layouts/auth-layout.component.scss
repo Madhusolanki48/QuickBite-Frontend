@@ -1,0 +1,87 @@
+.auth-layout {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
+  background:
+    linear-gradient(90deg, rgba(16, 19, 32, 0.08), rgba(16, 19, 32, 0.24)),
+    url('/assets/images/hero-banners/auth%20hero%20banner.png?v=20260428') center/cover no-repeat;
+}
+
+.auth-hero {
+  padding: 5rem clamp(1.5rem, 3vw, 4rem);
+  background: linear-gradient(145deg, rgba(20, 25, 40, 0.32), rgba(20, 25, 40, 0.08));
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 25% 22%, rgba(255, 255, 255, 0.08), transparent 30%);
+  pointer-events: none;
+}
+
+.auth-hero__badge {
+  width: fit-content;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-hero__badge img {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+  border-radius: 0.45rem;
+}
+
+.auth-hero h1 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.8rem, 5vw, 5.4rem);
+  line-height: 0.92;
+  letter-spacing: -0.06em;
+  max-width: 10ch;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-hero p {
+  margin: 0;
+  max-width: 26ch;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-stage {
+  padding: clamp(1rem, 2vw, 2rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+@media (max-width: 980px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-hero {
+    min-height: 280px;
+  }
+}

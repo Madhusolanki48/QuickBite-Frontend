@@ -1,27 +1,40 @@
-# Frontend build output and cache
-frontend/.angular/
-frontend/dist/
-frontend/out-tsc/
-frontend/coverage/
-frontend/tmp/
+# Build output
+dist/
+tmp/
+out-tsc/
+bazel-out/
 
-# Installed dependencies
-frontend/node_modules/
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
 
-# Local environment files
-frontend/.env
-frontend/.env.*
+# Angular
+.angular/
 
-# Editor and IDE settings
-frontend/.vscode/
-frontend/.idea/
-frontend/.history/
-frontend/.settings/
+# Environment
+.env
+.env.*
 
-# Logs and temp files
-frontend/*.log
-frontend/*.tsbuildinfo
+# IDEs
+.vscode/
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+.history/
 
-# OS files
-**/.DS_Store
-**/Thumbs.db
+# Misc
+.sass-cache/
+connect.lock
+coverage/
+libpeerconnection.log
+testem.log
+typings/
+__screenshots__/
+
+# System
+.DS_Store
+Thumbs.db

@@ -1,0 +1,97 @@
+.role-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.avatar {
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  height: 2.8rem;
+  padding: 0 0.95rem;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.avatar {
+  width: 2.8rem;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  overflow: hidden;
+  padding: 0;
+}
+
+.avatar:hover {
+  border-color: rgba(255, 90, 0, 0.35);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.role-menu__panel {
+  position: absolute;
+  top: calc(100% + 0.7rem);
+  right: 0;
+  width: min(280px, calc(100vw - 1.5rem));
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.35rem;
+  z-index: 50;
+}
+
+.role-menu__header {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.25rem 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.role-menu__header strong {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.role-menu__header span {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.role-menu__header small {
+  color: var(--brand);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.role-menu__item {
+  display: flex;
+  align-items: center;
+  border: 0;
+  width: 100%;
+  text-align: left;
+  border-radius: 12px;
+  padding: 0.8rem 0.75rem;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.role-menu__item:hover {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.buttonlike.danger {
+  color: var(--danger);
+}
+
+@media (max-width: 720px) {
+  .role-menu__panel {
+    right: -0.4rem;
+  }
+}
