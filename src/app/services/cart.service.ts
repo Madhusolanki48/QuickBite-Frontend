@@ -1,37 +1,22 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { Address, CartItem, PaymentMethod } from '../core/app.models';
+import { BackendCartSummaryResponse, cartToFrontend } from './backend-mappers';
+import { SessionService } from './session.service';
+import { environment } from '../../environments/environment';
 
 const CART_ADDRESSES_KEY = 'quickbite.addresses';
 const CART_SELECTED_ADDRESS_KEY = 'quickbite.selectedAddressId';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  private readonly itemsSignal = signal<CartItem[]>([
-    {
-      id: 'cart-1',
-      restaurantId: 'burger-palace',
-      restaurantName: 'Burger Palace',
-      name: 'Classic Cheeseburger',
-      description: 'Beef patty, cheddar, lettuce, tomato',
-      price: 249,
-      quantity: 1,
-      imageUrl: '/assets/food-items/classic-cheeseburger.jpg',
-    },
-    {
-      id: 'cart-2',
-      restaurantId: 'burger-palace',
-      restaurantName: 'Burger Palace',
-      name: 'BBQ Bacon Burger',
-      description: 'Crispy bacon, BBQ sauce, onion rings',
-      price: 329,
-      quantity: 1,
-      imageUrl: '/assets/food-items/bbq-bacon-burger.png',
-    },
-  ]);
+  private readonly http = inject(HttpClient);
+  private readonly session = inject(SessionService);
+  private readonly baseUrl = environment.apiBaseUrl;
 
+  private readonly itemsSignal = signal<CartItem[]>([]);
   private readonly addressesSignal = signal<Address[]>(this.readAddresses());
-
   private readonly selectedAddressIdSignal = signal<string>(this.readSelectedAddressId());
   private readonly paymentMethodSignal = signal<PaymentMethod>('UPI');
   private readonly promoCodeSignal = signal('FOOD10');
@@ -60,39 +45,55 @@ export class CartService {
     this.itemsSignal().reduce((count, item) => count + item.quantity, 0),
   );
 
+  constructor() {
+    this.refreshFromBackend();
+  }
+
   addItem(next: CartItem): void {
-    const items = [...this.itemsSignal()];
-    const existing = items.find((item) => item.id === next.id);
+    const current = this.itemsSignal();
+    const existing = current.find((item) => item.backendMenuItemId === next.backendMenuItemId && item.backendRestaurantId === next.backendRestaurantId);
     if (existing) {
-      existing.quantity += next.quantity;
-    } else {
-      items.push(next);
+      this.updateQuantityLocal(existing.id, existing.quantity + next.quantity, existing.quantity);
+      return;
     }
-    this.itemsSignal.set(items);
+
+    this.itemsSignal.set([...current, next]);
+    this.persistLocalItems();
+    this.addItemRemote(next);
   }
 
   removeItem(id: string): void {
-    this.itemsSignal.update((items) => items.filter((item) => item.id !== id));
+    const item = this.itemsSignal().find((entry) => entry.id === id);
+    this.itemsSignal.update((items) => items.filter((entry) => entry.id !== id));
+    this.persistLocalItems();
+    if (item?.backendId && this.currentCustomerId()) {
+      this.http.delete(`${this.baseUrl}/cart/${this.currentCustomerId()}/items/${item.backendId}`).subscribe();
+    }
   }
 
   increaseQuantity(id: string): void {
-    this.itemsSignal.update((items) =>
-      items.map((item) => (item.id === id ? { ...item, quantity: item.quantity + 1 } : item)),
-    );
+    const item = this.itemsSignal().find((entry) => entry.id === id);
+    if (!item) {
+      return;
+    }
+    this.updateQuantityLocal(id, item.quantity + 1, item.quantity);
   }
 
   decreaseQuantity(id: string): void {
-    this.itemsSignal.update((items) =>
-      items
-        .map((item) =>
-          item.id === id ? { ...item, quantity: Math.max(item.quantity - 1, 1) } : item,
-        )
-        .filter(Boolean),
-    );
+    const item = this.itemsSignal().find((entry) => entry.id === id);
+    if (!item) {
+      return;
+    }
+    this.updateQuantityLocal(id, Math.max(item.quantity - 1, 1), item.quantity);
   }
 
   clear(): void {
     this.itemsSignal.set([]);
+    this.persistLocalItems();
+    const customerId = this.currentCustomerId();
+    if (customerId) {
+      this.http.delete(`${this.baseUrl}/cart/${customerId}`).subscribe();
+    }
   }
 
   selectAddress(id: string): void {
@@ -146,8 +147,103 @@ export class CartService {
     }
   }
 
-  private persistAddresses(): void {
-    localStorage.setItem(CART_ADDRESSES_KEY, JSON.stringify(this.addressesSignal()));
+  formatAddress(
+    address?:
+      | (Pick<Address, 'street' | 'landmark' | 'city' | 'state' | 'pincode'> & {
+          addressLine?: string;
+        })
+      | null,
+  ): string {
+    if (!address) {
+      return 'Address not provided';
+    }
+    const parts = [
+      address.pincode,
+      address.street,
+      address.landmark,
+      address.city,
+      address.state,
+    ].filter(Boolean);
+    return parts.join(', ') || address.addressLine || 'Address not provided';
+  }
+
+  private refreshFromBackend(): void {
+    const customerId = this.currentCustomerId();
+    if (!customerId) {
+      this.itemsSignal.set(this.readLocalItems());
+      return;
+    }
+
+    this.http.get<BackendCartSummaryResponse>(`${this.baseUrl}/cart/${customerId}`).subscribe({
+      next: (response) => {
+        this.itemsSignal.set(response.items.map((item) => cartToFrontend(item)));
+        this.persistLocalItems();
+      },
+      error: () => {
+        this.itemsSignal.set(this.readLocalItems());
+      },
+    });
+  }
+
+  private addItemRemote(next: CartItem): void {
+    const customerId = this.currentCustomerId();
+    const backendRestaurantId = next.backendRestaurantId;
+    const backendMenuItemId = next.backendMenuItemId;
+    if (!customerId || !backendRestaurantId || !backendMenuItemId) {
+      return;
+    }
+
+    this.http.post(`${this.baseUrl}/cart`, {
+      customerId,
+      restaurantId: backendRestaurantId,
+      restaurantName: next.restaurantName,
+      menuItemId: backendMenuItemId,
+      itemName: next.name,
+      unitPrice: next.price,
+      quantity: next.quantity,
+      imageUrl: next.imageUrl,
+      category: next.description,
+    }).subscribe({
+      next: () => this.refreshFromBackend(),
+    });
+  }
+
+  private updateQuantityLocal(id: string, quantity: number, previousQuantity: number): void {
+    this.itemsSignal.update((items) =>
+      items.map((item) => (item.id === id ? { ...item, quantity } : item)),
+    );
+    this.persistLocalItems();
+    const item = this.itemsSignal().find((entry) => entry.id === id);
+    const customerId = this.currentCustomerId();
+    if (item?.backendId && customerId) {
+      const delta = quantity - previousQuantity;
+      this.http.patch(`${this.baseUrl}/cart/${customerId}/items/${item.backendId}`, null, {
+        params: { delta },
+      }).subscribe({
+        next: () => this.refreshFromBackend(),
+      });
+    }
+  }
+
+  private currentCustomerId(): number | null {
+    return this.session.user()?.id ?? null;
+  }
+
+  private persistLocalItems(): void {
+    localStorage.setItem('quickbite.cart.items', JSON.stringify(this.itemsSignal()));
+  }
+
+  private readLocalItems(): CartItem[] {
+    const raw = localStorage.getItem('quickbite.cart.items');
+    if (!raw) {
+      return [];
+    }
+
+    try {
+      return JSON.parse(raw) as CartItem[];
+    } catch {
+      return [];
+    }
   }
 
   private readAddresses(): Address[] {
@@ -186,26 +282,6 @@ export class CartService {
 
   private readSelectedAddressId(): string {
     return localStorage.getItem(CART_SELECTED_ADDRESS_KEY) ?? this.readAddresses()[0]?.id ?? '';
-  }
-
-  formatAddress(
-    address?:
-      | (Pick<Address, 'street' | 'landmark' | 'city' | 'state' | 'pincode'> & {
-          addressLine?: string;
-        })
-      | null,
-  ): string {
-    if (!address) {
-      return 'Address not provided';
-    }
-    const parts = [
-      address.pincode,
-      address.street,
-      address.landmark,
-      address.city,
-      address.state,
-    ].filter(Boolean);
-    return parts.join(', ') || address.addressLine || 'Address not provided';
   }
 
   private createAddress(address: Partial<Address> & Pick<Address, 'id' | 'title'>): Address {
@@ -249,5 +325,9 @@ export class CartService {
     const state = parts.length > 3 ? parts[parts.length - 1] : (parts[3] ?? '');
 
     return { street, landmark, city, state, pincode };
+  }
+
+  private persistAddresses(): void {
+    localStorage.setItem(CART_ADDRESSES_KEY, JSON.stringify(this.addressesSignal()));
   }
 }

@@ -73,6 +73,7 @@ export interface Category {
 
 export interface Restaurant {
   id: string;
+  backendId?: number;
   name: string;
   cuisine: string;
   category: string;
@@ -89,7 +90,9 @@ export interface Restaurant {
 
 export interface MenuItem {
   id: string;
+  backendId?: number;
   restaurantId: string;
+  restaurantBackendId?: number;
   name: string;
   description: string;
   price: number;
@@ -119,7 +122,10 @@ export interface CustomerProfile {
 
 export interface CartItem {
   id: string;
+  backendId?: number;
   restaurantId: string;
+  backendRestaurantId?: number;
+  backendMenuItemId?: number;
   restaurantName: string;
   name: string;
   description: string;
@@ -156,7 +162,9 @@ export interface RestaurantProfile {
 
 export interface Order {
   id: string;
+  backendId?: number;
   restaurantId?: string;
+  backendRestaurantId?: number;
   restaurantName: string;
   items: string;
   total: number;

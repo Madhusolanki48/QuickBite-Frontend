@@ -1,10 +1,24 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { GeoPoint, Order } from '../core/app.models';
-import { DeliveryAgentDirectoryService } from './delivery-agent-directory.service';
-import { RealtimeSyncService } from './realtime-sync.service';
+import { CartService } from './cart.service';
+import {
+  BackendOrderResponse,
+  paymentMethodToBackend,
+  orderStatusFromBackend,
+  orderStatusToBackend,
+} from './backend-mappers';
+import { CatalogService } from './catalog.service';
+import { SessionService } from './session.service';
+import { environment } from '../../environments/environment';
 
-const ORDERS_KEY = 'quickbite.orders.v2';
+const ORDER_OVERRIDES_KEY = 'quickbite.order.overrides';
+const HIDDEN_ORDERS_KEY = 'quickbite.order.hidden';
+
+interface OrderOverrides {
+  [orderId: string]: Partial<Order>;
+}
 
 const RESTAURANT_LOCATIONS: Record<string, GeoPoint> = {
   'burger-palace': { lat: 28.5434, lng: 77.2476 },
@@ -17,14 +31,19 @@ const RESTAURANT_LOCATIONS: Record<string, GeoPoint> = {
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
-  private readonly sync = inject(RealtimeSyncService);
-  private readonly agents = inject(DeliveryAgentDirectoryService);
-  private readonly ordersSignal = signal<Order[]>(this.readOrders());
+  private readonly http = inject(HttpClient);
+  private readonly session = inject(SessionService);
+  private readonly catalog = inject(CatalogService);
+  private readonly cart = inject(CartService);
+  private readonly baseUrl = environment.apiBaseUrl;
+  private readonly ordersSignal = signal<Order[]>(this.readLocalOrders());
+  private readonly overridesSignal = signal<OrderOverrides>(this.readOverrides());
+  private readonly hiddenOrdersSignal = signal<string[]>(this.readHiddenOrders());
 
-  readonly orders = computed(() => this.ordersSignal());
+  readonly orders = computed(() => this.mergeOrders(this.ordersSignal(), this.overridesSignal()));
 
   constructor() {
-    this.sync.on(ORDERS_KEY, () => this.refresh());
+    this.refreshFromBackend();
   }
 
   placeOrder(payload: {
@@ -43,19 +62,38 @@ export class OrderService {
     if (!payload.items.trim()) {
       throw new Error('Cannot place an empty order');
     }
-
     if (payload.total <= 0) {
       throw new Error('Order total must be greater than zero');
     }
 
+    const customer = this.session.user();
+    if (!customer?.id) {
+      throw new Error('Please log in before placing an order.');
+    }
+
+    const restaurant = payload.restaurantId ? this.catalog.restaurantById(payload.restaurantId) : undefined;
     const pickupLocation = payload.pickupLocation ?? this.restaurantPoint(payload.restaurantId);
     const deliveryLocation =
       payload.deliveryLocation ?? this.offsetPoint(pickupLocation, 0.015, 0.016);
-    const distanceKm = this.distanceKm(pickupLocation, deliveryLocation);
+    const backendItems = this.cart.items().map((item) => {
+      const menuItem =
+        this.catalog.menuForRestaurant(item.restaurantId).find((entry) => entry.name === item.name) ??
+        this.catalog.menuForRestaurant(item.restaurantId).find((entry) => entry.id === item.id);
+      const restaurantEntry = this.catalog.restaurantById(item.restaurantId) ?? restaurant;
+      return {
+        menuItemId: item.backendMenuItemId ?? menuItem?.backendId ?? 0,
+        itemName: item.name,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        restaurantId: item.backendRestaurantId ?? restaurantEntry?.backendId ?? 0,
+        restaurantName: item.restaurantName,
+      };
+    });
     const customerDistanceKm = this.distanceKm(pickupLocation, deliveryLocation);
+    const distanceKm = this.distanceKm(pickupLocation, deliveryLocation);
 
-    const order: Order = {
-      id: `ORD-${1005 + this.ordersSignal().length}`,
+    const optimistic: Order = {
+      id: `ORD-${Date.now()}`,
       restaurantId: payload.restaurantId,
       restaurantName: payload.restaurantName,
       items: payload.items,
@@ -75,101 +113,161 @@ export class OrderService {
       deliveryAgentDistanceKm: Number(distanceKm.toFixed(1)),
     };
 
-    this.ordersSignal.update((orders) => [order, ...orders]);
-    this.persistOrders();
-    return order;
+    this.ordersSignal.update((orders) => [optimistic, ...orders]);
+    this.persistLocalState();
+
+    this.http
+      .post<BackendOrderResponse>(`${this.baseUrl}/orders`, {
+        customerId: customer.id,
+        restaurantId: restaurant?.backendId ?? 0,
+        customerEmail: customer.email,
+        items: backendItems.map((item) => ({
+          menuItemId: item.menuItemId || 0,
+          itemName: item.itemName,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
+        promoCode: this.cart.promoCode() || undefined,
+        discountAmount: this.cart.discount() || undefined,
+      })
+      .subscribe({
+        next: (response) => {
+          const next = this.fromBackendOrder(response, optimistic);
+          this.upsertOrder(next);
+          this.persistLocalState();
+          this.http.post(`${this.baseUrl}/payments`, {
+            orderId: response.id,
+            customerId: customer.id,
+            amount: payload.total,
+            paymentMethod: paymentMethodToBackend(this.cart.paymentMethod()),
+          }).subscribe();
+        },
+      });
+
+    return optimistic;
   }
 
   updateOrderStatus(orderId: string, status: Order['status'], agent?: string): void {
-    this.ordersSignal.update((orders) =>
-      orders.map((order) =>
-        order.id === orderId
-          ? {
-              ...order,
-              status,
-              agent: agent ?? order.agent,
-              deliveryAgentStatus:
-                status === 'READY'
-                  ? 'ASSIGNED'
-                  : status === 'ON_THE_WAY'
-                    ? 'PICKED_UP'
-                    : status === 'DELIVERED'
-                      ? 'DELIVERED'
-                      : order.deliveryAgentStatus,
-            }
-          : order,
-      ),
-    );
-    this.persistOrders();
+    this.overridesSignal.update((current) => ({
+      ...current,
+      [orderId]: {
+        ...(current[orderId] ?? {}),
+        status,
+        agent: agent ?? current[orderId]?.agent,
+      },
+    }));
+    this.persistLocalState();
+
+    const order = this.orders().find((item) => item.id === orderId);
+    if (!order?.backendId) {
+      return;
+    }
+
+    this.http
+      .patch<BackendOrderResponse>(`${this.baseUrl}/orders/${order.backendId}/status`, null, {
+        params: { status: orderStatusToBackend(status) },
+      })
+      .subscribe({
+        next: (response) => {
+          this.upsertOrder(this.fromBackendOrder(response, order));
+          this.persistLocalState();
+        },
+      });
   }
 
   assignDeliveryAgent(orderId: string, agentEmail: string): void {
-    const agent = this.agents.findAgent(agentEmail);
-    if (!agent) {
-      throw new Error('Selected delivery agent is not available');
-    }
-
-    this.ordersSignal.update((orders) =>
-      orders.map((order) =>
-        order.id === orderId
-          ? {
-              ...order,
-              status: order.status === 'PLACED' ? 'CONFIRMED' : order.status,
-              deliveryAgentName: agent.name,
-              deliveryAgentEmail: agent.email,
-              deliveryAgentPhone: agent.phone,
-              deliveryAgentStatus: 'ASSIGNED',
-              deliveryAgentLocation: agent.location,
-              deliveryAgentEtaMinutes: Math.max(
-                12,
-                Math.round(
-                  this.distanceKm(
-                    agent.location,
-                    order.pickupLocation ?? this.restaurantPoint(order.restaurantId),
-                  ) *
-                    4 +
-                    8,
-                ),
-              ),
-              deliveryAgentDistanceKm: Number(
-                this.distanceKm(
-                  agent.location,
-                  order.pickupLocation ?? this.restaurantPoint(order.restaurantId),
-                ).toFixed(1),
-              ),
-              deliveryAgentEarnings: Math.max(39, Math.round(order.total * 0.12)),
-            }
-          : order,
-      ),
-    );
-    this.persistOrders();
+    this.overridesSignal.update((current) => ({
+      ...current,
+      [orderId]: {
+        ...(current[orderId] ?? {}),
+        agent: this.currentAgentName(agentEmail) ?? current[orderId]?.agent,
+        deliveryAgentEmail: agentEmail,
+      },
+    }));
+    this.persistLocalState();
   }
 
   deleteOrder(orderId: string): void {
-    const order = this.ordersSignal().find((item) => item.id === orderId);
+    const order = this.orders().find((item) => item.id === orderId);
     if (!order || order.status !== 'PLACED') {
       return;
     }
 
-    this.ordersSignal.update((orders) => orders.filter((order) => order.id !== orderId));
-    this.persistOrders();
+    this.hiddenOrdersSignal.update((items) => Array.from(new Set([orderId, ...items])));
+    this.persistLocalState();
   }
 
   recordOrders(orders: Order[]): void {
     this.ordersSignal.set(orders);
-    this.persistOrders();
+    this.persistLocalState();
   }
 
   activeOrders() {
-    return this.ordersSignal().filter(
-      (order) => order.status !== 'DELIVERED' && order.status !== 'CANCELLED',
-    );
+    return this.orders().filter((order) => order.status !== 'DELIVERED' && order.status !== 'CANCELLED');
   }
 
   pastOrders() {
-    return this.ordersSignal().filter(
-      (order) => order.status === 'DELIVERED' || order.status === 'CANCELLED',
-    );
+    return this.orders().filter((order) => order.status === 'DELIVERED' || order.status === 'CANCELLED');
+  }
+
+  private refreshFromBackend(): void {
+    this.http.get<BackendOrderResponse[]>(`${this.baseUrl}/orders`).subscribe({
+      next: (orders) => {
+        const next = orders.map((order) => this.fromBackendOrder(order));
+        this.ordersSignal.set(next);
+        this.persistLocalState();
+      },
+    });
+  }
+
+  private fromBackendOrder(response: BackendOrderResponse, fallback?: Order): Order {
+    const restaurant = this.catalog
+      .restaurantList()
+      .find((entry) => entry.backendId === response.restaurantId);
+    const restaurantName = fallback?.restaurantName ?? restaurant?.name ?? `Restaurant ${response.restaurantId}`;
+    return {
+      id: `ORD-${response.id}`,
+      backendId: response.id,
+      restaurantId: fallback?.restaurantId ?? restaurant?.id,
+      backendRestaurantId: response.restaurantId,
+      restaurantName,
+      items: response.items.map((item) => `${item.itemName} x${item.quantity}`).join(', '),
+      total: response.totalAmount,
+      status: orderStatusFromBackend(response.orderStatus),
+      customerName: fallback?.customerName ?? undefined,
+      customerEmail: response.customerEmail,
+      customerPhone: fallback?.customerPhone,
+      time: fallback?.time ?? this.currentTime(),
+      createdAt: response.createdAt,
+      note: fallback?.note,
+      customerDistanceKm: fallback?.customerDistanceKm,
+      deliveryAddressLine: fallback?.deliveryAddressLine,
+      deliveryLocation: fallback?.deliveryLocation,
+      pickupLocation: fallback?.pickupLocation ?? this.restaurantPoint(fallback?.restaurantId ?? restaurant?.id),
+      deliveryAgentName: fallback?.deliveryAgentName,
+      deliveryAgentEmail: fallback?.deliveryAgentEmail,
+      deliveryAgentPhone: fallback?.deliveryAgentPhone,
+      deliveryAgentStatus: fallback?.deliveryAgentStatus,
+      deliveryAgentEtaMinutes: fallback?.deliveryAgentEtaMinutes,
+      deliveryAgentDistanceKm: fallback?.deliveryAgentDistanceKm,
+      deliveryAgentEarnings: fallback?.deliveryAgentEarnings,
+      deliveryAgentLocation: fallback?.deliveryAgentLocation,
+      agent: fallback?.agent,
+    };
+  }
+
+  private upsertOrder(order: Order): void {
+    this.ordersSignal.update((orders) => {
+      const filtered = orders.filter((item) => item.id !== order.id);
+      return [order, ...filtered];
+    });
+  }
+
+  private mergeOrders(base: Order[], overrides: OrderOverrides): Order[] {
+    return base
+      .filter((order) => !this.hiddenOrdersSignal().includes(order.id))
+      .map((order) => ({ ...order, ...(overrides[order.id] ?? {}) }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
   private restaurantPoint(restaurantId?: string): GeoPoint {
@@ -192,7 +290,6 @@ export class OrderService {
     const dLng = this.toRad(b.lng - a.lng);
     const lat1 = this.toRad(a.lat);
     const lat2 = this.toRad(b.lat);
-
     const sinLat = Math.sin(dLat / 2);
     const sinLng = Math.sin(dLng / 2);
     const haversine = sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLng * sinLng;
@@ -203,8 +300,8 @@ export class OrderService {
     return (value * Math.PI) / 180;
   }
 
-  private readOrders(): Order[] {
-    const raw = localStorage.getItem(ORDERS_KEY);
+  private readLocalOrders(): Order[] {
+    const raw = localStorage.getItem('quickbite.orders.local');
     if (!raw) {
       return [];
     }
@@ -216,13 +313,36 @@ export class OrderService {
     }
   }
 
-  private persistOrders(): void {
-    localStorage.setItem(ORDERS_KEY, JSON.stringify(this.ordersSignal()));
-    this.sync.publish(ORDERS_KEY);
+  private readOverrides(): OrderOverrides {
+    const raw = localStorage.getItem(ORDER_OVERRIDES_KEY);
+    if (!raw) {
+      return {};
+    }
+
+    try {
+      return JSON.parse(raw) as OrderOverrides;
+    } catch {
+      return {};
+    }
   }
 
-  private refresh(): void {
-    this.ordersSignal.set(this.readOrders());
+  private readHiddenOrders(): string[] {
+    const raw = localStorage.getItem(HIDDEN_ORDERS_KEY);
+    if (!raw) {
+      return [];
+    }
+
+    try {
+      return JSON.parse(raw) as string[];
+    } catch {
+      return [];
+    }
+  }
+
+  private persistLocalState(): void {
+    localStorage.setItem('quickbite.orders.local', JSON.stringify(this.ordersSignal()));
+    localStorage.setItem(ORDER_OVERRIDES_KEY, JSON.stringify(this.overridesSignal()));
+    localStorage.setItem(HIDDEN_ORDERS_KEY, JSON.stringify(this.hiddenOrdersSignal()));
   }
 
   private currentTime(): string {
@@ -230,5 +350,17 @@ export class OrderService {
       hour: 'numeric',
       minute: '2-digit',
     }).format(new Date());
+  }
+
+  private currentAgentName(email: string): string | undefined {
+    const localPart = email.split('@')[0] ?? '';
+    if (!localPart) {
+      return undefined;
+    }
+    return localPart
+      .split(/[._-]/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
   }
 }

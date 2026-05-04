@@ -1,14 +1,27 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 
 import { Category, MenuItem, Restaurant } from '../core/app.models';
+import {
+  BackendMenuItemResponse,
+  BackendRestaurantResponse,
+  cuisineTypeFromText,
+  menuToFrontend,
+  restaurantStatusToBackend,
+  restaurantToFrontend,
+  slugify,
+} from './backend-mappers';
 import { RealtimeSyncService } from './realtime-sync.service';
+import { environment as appEnvironment } from '../../environments/environment';
 
 const RESTAURANTS_KEY = 'quickbite.restaurants';
 const MENU_ITEMS_KEY = 'quickbite.menuItems';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
+  private readonly http = inject(HttpClient);
   private readonly sync = inject(RealtimeSyncService);
+  private readonly baseUrl = appEnvironment.apiBaseUrl;
   private readonly assetBase = '/assets/images';
   private readonly assetVersion = 'v=20260429';
 
@@ -446,6 +459,32 @@ export class CatalogService {
       this.restaurantsSignal.set(this.readRestaurants());
       this.menuItemsSignal.set(this.readMenuItems());
     });
+    this.refreshFromBackend();
+  }
+
+  private refreshFromBackend(): void {
+    this.http.get<BackendRestaurantResponse[]>(`${this.baseUrl}/restaurants`).subscribe({
+      next: (restaurants) => {
+        const mappedRestaurants = restaurants.map((restaurant) => restaurantToFrontend(restaurant));
+        const mappedMenus = restaurants.flatMap((restaurant) =>
+          (restaurant.menuItems ?? []).map((item) =>
+            menuToFrontend(
+              slugify(restaurant.name),
+              restaurant.name,
+              restaurant.id,
+              item as BackendMenuItemResponse,
+            ),
+          ),
+        );
+
+        this.restaurantsSignal.set(mappedRestaurants.length ? mappedRestaurants : this.readRestaurants());
+        this.menuItemsSignal.set(mappedMenus.length ? mappedMenus : this.readMenuItems());
+      },
+      error: () => {
+        this.restaurantsSignal.set(this.readRestaurants());
+        this.menuItemsSignal.set(this.readMenuItems());
+      },
+    });
   }
 
   categoryList() {
@@ -465,65 +504,169 @@ export class CatalogService {
   }
 
   updateRestaurantAvailability(id: string, status: 'OPEN' | 'CLOSED'): void {
-    this.restaurantsSignal.update((restaurants) =>
-      restaurants.map((restaurant) =>
-        restaurant.id === id ? { ...restaurant, status } : restaurant,
-      ),
-    );
-    this.persistRestaurants();
+    const restaurant = this.restaurantsSignal().find((entry) => entry.id === id);
+    if (!restaurant?.backendId) {
+      this.restaurantsSignal.update((restaurants) =>
+        restaurants.map((item) => (item.id === id ? { ...item, status } : item)),
+      );
+      return;
+    }
+
+    this.http
+      .put<BackendRestaurantResponse>(`${this.baseUrl}/restaurants/${restaurant.backendId}`, {
+        status: restaurantStatusToBackend(status),
+      })
+      .subscribe({
+        next: () => this.refreshFromBackend(),
+        error: () =>
+          this.restaurantsSignal.update((restaurants) =>
+            restaurants.map((item) => (item.id === id ? { ...item, status } : item)),
+          ),
+      });
   }
 
   updateRestaurant(id: string, patch: Partial<Restaurant>): void {
-    this.restaurantsSignal.update((restaurants) =>
-      restaurants.map((restaurant) =>
-        restaurant.id === id ? { ...restaurant, ...patch, id: restaurant.id } : restaurant,
-      ),
-    );
-    this.persistRestaurants();
+    const restaurant = this.restaurantsSignal().find((entry) => entry.id === id);
+    if (!restaurant?.backendId) {
+      this.restaurantsSignal.update((restaurants) =>
+        restaurants.map((item) => (item.id === id ? { ...item, ...patch, id: item.id } : item)),
+      );
+      return;
+    }
+
+    this.http
+      .put<BackendRestaurantResponse>(`${this.baseUrl}/restaurants/${restaurant.backendId}`, {
+        name: patch.name ?? restaurant.name,
+        address: patch.description ?? restaurant.description,
+        rating: patch.rating ?? restaurant.rating,
+        cuisineType: cuisineTypeFromText(patch.category ?? restaurant.cuisine),
+        status: patch.status ? restaurantStatusToBackend(patch.status) : undefined,
+      })
+      .subscribe({
+        next: () => this.refreshFromBackend(),
+        error: () =>
+          this.restaurantsSignal.update((restaurants) =>
+            restaurants.map((item) => (item.id === id ? { ...item, ...patch, id: item.id } : item)),
+          ),
+      });
   }
 
   addRestaurant(restaurant: Restaurant): void {
-    this.restaurantsSignal.update((restaurants) => [
-      restaurant,
-      ...restaurants.filter((entry) => entry.id !== restaurant.id),
-    ]);
-    this.persistRestaurants();
+    this.http
+      .post<BackendRestaurantResponse>(`${this.baseUrl}/restaurants`, {
+        name: restaurant.name,
+        address: restaurant.description,
+        phoneNumber: '0000000000',
+        email: `${restaurant.id}@quickbite.dev`,
+        cuisineType: cuisineTypeFromText(restaurant.cuisine ?? restaurant.category),
+        rating: restaurant.rating,
+        ownerName: '',
+      })
+      .subscribe({
+        next: () => this.refreshFromBackend(),
+        error: () =>
+          this.restaurantsSignal.update((restaurants) => [
+            restaurant,
+            ...restaurants.filter((entry) => entry.id !== restaurant.id),
+          ]),
+      });
   }
 
   addMenuItem(item: MenuItem): void {
-    this.menuItemsSignal.update((items) => [
-      item,
-      ...items.filter((entry) => entry.id !== item.id),
-    ]);
-    this.persistMenuItems();
+    const restaurant = this.restaurantsSignal().find((entry) => entry.id === item.restaurantId);
+    if (!restaurant?.backendId) {
+      this.menuItemsSignal.update((items) => [
+        item,
+        ...items.filter((entry) => entry.id !== item.id),
+      ]);
+      return;
+    }
+
+    this.http
+      .post(`${this.baseUrl}/restaurants/${restaurant.backendId}/menu-items`, {
+        name: item.name,
+        description: item.description,
+        price: item.price,
+      })
+      .subscribe({
+        next: () => this.refreshFromBackend(),
+        error: () =>
+          this.menuItemsSignal.update((items) => [
+            item,
+            ...items.filter((entry) => entry.id !== item.id),
+          ]),
+      });
   }
 
   updateMenuItem(id: string, patch: Partial<MenuItem>): void {
-    this.menuItemsSignal.update((items) =>
-      items.map((item) => (item.id === id ? { ...item, ...patch, id: item.id } : item)),
-    );
-    this.persistMenuItems();
+    const item = this.menuItemsSignal().find((entry) => entry.id === id);
+    const restaurant = this.restaurantsSignal().find((entry) => entry.id === item?.restaurantId);
+    if (!item?.backendId || !restaurant?.backendId) {
+      this.menuItemsSignal.update((items) =>
+        items.map((entry) => (entry.id === id ? { ...entry, ...patch, id: entry.id } : entry)),
+      );
+      return;
+    }
+
+    this.http
+      .put(`${this.baseUrl}/restaurants/${restaurant.backendId}/menu-items/${item.backendId}`, {
+        name: patch.name ?? item.name,
+        description: patch.description ?? item.description,
+        price: patch.price ?? item.price,
+        availability: patch.available === false ? 'UNAVAILABLE' : 'AVAILABLE',
+      })
+      .subscribe({
+        next: () => this.refreshFromBackend(),
+        error: () =>
+          this.menuItemsSignal.update((items) =>
+            items.map((entry) => (entry.id === id ? { ...entry, ...patch, id: entry.id } : entry)),
+          ),
+      });
   }
 
   deleteMenuItem(id: string): void {
-    this.menuItemsSignal.update((items) => items.filter((item) => item.id !== id));
-    this.persistMenuItems();
+    const item = this.menuItemsSignal().find((entry) => entry.id === id);
+    const restaurant = this.restaurantsSignal().find((entry) => entry.id === item?.restaurantId);
+    if (!item?.backendId || !restaurant?.backendId) {
+      this.menuItemsSignal.update((items) => items.filter((entry) => entry.id !== id));
+      return;
+    }
+
+    this.http
+      .delete(`${this.baseUrl}/restaurants/${restaurant.backendId}/menu-items/${item.backendId}`)
+      .subscribe({
+        next: () => this.refreshFromBackend(),
+        error: () => this.menuItemsSignal.update((items) => items.filter((entry) => entry.id !== id)),
+      });
   }
 
   toggleMenuItemAvailability(id: string): void {
-    this.menuItemsSignal.update((items) =>
-      items.map((item) =>
-        item.id === id ? { ...item, available: item.available === false ? true : false } : item,
-      ),
-    );
-    this.persistMenuItems();
+    const item = this.menuItemsSignal().find((entry) => entry.id === id);
+    const nextAvailable = item?.available === false;
+    this.setMenuItemAvailability(id, nextAvailable);
   }
 
   setMenuItemAvailability(id: string, available: boolean): void {
-    this.menuItemsSignal.update((items) =>
-      items.map((item) => (item.id === id ? { ...item, available } : item)),
-    );
-    this.persistMenuItems();
+    const item = this.menuItemsSignal().find((entry) => entry.id === id);
+    const restaurant = this.restaurantsSignal().find((entry) => entry.id === item?.restaurantId);
+    if (!item?.backendId || !restaurant?.backendId) {
+      this.menuItemsSignal.update((items) =>
+        items.map((entry) => (entry.id === id ? { ...entry, available } : entry)),
+      );
+      return;
+    }
+
+    this.http
+      .put(`${this.baseUrl}/restaurants/${restaurant.backendId}/menu-items/${item.backendId}`, {
+        availability: available ? 'AVAILABLE' : 'UNAVAILABLE',
+      })
+      .subscribe({
+        next: () => this.refreshFromBackend(),
+        error: () =>
+          this.menuItemsSignal.update((items) =>
+            items.map((entry) => (entry.id === id ? { ...entry, available } : entry)),
+          ),
+      });
   }
 
   categoryLabel(id: string) {

@@ -72,7 +72,13 @@ export class MenuPageComponent {
   protected readonly restaurant = computed(() => this.catalog.restaurantById(this.restaurantId));
   protected readonly items = computed(() => this.catalog.menuForRestaurant(this.restaurantId));
 
-  protected add(item: { id: string; name: string; description: string; price: number }) {
+  protected add(item: {
+    id: string;
+    backendId?: number;
+    name: string;
+    description: string;
+    price: number;
+  }) {
     const restaurant = this.restaurant();
     if (!restaurant) {
       return;
@@ -86,6 +92,8 @@ export class MenuPageComponent {
 
     this.cart.addItem({
       id: `${restaurant.id}-${item.id}`,
+      backendMenuItemId: item.backendId,
+      backendRestaurantId: restaurant.backendId,
       restaurantId: restaurant.id,
       restaurantName: restaurant.name,
       name: item.name,

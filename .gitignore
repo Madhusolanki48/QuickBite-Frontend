@@ -1,40 +1,28 @@
-# Build output
+# build files
 dist/
-tmp/
 out-tsc/
-bazel-out/
 
-# Node
+# node modules
 node_modules/
+
+# angular cache
+.angular/
+
+# temp files
+tmp/
+.cache/
+
+# env files
+.env
+
+# logs
 npm-debug.log
 yarn-error.log
 
-# Angular
-.angular/
-
-# Environment
-.env
-.env.*
-
-# IDEs
+# IDE files
 .vscode/
 .idea/
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-.history/
 
-# Misc
-.sass-cache/
-connect.lock
-coverage/
-libpeerconnection.log
-testem.log
-typings/
-__screenshots__/
-
-# System
+# system files
 .DS_Store
 Thumbs.db

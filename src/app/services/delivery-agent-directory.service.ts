@@ -1,5 +1,7 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 
+import { environment } from '../../environments/environment';
 import { RealtimeSyncService } from './realtime-sync.service';
 import { SessionService } from './session.service';
 import { DELIVERY_AGENT_SEEDS, DeliveryAgentDirectoryEntry } from './delivery-agents.data';
@@ -8,8 +10,10 @@ const DIRECTORY_KEY = 'quickbite.delivery.agents.directory';
 
 @Injectable({ providedIn: 'root' })
 export class DeliveryAgentDirectoryService {
+  private readonly http = inject(HttpClient);
   private readonly sync = inject(RealtimeSyncService);
   private readonly session = inject(SessionService);
+  private readonly baseUrl = environment.apiBaseUrl;
   private readonly agentsSignal = signal<DeliveryAgentDirectoryEntry[]>(this.readAgents());
 
   readonly agents = computed(() => this.agentsSignal());
@@ -19,6 +23,7 @@ export class DeliveryAgentDirectoryService {
 
   constructor() {
     this.sync.on(DIRECTORY_KEY, () => this.refresh());
+    this.refreshFromBackend();
   }
 
   currentAgentEmail(): string {
@@ -90,5 +95,37 @@ export class DeliveryAgentDirectoryService {
 
   private refresh(): void {
     this.agentsSignal.set(this.readAgents());
+  }
+
+  private refreshFromBackend(): void {
+    this.http.get<Array<{ userId: number; fullName: string; email: string; phoneNumber: string; vehicleType?: string; vehicleNumber?: string; vehicleModel?: string; licenseNumber?: string; serviceArea?: string; active: boolean }>>(`${this.baseUrl}/delivery-agents`).subscribe({
+      next: (agents) => {
+        if (!agents.length) {
+          return;
+        }
+
+        const merged = this.agentsSignal().map((seed) => {
+          const match = agents.find((agent) => agent.email.toLowerCase() === seed.email.toLowerCase());
+          if (!match) {
+            return seed;
+          }
+
+          return {
+            ...seed,
+            name: match.fullName || seed.name,
+            email: match.email || seed.email,
+            phone: match.phoneNumber || seed.phone,
+            zone: match.serviceArea || seed.zone,
+            role: match.vehicleType ? `${match.vehicleType} - ID #${match.userId}` : seed.role,
+            initial: (match.fullName || seed.name).charAt(0).toUpperCase(),
+            available: match.active,
+            online: match.active,
+          };
+        });
+
+        this.agentsSignal.set(merged);
+        localStorage.setItem(DIRECTORY_KEY, JSON.stringify(merged));
+      },
+    });
   }
 }
