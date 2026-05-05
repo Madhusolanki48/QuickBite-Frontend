@@ -34,7 +34,7 @@ import { CartService } from '../../services/cart.service';
       <a routerLink="/cart" class="ghost">Cart ({{ cart.itemCount() }})</a>
     </section>
 
-    <section class="grid">
+    <section class="menu-grid">
       <article *ngFor="let item of items()" class="menu-card card">
         <div class="menu-card__visual">
           <img

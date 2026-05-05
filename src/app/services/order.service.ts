@@ -1,13 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { map, Observable } from 'rxjs';
 
-import { GeoPoint, Order } from '../core/app.models';
+import { GeoPoint, Order, PaymentMethod } from '../core/app.models';
 import { CartService } from './cart.service';
 import {
   BackendOrderResponse,
-  paymentMethodToBackend,
   orderStatusFromBackend,
   orderStatusToBackend,
+  paymentMethodToBackend,
 } from './backend-mappers';
 import { CatalogService } from './catalog.service';
 import { SessionService } from './session.service';
@@ -58,93 +59,42 @@ export class OrderService {
     deliveryAddressLine?: string;
     deliveryLocation?: GeoPoint;
     pickupLocation?: GeoPoint;
-  }): Order {
-    if (!payload.items.trim()) {
-      throw new Error('Cannot place an empty order');
-    }
-    if (payload.total <= 0) {
-      throw new Error('Order total must be greater than zero');
-    }
+    paymentMethod?: PaymentMethod;
+  }): Observable<Order> {
+    return this.createOrderRecord(
+      {
+        ...payload,
+        paymentMethod: payload.paymentMethod ?? 'UPI',
+      },
+      undefined,
+    );
+  }
 
-    const customer = this.session.user();
-    if (!customer?.id) {
-      throw new Error('Please log in before placing an order.');
-    }
-
-    const restaurant = payload.restaurantId ? this.catalog.restaurantById(payload.restaurantId) : undefined;
-    const pickupLocation = payload.pickupLocation ?? this.restaurantPoint(payload.restaurantId);
-    const deliveryLocation =
-      payload.deliveryLocation ?? this.offsetPoint(pickupLocation, 0.015, 0.016);
-    const backendItems = this.cart.items().map((item) => {
-      const menuItem =
-        this.catalog.menuForRestaurant(item.restaurantId).find((entry) => entry.name === item.name) ??
-        this.catalog.menuForRestaurant(item.restaurantId).find((entry) => entry.id === item.id);
-      const restaurantEntry = this.catalog.restaurantById(item.restaurantId) ?? restaurant;
-      return {
-        menuItemId: item.backendMenuItemId ?? menuItem?.backendId ?? 0,
-        itemName: item.name,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        restaurantId: item.backendRestaurantId ?? restaurantEntry?.backendId ?? 0,
-        restaurantName: item.restaurantName,
-      };
+  placeOrderAfterPayment(payload: {
+    restaurantId?: string;
+    restaurantName: string;
+    items: string;
+    total: number;
+    customerName?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    note?: string;
+    deliveryAddressLine?: string;
+    deliveryLocation?: GeoPoint;
+    pickupLocation?: GeoPoint;
+    paymentMethod: PaymentMethod;
+    paymentId: string;
+    paymentOrderId: string;
+    paymentSignature: string;
+    paymentStatus?: 'SUCCESS' | 'PENDING' | 'FAILED';
+  }): Observable<Order> {
+    return this.createOrderRecord(payload, {
+      paymentId: payload.paymentId,
+      paymentOrderId: payload.paymentOrderId,
+      paymentSignature: payload.paymentSignature,
+      paymentStatus: payload.paymentStatus ?? 'SUCCESS',
+      paymentMethod: payload.paymentMethod,
     });
-    const customerDistanceKm = this.distanceKm(pickupLocation, deliveryLocation);
-    const distanceKm = this.distanceKm(pickupLocation, deliveryLocation);
-
-    const optimistic: Order = {
-      id: `ORD-${Date.now()}`,
-      restaurantId: payload.restaurantId,
-      restaurantName: payload.restaurantName,
-      items: payload.items,
-      total: payload.total,
-      status: 'PLACED',
-      customerName: payload.customerName,
-      customerEmail: payload.customerEmail,
-      customerPhone: payload.customerPhone,
-      note: payload.note,
-      time: this.currentTime(),
-      createdAt: new Date().toISOString(),
-      customerDistanceKm: Number(customerDistanceKm.toFixed(1)),
-      deliveryAddressLine: payload.deliveryAddressLine,
-      deliveryLocation,
-      pickupLocation,
-      deliveryAgentStatus: 'REQUESTED',
-      deliveryAgentDistanceKm: Number(distanceKm.toFixed(1)),
-    };
-
-    this.ordersSignal.update((orders) => [optimistic, ...orders]);
-    this.persistLocalState();
-
-    this.http
-      .post<BackendOrderResponse>(`${this.baseUrl}/orders`, {
-        customerId: customer.id,
-        restaurantId: restaurant?.backendId ?? 0,
-        customerEmail: customer.email,
-        items: backendItems.map((item) => ({
-          menuItemId: item.menuItemId || 0,
-          itemName: item.itemName,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-        })),
-        promoCode: this.cart.promoCode() || undefined,
-        discountAmount: this.cart.discount() || undefined,
-      })
-      .subscribe({
-        next: (response) => {
-          const next = this.fromBackendOrder(response, optimistic);
-          this.upsertOrder(next);
-          this.persistLocalState();
-          this.http.post(`${this.baseUrl}/payments`, {
-            orderId: response.id,
-            customerId: customer.id,
-            amount: payload.total,
-            paymentMethod: paymentMethodToBackend(this.cart.paymentMethod()),
-          }).subscribe();
-        },
-      });
-
-    return optimistic;
   }
 
   updateOrderStatus(orderId: string, status: Order['status'], agent?: string): void {
@@ -234,6 +184,11 @@ export class OrderService {
       items: response.items.map((item) => `${item.itemName} x${item.quantity}`).join(', '),
       total: response.totalAmount,
       status: orderStatusFromBackend(response.orderStatus),
+      paymentStatus: response.paymentStatus,
+      paymentId: response.paymentId ?? fallback?.paymentId,
+      paymentOrderId: response.razorpayOrderId ?? fallback?.paymentOrderId,
+      paymentSignature: response.razorpaySignature ?? fallback?.paymentSignature,
+      paymentMethod: (response.paymentMethod as PaymentMethod | undefined) ?? fallback?.paymentMethod,
       customerName: fallback?.customerName ?? undefined,
       customerEmail: response.customerEmail,
       customerPhone: fallback?.customerPhone,
@@ -254,6 +209,120 @@ export class OrderService {
       deliveryAgentLocation: fallback?.deliveryAgentLocation,
       agent: fallback?.agent,
     };
+  }
+
+  private createOrderRecord(
+    payload: {
+      restaurantId?: string;
+      restaurantName: string;
+      items: string;
+      total: number;
+      customerName?: string;
+      customerEmail?: string;
+      customerPhone?: string;
+      note?: string;
+      deliveryAddressLine?: string;
+      deliveryLocation?: GeoPoint;
+      pickupLocation?: GeoPoint;
+      paymentMethod: PaymentMethod;
+    },
+    payment?: {
+      paymentId?: string;
+      paymentOrderId?: string;
+      paymentSignature?: string;
+      paymentStatus?: 'SUCCESS' | 'PENDING' | 'FAILED';
+      paymentMethod?: PaymentMethod;
+    },
+  ): Observable<Order> {
+    if (!payload.items.trim()) {
+      throw new Error('Cannot place an empty order');
+    }
+    if (payload.total <= 0) {
+      throw new Error('Order total must be greater than zero');
+    }
+
+    const customer = this.session.user();
+    if (!customer?.id) {
+      throw new Error('Please log in before placing an order.');
+    }
+
+    const restaurant = payload.restaurantId ? this.catalog.restaurantById(payload.restaurantId) : undefined;
+    const pickupLocation = payload.pickupLocation ?? this.restaurantPoint(payload.restaurantId);
+    const deliveryLocation =
+      payload.deliveryLocation ?? this.offsetPoint(pickupLocation, 0.015, 0.016);
+    const backendItems = this.cart.items().map((item) => {
+      const menuItem =
+        this.catalog.menuForRestaurant(item.restaurantId).find((entry) => entry.name === item.name) ??
+        this.catalog.menuForRestaurant(item.restaurantId).find((entry) => entry.id === item.id);
+      const restaurantEntry = this.catalog.restaurantById(item.restaurantId) ?? restaurant;
+      return {
+        menuItemId: item.backendMenuItemId ?? menuItem?.backendId ?? 0,
+        itemName: item.name,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        restaurantId: item.backendRestaurantId ?? restaurantEntry?.backendId ?? 0,
+        restaurantName: item.restaurantName,
+      };
+    });
+    const customerDistanceKm = this.distanceKm(pickupLocation, deliveryLocation);
+    const distanceKm = this.distanceKm(pickupLocation, deliveryLocation);
+
+    const optimistic: Order = {
+      id: `ORD-${Date.now()}`,
+      restaurantId: payload.restaurantId,
+      restaurantName: payload.restaurantName,
+      items: payload.items,
+      total: payload.total,
+      status: 'PLACED',
+      paymentStatus: payment?.paymentStatus ?? 'SUCCESS',
+      paymentMethod: payment?.paymentMethod ?? payload.paymentMethod,
+      paymentId: payment?.paymentId,
+      paymentOrderId: payment?.paymentOrderId,
+      paymentSignature: payment?.paymentSignature,
+      customerName: payload.customerName,
+      customerEmail: payload.customerEmail,
+      customerPhone: payload.customerPhone,
+      note: payload.note,
+      time: this.currentTime(),
+      createdAt: new Date().toISOString(),
+      customerDistanceKm: Number(customerDistanceKm.toFixed(1)),
+      deliveryAddressLine: payload.deliveryAddressLine,
+      deliveryLocation,
+      pickupLocation,
+      deliveryAgentStatus: 'REQUESTED',
+      deliveryAgentDistanceKm: Number(distanceKm.toFixed(1)),
+    };
+
+    this.ordersSignal.update((orders) => [optimistic, ...orders]);
+    this.persistLocalState();
+
+    return this.http
+      .post<BackendOrderResponse>(`${this.baseUrl}/orders`, {
+        customerId: customer.id,
+        restaurantId: restaurant?.backendId ?? 0,
+        customerEmail: customer.email,
+        items: backendItems.map((item) => ({
+          menuItemId: item.menuItemId || 0,
+          itemName: item.itemName,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
+        promoCode: this.cart.promoCode() || undefined,
+        discountAmount: this.cart.discount() || undefined,
+        paymentMethod: paymentMethodToBackend(payload.paymentMethod),
+        paymentStatus: payment?.paymentStatus ?? 'SUCCESS',
+        razorpayPaymentId: payment?.paymentId,
+        razorpayOrderId: payment?.paymentOrderId,
+        razorpaySignature: payment?.paymentSignature,
+      })
+      .pipe(
+        map((response) => {
+          const next = this.fromBackendOrder(response, optimistic);
+          this.upsertOrder(next);
+          this.persistLocalState();
+          return next;
+        }),
+      );
   }
 
   private upsertOrder(order: Order): void {
@@ -362,5 +431,9 @@ export class OrderService {
       .filter(Boolean)
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join(' ');
+  }
+
+  findByBackendId(backendId: number): Order | undefined {
+    return this.orders().find((order) => order.backendId === backendId);
   }
 }

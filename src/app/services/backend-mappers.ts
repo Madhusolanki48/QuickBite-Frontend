@@ -1,4 +1,4 @@
-import { CartItem, MenuItem, Order, Restaurant } from '../core/app.models';
+import { CartItem, MenuItem, Order, PaymentMethod, Restaurant } from '../core/app.models';
 
 export interface BackendRestaurantResponse {
   id: number;
@@ -32,6 +32,10 @@ export interface BackendOrderResponse {
   orderStatus: 'CREATED' | 'CONFIRMED' | 'PREPARING' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED';
   paymentStatus: 'PENDING' | 'SUCCESS' | 'FAILED' | 'REFUNDED';
   createdAt: string;
+  paymentId?: string | null;
+  razorpayOrderId?: string | null;
+  razorpaySignature?: string | null;
+  paymentMethod?: string | null;
   items: Array<{
     id: number;
     menuItemId: number;
@@ -124,8 +128,19 @@ export function orderStatusToBackend(status: Order['status']): BackendOrderRespo
   }
 }
 
-export function paymentMethodToBackend(method: 'UPI' | 'CARD' | 'COD'): 'UPI' | 'CARD' | 'CASH_ON_DELIVERY' {
-  return method === 'COD' ? 'CASH_ON_DELIVERY' : method;
+export function paymentMethodToBackend(
+  method: PaymentMethod,
+): 'UPI' | 'CARD' | 'NETBANKING' | 'WALLET' | 'CASH_ON_DELIVERY' {
+  switch (method) {
+    case 'COD':
+      return 'CASH_ON_DELIVERY';
+    case 'UPI':
+    case 'CARD':
+    case 'NETBANKING':
+    case 'WALLET':
+    default:
+      return method;
+  }
 }
 
 export function cuisineTypeFromText(value: string): string {

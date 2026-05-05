@@ -134,7 +134,7 @@ export interface CartItem {
   imageUrl?: string;
 }
 
-export type PaymentMethod = 'UPI' | 'CARD' | 'COD';
+export type PaymentMethod = 'UPI' | 'CARD' | 'NETBANKING' | 'WALLET' | 'COD';
 export type AnalyticsPeriod = 'today' | 'week' | 'month' | 'custom';
 
 export interface OperatingHour {
@@ -169,6 +169,11 @@ export interface Order {
   items: string;
   total: number;
   status: 'PLACED' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'ON_THE_WAY' | 'DELIVERED' | 'CANCELLED';
+  paymentStatus?: 'PENDING' | 'SUCCESS' | 'FAILED' | 'REFUNDED';
+  paymentMethod?: PaymentMethod;
+  paymentId?: string;
+  paymentOrderId?: string;
+  paymentSignature?: string;
   agent?: string;
   customerName?: string;
   customerEmail?: string;

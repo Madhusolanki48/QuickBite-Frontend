@@ -100,7 +100,7 @@ import { CartService } from '../../services/cart.service';
           ></textarea>
         </label>
 
-        <a routerLink="/payment" class="primary-link">Place Order &middot; Rs {{ cart.total() }}</a>
+        <a routerLink="/payment" class="primary-link">Proceed to Payment &middot; Rs {{ cart.total() }}</a>
       </div>
     </section>
   `,

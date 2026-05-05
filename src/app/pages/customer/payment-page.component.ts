@@ -1,12 +1,15 @@
 import { NgFor, NgIf } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 import { CartService } from '../../services/cart.service';
 import { LocationService } from '../../services/location.service';
 import { NotificationService } from '../../services/notification.service';
 import { OrderService } from '../../services/order.service';
+import { RazorpayService } from '../../services/razorpay.service';
 import { SessionService } from '../../services/session.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-payment-page',
@@ -14,8 +17,8 @@ import { SessionService } from '../../services/session.service';
   template: `
     <section class="page-head">
       <div>
-        <h1>Payment</h1>
-        <p>Mock checkout flow only. No live payment gateway is wired in yet.</p>
+        <h1>Secure Payment</h1>
+        <p>Pay with Razorpay first, then QuickBite will create your order automatically.</p>
       </div>
     </section>
 
@@ -35,52 +38,67 @@ import { SessionService } from '../../services/session.service';
             </div>
           </div>
           <div class="payment-card__item-actions">
-            <strong>₹{{ item.price * item.quantity }}</strong>
+            <strong>Rs {{ item.price * item.quantity }}</strong>
             <button type="button" class="ghost small danger" (click)="cart.removeItem(item.id)">
               Remove
             </button>
           </div>
         </div>
+
         <div class="payment-card__line muted">
           <span>Total</span>
-          <strong>₹{{ cart.total() }}</strong>
+          <strong>Rs {{ cart.total() }}</strong>
         </div>
+
         <div class="methods">
           <button
             type="button"
-            [class.active]="cart.paymentMethod() === 'UPI'"
-            (click)="cart.setPaymentMethod('UPI')"
+            [class.active]="selectedMethod() === 'UPI'"
+            (click)="setMethod('UPI')"
           >
-            UPI / Google Pay
+            UPI
           </button>
           <button
             type="button"
-            [class.active]="cart.paymentMethod() === 'CARD'"
-            (click)="cart.setPaymentMethod('CARD')"
+            [class.active]="selectedMethod() === 'CARD'"
+            (click)="setMethod('CARD')"
           >
-            Credit / Debit Card
+            Cards
           </button>
           <button
             type="button"
-            [class.active]="cart.paymentMethod() === 'COD'"
-            (click)="cart.setPaymentMethod('COD')"
+            [class.active]="selectedMethod() === 'NETBANKING'"
+            (click)="setMethod('NETBANKING')"
           >
-            Cash on Delivery
+            Netbanking
+          </button>
+          <button
+            type="button"
+            [class.active]="selectedMethod() === 'WALLET'"
+            (click)="setMethod('WALLET')"
+          >
+            Wallets
           </button>
         </div>
+
+        <p class="pay-note">
+          Razorpay checkout will open with UPI, cards, netbanking, and wallets enabled.
+        </p>
         <p *ngIf="errorMessage()" class="pay-error">{{ errorMessage() }}</p>
-        <button type="button" class="pay" [disabled]="!canPlaceOrder()" (click)="placeOrder()">
-          Place Order · ₹{{ cart.total() }}
+
+        <button type="button" class="pay" [disabled]="!canPay()" (click)="startPayment()">
+          <span *ngIf="processing(); else payLabel">Processing...</span>
+          <ng-template #payLabel>Pay Rs {{ cart.total() }} and Create Order</ng-template>
         </button>
       </div>
 
       <div class="card receipt">
         <h2>Payment Summary</h2>
         <p>Address: {{ formatAddress(cart.selectedAddress()) }}</p>
-        <p>Method: {{ cart.paymentMethod() }}</p>
+        <p>Method: {{ selectedMethod() }}</p>
         <p>Promo: {{ cart.promoCode() || 'None' }}</p>
         <p class="receipt-note">
-          Restaurant owner will assign a delivery partner after the order is placed.
+          After successful payment, you will be redirected to the order success page.
         </p>
       </div>
     </section>
@@ -94,85 +112,151 @@ export class PaymentPageComponent {
   private readonly session = inject(SessionService);
   private readonly locations = inject(LocationService);
   private readonly notifications = inject(NotificationService);
+  private readonly razorpay = inject(RazorpayService);
   protected readonly errorMessage = signal('');
+  protected readonly processing = signal(false);
+  protected readonly selectedMethod = signal<'UPI' | 'CARD' | 'NETBANKING' | 'WALLET'>('UPI');
 
-  protected readonly canPlaceOrder = computed(
-    () => this.cart.itemCount() > 0 && this.cart.total() > 0,
+  protected readonly canPay = computed(
+    () => this.cart.itemCount() > 0 && this.cart.total() > 0 && !this.processing(),
   );
 
-  placeOrder(): void {
-    if (!this.canPlaceOrder()) {
-      this.errorMessage.set('Add at least one item before placing the order.');
+  setMethod(method: 'UPI' | 'CARD' | 'NETBANKING' | 'WALLET'): void {
+    this.selectedMethod.set(method);
+    this.cart.setPaymentMethod(method);
+  }
+
+  async startPayment(): Promise<void> {
+    if (!this.canPay()) {
+      this.errorMessage.set('Add at least one item before paying.');
       return;
     }
 
-    const restaurantName = this.cart.items()[0]?.restaurantName ?? 'QuickBite';
-    const restaurantId = this.cart.items()[0]?.restaurantId;
-    const items = this.cart
+    const restaurant = this.cart.items()[0];
+    if (!restaurant) {
+      this.errorMessage.set('Your cart is empty.');
+      return;
+    }
+
+    const customer = this.session.user();
+    const selectedAddress = this.cart.selectedAddress();
+    const formattedAddress = selectedAddress ? this.cart.formatAddress(selectedAddress) : undefined;
+    const customerName = customer?.firstName
+      ? `${customer.firstName} ${customer.lastName ?? ''}`.trim()
+      : 'Customer';
+    const orderSummary = this.cart
       .items()
       .map((item) => `${item.name} x${item.quantity}`)
       .join(', ');
-    const selectedAddress = this.cart.selectedAddress();
-    const formattedAddress = selectedAddress ? this.cart.formatAddress(selectedAddress) : undefined;
-    const customerEmail = this.session.user()?.email;
-    const customerPhone = this.session.user()?.phoneNumber;
-    const customerName = this.session.user()?.firstName
-      ? `${this.session.user()?.firstName} ${this.session.user()?.lastName ?? ''}`.trim()
-      : 'Customer';
+
+    this.processing.set(true);
+    this.errorMessage.set('');
 
     try {
-      const order = this.orders.placeOrder({
-        restaurantId,
-        restaurantName,
-        items,
-        total: this.cart.total(),
-        customerName,
-        customerEmail,
-        customerPhone,
-        deliveryAddressLine: formattedAddress,
-        deliveryLocation: selectedAddress
-          ? this.locations.addressLocation(selectedAddress)
-          : undefined,
-        pickupLocation: restaurantId ? this.locations.restaurantLocation(restaurantId) : undefined,
+      await this.razorpay.loadCheckoutScript();
+
+      const createResponse = await firstValueFrom(
+        this.razorpay.createOrder({
+          amount: this.cart.total() * 100,
+          currency: 'INR',
+          receipt: `qb-${Date.now()}`,
+          notes: {
+            restaurant: restaurant.restaurantName,
+            items: orderSummary,
+            customerEmail: customer?.email ?? '',
+          },
+        }),
+      );
+
+      const checkoutResult = await this.razorpay.openCheckout({
+        key: createResponse.keyId || environment.razorpayKeyId,
+        amount: createResponse.amountInPaise ?? createResponse.amount ?? this.cart.total() * 100,
+        currency: createResponse.currency || 'INR',
+        name: 'QuickBite',
+        description: `${restaurant.restaurantName} order`,
+        order_id: createResponse.orderId || createResponse.razorpayOrderId || createResponse.id || '',
+        prefill: {
+          name: customerName,
+          email: customer?.email,
+          contact: customer?.phoneNumber,
+        },
+        notes: {
+          restaurant: restaurant.restaurantName,
+          method: this.selectedMethod(),
+          address: formattedAddress ?? '',
+        },
+        config: {
+          display: {
+            sequence: ['upi', 'card', 'netbanking', 'wallet'],
+          },
+        },
+        theme: {
+          color: '#ff5a00',
+        },
       });
 
-      if (customerEmail) {
-        this.notifications
-          .create({
-            recipientEmail: customerEmail,
-            title: 'Order placed',
-            message: `${order.restaurantName} has received your order. Delivery partner ${order.deliveryAgentName ?? 'will be assigned shortly'} is on the way.`,
-            category: 'ORDER',
-          })
-          .subscribe();
+      const verifyResponse = await firstValueFrom(
+        this.razorpay.verifyPayment({
+          razorpayOrderId: checkoutResult.razorpay_order_id,
+          razorpayPaymentId: checkoutResult.razorpay_payment_id,
+          razorpaySignature: checkoutResult.razorpay_signature,
+        }),
+      );
+
+      if (!verifyResponse.success && !verifyResponse.verified) {
+        throw new Error(verifyResponse.message || 'Payment verification failed.');
       }
 
-      this.notifications
-        .create({
-          recipientRole: 'RESTAURANT_OWNER',
-          title: 'New order received',
-          message: `A new order has been placed for ${restaurantName}.`,
-          category: 'ORDER',
-        })
-        .subscribe();
+      const orderTotal = this.cart.total();
+      const order = await firstValueFrom(
+        this.orders.placeOrderAfterPayment({
+          restaurantId: restaurant.restaurantId,
+          restaurantName: restaurant.restaurantName,
+          items: orderSummary,
+          total: orderTotal,
+          customerName,
+          customerEmail: customer?.email,
+          customerPhone: customer?.phoneNumber,
+          deliveryAddressLine: formattedAddress,
+          deliveryLocation: selectedAddress
+            ? this.locations.addressLocation(selectedAddress)
+            : undefined,
+          pickupLocation: restaurant.restaurantId
+            ? this.locations.restaurantLocation(restaurant.restaurantId)
+            : undefined,
+          paymentMethod: this.selectedMethod(),
+          paymentId: checkoutResult.razorpay_payment_id,
+          paymentOrderId: checkoutResult.razorpay_order_id,
+          paymentSignature: checkoutResult.razorpay_signature,
+          paymentStatus: 'SUCCESS',
+        }),
+      );
 
-      if (order.deliveryAgentEmail) {
+      if (customer?.email) {
         this.notifications
           .create({
-            recipientEmail: order.deliveryAgentEmail,
-            recipientRole: 'DELIVERY_PARTNER',
-            title: 'New delivery request',
-            message: `${order.restaurantName} -> ${formattedAddress ?? 'customer address'} | ETA ${order.deliveryAgentEtaMinutes ?? '10'} min | Earnings ₹${order.deliveryAgentEarnings ?? 0}`,
-            category: 'DELIVERY',
+            recipientEmail: customer.email,
+            title: 'Payment successful',
+            message: `Your payment for ${order.restaurantName} was verified successfully.`,
+            category: 'PAYMENT',
           })
           .subscribe();
       }
 
       this.cart.clear();
-      this.errorMessage.set('');
-      void this.router.navigate(['/orders'], { queryParams: { placed: '1' } });
+      await this.router.navigate(['/order-success'], {
+        queryParams: {
+          orderId: order.backendId ?? order.id,
+          paymentId: checkoutResult.razorpay_payment_id,
+          paymentOrderId: checkoutResult.razorpay_order_id,
+          total: orderTotal,
+          restaurant: order.restaurantName,
+        },
+      });
     } catch (error) {
-      this.errorMessage.set(error instanceof Error ? error.message : 'Unable to place order.');
+      this.errorMessage.set(this.razorpay.describeError(error));
+    } finally {
+      this.processing.set(false);
     }
   }
 

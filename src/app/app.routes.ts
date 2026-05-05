@@ -11,6 +11,7 @@ import { AddressesPageComponent } from './pages/customer/addresses-page.componen
 import { CartPageComponent } from './pages/customer/cart-page.component';
 import { HomePageComponent } from './pages/customer/home-page.component';
 import { MenuPageComponent } from './pages/customer/menu-page.component';
+import { OrderSuccessPageComponent } from './pages/customer/order-success-page.component';
 import { OrdersPageComponent } from './pages/customer/orders-page.component';
 import { PaymentPageComponent } from './pages/customer/payment-page.component';
 import { ProfilePageComponent } from './pages/customer/profile-page.component';
@@ -52,6 +53,7 @@ export const routes: Routes = [
       { path: 'restaurants/:id', component: MenuPageComponent },
       { path: 'cart', component: CartPageComponent },
       { path: 'payment', component: PaymentPageComponent },
+      { path: 'order-success', component: OrderSuccessPageComponent },
       { path: 'orders', component: OrdersPageComponent },
       { path: 'profile', component: ProfilePageComponent },
       { path: 'addresses', component: AddressesPageComponent },
