@@ -1,4 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
+import { NgIf } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { NotificationBellComponent } from '../components/notification-bell.component';
@@ -10,6 +11,7 @@ import { ThemeService } from '../services/theme.service';
 @Component({
   selector: 'app-admin-layout',
   imports: [
+    NgIf,
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
@@ -70,7 +72,10 @@ import { ThemeService } from '../services/theme.service';
               >🚴 Delivery Agents</a
             >
             <a routerLink="/admin/customers" routerLinkActive="active" class="sidebar__link"
-              >👥 Customers</a
+              >👥 Customers
+              <span class="count" *ngIf="admin.pendingApprovalCount() > 0">{{
+                admin.pendingApprovalCount()
+              }}</span></a
             >
           </div>
           <div class="sidebar__group">

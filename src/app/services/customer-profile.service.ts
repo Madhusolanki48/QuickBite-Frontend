@@ -1,11 +1,11 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
-import { CustomerProfile } from '../core/app.models';
+import { AuthUser, CustomerProfile } from '../core/app.models';
 import { environment } from '../../environments/environment';
 import { SessionService } from './session.service';
 
-const PROFILE_KEY = 'quickbite.customerProfile';
+const PROFILE_KEY_PREFIX = 'quickbite.customerProfile';
 
 const DEFAULT_PROFILE: CustomerProfile = {
   name: 'Customer',
@@ -14,7 +14,7 @@ const DEFAULT_PROFILE: CustomerProfile = {
   memberSince: 'Jan 2024',
   avgRating: 4.8,
   totalOrders: 0,
-  totalSpent: '₹0',
+  totalSpent: 'Rs 0',
   loyaltyTier: 'Gold',
 };
 
@@ -23,18 +23,31 @@ export class CustomerProfileService {
   private readonly http = inject(HttpClient);
   private readonly session = inject(SessionService);
   private readonly baseUrl = environment.apiBaseUrl;
-  private readonly profileSignal = signal<CustomerProfile>(this.readProfile());
+  private readonly profileSignal = signal<CustomerProfile>(DEFAULT_PROFILE);
 
   readonly profile = computed(() => this.profileSignal());
 
   constructor() {
-    this.refreshFromBackend();
+    effect(() => {
+      const user = this.session.user();
+      if (!user) {
+        this.profileSignal.set(DEFAULT_PROFILE);
+        return;
+      }
+
+      this.profileSignal.set(this.createDefaultProfile(user));
+      this.refreshFromBackend(user);
+    });
   }
 
   updateProfile(patch: Partial<CustomerProfile>): void {
     const next = { ...this.profileSignal(), ...patch };
     this.profileSignal.set(next);
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(next));
+
+    const user = this.session.user();
+    if (user) {
+      localStorage.setItem(this.profileKeyFor(user.email), JSON.stringify(next));
+    }
 
     this.http
       .put(`${this.baseUrl}/auth/me`, {
@@ -45,38 +58,40 @@ export class CustomerProfileService {
       .subscribe();
   }
 
-  private refreshFromBackend(): void {
+  private refreshFromBackend(user: AuthUser): void {
     this.http.get<any>(`${this.baseUrl}/auth/me`).subscribe({
-      next: (user) => {
+      next: (backendUser) => {
+        const nextUser: AuthUser = {
+          ...user,
+          ...backendUser,
+          role: (backendUser.role ?? user.role) as AuthUser['role'],
+        };
+        this.session.replaceUser(nextUser);
+
         const next: CustomerProfile = {
-          ...this.profileSignal(),
-          name: `${user.firstName ?? 'Customer'} ${user.lastName ?? ''}`.trim(),
-          phone: user.phoneNumber ?? '',
-          email: user.email ?? this.session.user()?.email ?? '',
+          ...this.createDefaultProfile(nextUser),
+          name: `${backendUser.firstName ?? user.firstName ?? 'Customer'} ${
+            backendUser.lastName ?? user.lastName ?? ''
+          }`.trim(),
+          phone: backendUser.phoneNumber ?? user.phoneNumber ?? '',
+          email: backendUser.email ?? user.email,
         };
         this.profileSignal.set(next);
-        localStorage.setItem(PROFILE_KEY, JSON.stringify(next));
+        localStorage.setItem(this.profileKeyFor(user.email), JSON.stringify(next));
       },
     });
   }
 
-  private readProfile(): CustomerProfile {
-    const raw = localStorage.getItem(PROFILE_KEY);
-    if (!raw) {
-      return {
-        ...DEFAULT_PROFILE,
-        email: this.session.user()?.email ?? '',
-        name: this.session.user()
-          ? `${this.session.user()?.firstName ?? ''} ${this.session.user()?.lastName ?? ''}`.trim()
-          : DEFAULT_PROFILE.name,
-        phone: this.session.user()?.phoneNumber ?? '',
-      };
-    }
+  private createDefaultProfile(user?: AuthUser | null): CustomerProfile {
+    return {
+      ...DEFAULT_PROFILE,
+      email: user?.email ?? '',
+      name: user ? `${user.firstName ?? 'Customer'} ${user.lastName ?? ''}`.trim() : DEFAULT_PROFILE.name,
+      phone: user?.phoneNumber ?? '',
+    };
+  }
 
-    try {
-      return { ...DEFAULT_PROFILE, ...(JSON.parse(raw) as Partial<CustomerProfile>) };
-    } catch {
-      return DEFAULT_PROFILE;
-    }
+  private profileKeyFor(email: string): string {
+    return `${PROFILE_KEY_PREFIX}:${email.trim().toLowerCase()}`;
   }
 }

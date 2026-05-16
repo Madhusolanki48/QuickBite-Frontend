@@ -1,0 +1,433 @@
+.orders-hero {
+  padding: 1.2rem;
+  display: grid;
+  gap: 1rem;
+  background:
+    radial-gradient(circle at top right, rgba(255, 107, 0, 0.14), transparent 30%),
+    linear-gradient(135deg, var(--surface), var(--surface-soft));
+}
+
+.orders-hero__copy h1 {
+  margin: 0.25rem 0 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.1rem, 4vw, 3.35rem);
+  line-height: 0.95;
+  letter-spacing: -0.07em;
+  max-width: 13ch;
+}
+
+.orders-eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.orders-hero__text {
+  margin: 0.9rem 0 0;
+  max-width: 58ch;
+  color: var(--muted);
+  line-height: 1.8;
+  font-size: 0.98rem;
+}
+
+.orders-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.metric-card {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 22px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.35rem;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.metric-card span,
+.metric-card small,
+.spot-panel__label,
+.order-card__eyebrow,
+.review-item__chip {
+  color: var(--muted);
+}
+
+.metric-card strong {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.55rem, 2vw, 2rem);
+  letter-spacing: -0.05em;
+}
+
+.metric-card--brand {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.14), rgba(255, 248, 242, 0.98));
+}
+
+.orders-spotlight {
+  padding: 1.2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.orders-spotlight__head,
+.order-card__top,
+.review-card__head,
+.review-feed__head,
+.section-heading,
+.review-item__header,
+.review-feed__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.orders-spotlight__head h2,
+.section-heading h2,
+.review-card__head h2,
+.review-feed__head h3 {
+  margin: 0.25rem 0 0;
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.05em;
+}
+
+.orders-spotlight__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 0.9rem;
+}
+
+.spot-panel {
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 22px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.spot-panel--accent {
+  background: linear-gradient(180deg, rgba(255, 107, 0, 0.09), var(--surface));
+}
+
+.spot-panel strong {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.08rem;
+  line-height: 1.5;
+}
+
+.spot-panel p,
+.section-heading p,
+.review-card__head p,
+.review-feed__head p,
+.review-item p,
+.review-feed__meta,
+.order-card__title p,
+.order-card__footer small {
+  color: var(--muted);
+}
+
+.spot-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.spot-pill-row span,
+.review-item__chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.orders-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.order-card--premium {
+  padding: 1.15rem;
+  display: grid;
+  gap: 0.95rem;
+}
+
+.order-card__top {
+  align-items: center;
+}
+
+.order-card__title {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.order-card__title h3 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.08rem;
+  letter-spacing: -0.04em;
+}
+
+.order-card__meta {
+  display: grid;
+  justify-items: end;
+  gap: 0.45rem;
+}
+
+.order-card__meta strong {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.08rem;
+}
+
+.order-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.section-heading {
+  align-items: end;
+}
+
+.section-heading p {
+  margin: 0.35rem 0 0;
+}
+
+.reviews-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 1rem;
+}
+
+.review-card,
+.review-feed {
+  padding: 1.2rem;
+}
+
+.review-card--compose {
+  display: grid;
+  gap: 1rem;
+}
+
+.review-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.review-item {
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 22px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.review-item__header {
+  align-items: center;
+}
+
+.review-item__header strong,
+.review-feed__top strong {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.review-rating-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.review-rating-grid label,
+.review-upload {
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.review-stars {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.review-stars button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.review-stars button.active {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.18), rgba(255, 122, 0, 0.28));
+  color: var(--brand);
+  border-color: rgba(255, 107, 0, 0.28);
+}
+
+.review-stars button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 107, 0, 0.32);
+  color: var(--brand);
+}
+
+.review-item textarea,
+.review-card textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 0.95rem 1rem;
+  background: var(--surface);
+  color: var(--text);
+  caret-color: var(--text);
+  resize: vertical;
+  min-height: 92px;
+}
+
+.review-upload input {
+  width: 100%;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.review-preview {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.review-preview img {
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+.review-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.review-feed {
+  display: grid;
+  gap: 1rem;
+  align-self: start;
+}
+
+.review-feed__item {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 22px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.review-feed__top {
+  align-items: center;
+}
+
+.review-feed__top span {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--brand);
+}
+
+.review-responses {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.2rem;
+}
+
+.review-response {
+  border-left: 3px solid var(--brand);
+  padding-left: 0.75rem;
+}
+
+.review-response strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.82rem;
+  color: var(--brand);
+}
+
+.review-response p {
+  margin: 0;
+  color: var(--muted);
+}
+
+html[data-theme='dark'] .orders-hero,
+html[data-theme='dark'] .orders-spotlight,
+html[data-theme='dark'] .review-card,
+html[data-theme='dark'] .review-feed,
+html[data-theme='dark'] .order-card--premium,
+html[data-theme='dark'] .review-item,
+html[data-theme='dark'] .review-feed__item,
+html[data-theme='dark'] .metric-card,
+html[data-theme='dark'] .spot-panel {
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 1200px) {
+  .orders-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .orders-spotlight__grid,
+  .reviews-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .review-rating-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .orders-metrics,
+  .orders-spotlight__grid,
+  .review-rating-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .order-card__top,
+  .review-card__head,
+  .review-feed__head,
+  .section-heading,
+  .review-item__header,
+  .review-feed__top,
+  .order-card__footer,
+  .orders-spotlight__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .order-card__meta {
+    justify-items: start;
+  }
+}

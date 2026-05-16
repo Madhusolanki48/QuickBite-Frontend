@@ -1,9 +1,11 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 
+import { AuthApiService } from './auth-api.service';
 import { CatalogService } from './catalog.service';
 import { CustomerProfileService } from './customer-profile.service';
 import { DeliveryDashboardService } from './delivery-dashboard.service';
 import { OrderService } from './order.service';
+import { AdminUserResponse } from '../core/app.models';
 
 const ADMIN_SETTINGS_KEY = 'quickbite.admin.settings';
 const ADMIN_AGENTS_KEY = 'quickbite.admin.agents';
@@ -32,12 +34,18 @@ interface AdminDeliveryAgent {
 
 @Injectable({ providedIn: 'root' })
 export class AdminDashboardService {
+  private readonly auth = inject(AuthApiService);
   private readonly catalog = inject(CatalogService);
   private readonly orders = inject(OrderService);
   private readonly customerProfile = inject(CustomerProfileService);
   private readonly delivery = inject(DeliveryDashboardService);
   private readonly settingsSignal = signal<AdminSettings>(this.readSettings());
   private readonly agentsSignal = signal<AdminDeliveryAgent[]>(this.readAgents());
+  private readonly approvalUsersSignal = signal<AdminUserResponse[]>([]);
+
+  constructor() {
+    this.refreshApprovalUsers();
+  }
 
   readonly dashboard = computed(() => {
     const restaurants = this.catalog.restaurantList();
@@ -117,6 +125,18 @@ export class AdminDashboardService {
       settings: { ...this.settingsSignal() },
     };
   });
+
+  readonly pendingApprovals = computed(() => this.approvalUsersSignal());
+
+  readonly pendingApprovalCount = computed(() => this.approvalUsersSignal().length);
+
+  readonly pendingOwnerApprovals = computed(() =>
+    this.approvalUsersSignal().filter((user) => user.role === 'RESTAURANT_OWNER'),
+  );
+
+  readonly pendingDeliveryApprovals = computed(() =>
+    this.approvalUsersSignal().filter((user) => user.role === 'DELIVERY_PARTNER'),
+  );
 
   updateSettings(
     patch: Partial<
@@ -284,5 +304,19 @@ export class AdminDashboardService {
 
   private persistAgents(): void {
     localStorage.setItem(ADMIN_AGENTS_KEY, JSON.stringify(this.agentsSignal()));
+  }
+
+  refreshApprovalUsers(): void {
+    this.auth.listAdminUsers().subscribe({
+      next: (users) => {
+        this.approvalUsersSignal.set(
+          users.filter(
+            (user) =>
+              (user.role === 'RESTAURANT_OWNER' || user.role === 'DELIVERY_PARTNER') &&
+              (user.approvalStatus === 'PENDING' || user.enabled === false),
+          ),
+        );
+      },
+    });
   }
 }

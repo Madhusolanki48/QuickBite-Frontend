@@ -1,5 +1,5 @@
 import { NgIf } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 
 import { CustomerProfileService } from '../../services/customer-profile.service';
 
@@ -72,6 +72,15 @@ export class ProfilePageComponent {
   protected readonly avatarInitial = signal(
     this.profileService.profile().name.charAt(0).toUpperCase(),
   );
+
+  constructor() {
+    effect(() => {
+      const profile = this.profileService.profile();
+      this.draft.set(profile);
+      this.avatarInitial.set(profile.name.charAt(0).toUpperCase() || 'C');
+      this.saved.set(false);
+    });
+  }
 
   updateField(field: 'name' | 'phone' | 'email', value: string): void {
     this.draft.update((profile) => ({ ...profile, [field]: value }));

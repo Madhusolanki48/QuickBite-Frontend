@@ -6,7 +6,10 @@ import { AdminLayoutComponent } from './layouts/admin-layout.component';
 import { CustomerLayoutComponent } from './layouts/customer-layout.component';
 import { OwnerLayoutComponent } from './layouts/owner-layout.component';
 import { LoginPageComponent } from './pages/auth/login-page.component';
+import { ForgotPasswordPageComponent } from './pages/auth/forgot-password-page.component';
+import { ApprovalPendingPageComponent } from './pages/auth/approval-pending-page.component';
 import { SignInPageComponent } from './pages/auth/sign-in-page.component';
+import { VerifyEmailPageComponent } from './pages/auth/verify-email-page.component';
 import { AddressesPageComponent } from './pages/customer/addresses-page.component';
 import { CartPageComponent } from './pages/customer/cart-page.component';
 import { HomePageComponent } from './pages/customer/home-page.component';
@@ -15,6 +18,8 @@ import { OrderSuccessPageComponent } from './pages/customer/order-success-page.c
 import { OrdersPageComponent } from './pages/customer/orders-page.component';
 import { PaymentPageComponent } from './pages/customer/payment-page.component';
 import { ProfilePageComponent } from './pages/customer/profile-page.component';
+import { FavoritesPageComponent } from './pages/customer/favorites-page.component';
+import { CategoryCollectionPageComponent } from './pages/customer/category-collection-page.component';
 import { AnalyticsPageComponent } from './pages/owner/analytics-page.component';
 import { HoursStatusPageComponent } from './pages/owner/hours-status-page.component';
 import { LiveOrdersPageComponent } from './pages/owner/live-orders-page.component';
@@ -42,7 +47,13 @@ export const routes: Routes = [
     children: [
       { path: 'sign-in', component: SignInPageComponent },
       { path: 'login', component: LoginPageComponent },
+      { path: 'verify-email', component: VerifyEmailPageComponent },
+      { path: 'forgot-password', component: ForgotPasswordPageComponent },
     ],
+  },
+  {
+    path: 'approval-pending',
+    component: ApprovalPendingPageComponent,
   },
   {
     path: '',
@@ -50,6 +61,8 @@ export const routes: Routes = [
     canActivateChild: [authGuard],
     children: [
       { path: 'home', component: HomePageComponent },
+      { path: 'favorites', component: FavoritesPageComponent },
+      { path: 'categories/:id', component: CategoryCollectionPageComponent },
       { path: 'restaurants/:id', component: MenuPageComponent },
       { path: 'cart', component: CartPageComponent },
       { path: 'payment', component: PaymentPageComponent },

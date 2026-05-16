@@ -16,7 +16,7 @@ export const guestGuard: CanActivateChildFn = () => {
   const router = inject(Router);
 
   return session.isAuthenticated()
-    ? router.createUrlTree([session.dashboardRouteFor(session.user()?.role)])
+    ? router.createUrlTree([session.routeAfterAuth(session.user())])
     : true;
 };
 
@@ -30,10 +30,14 @@ export const roleGuard = (allowedRoles: AppRole[]): CanActivateFn => {
       return router.createUrlTree(['/login']);
     }
 
+    if (user && user.approvalStatus === 'PENDING' && (user.role === 'RESTAURANT_OWNER' || user.role === 'DELIVERY_PARTNER')) {
+      return router.createUrlTree(['/approval-pending']);
+    }
+
     if (user && allowedRoles.includes(user.role)) {
       return true;
     }
 
-    return router.createUrlTree([session.dashboardRouteFor(user?.role)]);
+    return router.createUrlTree([session.routeAfterAuth(user)]);
   };
 };

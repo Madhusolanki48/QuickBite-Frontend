@@ -65,18 +65,19 @@ import { AdminDashboardService } from '../../services/admin-dashboard.service';
       </ng-template>
     </section>
 
-    <section class="card panel" style="margin-top:1rem;" *ngIf="pendingOwners().length > 0">
+    <section class="card panel" style="margin-top:1rem;" *ngIf="pendingApprovals().length > 0">
       <div class="section-head">
         <div>
-          <h2>Owner Approvals</h2>
-          <p>Approve restaurant owners after verifying their restaurant details.</p>
+          <h2>Pending Approvals</h2>
+          <p>Review restaurant owners and delivery partners waiting for admin approval.</p>
         </div>
       </div>
 
       <table class="card-table">
         <thead>
           <tr>
-            <th>Owner</th>
+            <th>Name</th>
+            <th>Role</th>
             <th>Restaurant</th>
             <th>Email</th>
             <th>Status</th>
@@ -84,17 +85,18 @@ import { AdminDashboardService } from '../../services/admin-dashboard.service';
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let owner of pendingOwners()">
+          <tr *ngFor="let user of pendingApprovals()">
             <td>
-              <strong>{{ owner.firstName }} {{ owner.lastName }}</strong>
+              <strong>{{ user.firstName }} {{ user.lastName }}</strong>
             </td>
-            <td>{{ owner.restaurantName || owner.restaurantId || 'Unassigned' }}</td>
-            <td>{{ owner.email }}</td>
+            <td>{{ formatRole(user.role) }}</td>
+            <td>{{ user.restaurantName || user.restaurantId || 'Unassigned' }}</td>
+            <td>{{ user.email }}</td>
             <td>
-              <span class="pill orange">{{ owner.approvalStatus || 'PENDING' }}</span>
+              <span class="pill orange">{{ user.approvalStatus || 'PENDING' }}</span>
             </td>
             <td class="list-actions">
-              <button class="ghost-btn" type="button" (click)="approve(owner.id)">Approve</button>
+              <button class="ghost-btn" type="button" (click)="approve(user.id)">Approve</button>
             </td>
           </tr>
         </tbody>
@@ -107,7 +109,7 @@ export class AdminCustomersPageComponent {
   protected readonly admin = inject(AdminDashboardService);
   private readonly auth = inject(AuthApiService);
   protected readonly query = signal('');
-  protected readonly pendingOwners = signal<AdminUserResponse[]>([]);
+  protected readonly pendingApprovals = signal<AdminUserResponse[]>([]);
   protected readonly filteredCustomers = computed(() => {
     const q = this.query().trim().toLowerCase();
     return this.admin.dashboard().customers.filter((customer) => {
@@ -133,11 +135,22 @@ export class AdminCustomersPageComponent {
   private loadPendingOwners(): void {
     this.auth.listAdminUsers().subscribe({
       next: (users) => {
-        this.pendingOwners.set(
-          users.filter((user) => user.role === 'RESTAURANT_OWNER' && user.enabled === false),
+        this.pendingApprovals.set(
+          users.filter(
+            (user) =>
+              (user.role === 'RESTAURANT_OWNER' || user.role === 'DELIVERY_PARTNER') &&
+              (user.approvalStatus === 'PENDING' || user.enabled === false),
+          ),
         );
       },
     });
+  }
+
+  formatRole(role: AdminUserResponse['role']): string {
+    return role
+      .toLowerCase()
+      .replaceAll('_', ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
   view(email: string): void {
@@ -160,7 +173,10 @@ export class AdminCustomersPageComponent {
 
   approve(id: number): void {
     this.auth.setUserEnabled(id, true).subscribe({
-      next: () => this.loadPendingOwners(),
+      next: () => {
+        this.loadPendingOwners();
+        this.admin.refreshApprovalUsers();
+      },
     });
   }
 }

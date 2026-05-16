@@ -1,5 +1,6 @@
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { LiveRouteMapComponent } from '../../components/live-route-map.component';
 import { Order } from '../../core/app.models';
@@ -10,16 +11,29 @@ import { ReviewService } from '../../services/review.service';
 
 @Component({
   selector: 'app-admin-dashboard-page',
-  imports: [NgClass, NgFor, NgIf, LiveRouteMapComponent],
+  imports: [NgClass, NgFor, NgIf, RouterLink, LiveRouteMapComponent],
   template: `
     <section class="page-head">
       <div>
-        <h1>Admin Dashboard ⚙</h1>
+        <h1>Admin Dashboard</h1>
         <p>Platform-wide overview · Last updated just now</p>
       </div>
       <div class="admin-toolbar">
         <button class="toolbar-btn">⬇ Export Report</button>
       </div>
+    </section>
+
+    <section class="card panel approval-banner" *ngIf="admin.pendingApprovalCount() > 0">
+      <div class="approval-banner__badge">{{ admin.pendingApprovalCount() }}</div>
+      <div class="approval-banner__copy">
+        <h2>Approval queue needs attention</h2>
+        <p>
+          {{ admin.pendingOwnerApprovals().length }} restaurant owner(s) and
+          {{ admin.pendingDeliveryApprovals().length }} delivery partner(s) are waiting for
+          approval.
+        </p>
+      </div>
+      <a routerLink="/admin/customers" class="approval-banner__action">Review approvals</a>
     </section>
 
     <section class="stats-grid">

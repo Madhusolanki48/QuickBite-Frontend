@@ -12,17 +12,43 @@ import { SessionService } from '../../services/session.service';
   selector: 'app-orders-page',
   imports: [NgFor, NgIf, LiveRouteMapComponent],
   template: `
-    <section class="page-head">
-      <div>
-        <h1>My Orders</h1>
-        <p>Track active deliveries and leave a detailed review after delivery.</p>
+    <section class="orders-hero card">
+      <div class="orders-hero__copy">
+        <p class="orders-eyebrow">My Orders</p>
+        <h1>Track every delivery with a premium QuickBite feel.</h1>
+        <p class="orders-hero__text">
+          Follow live progress, revisit past orders, and leave thoughtful reviews after your food lands.
+        </p>
+      </div>
+
+      <div class="orders-metrics">
+        <article class="metric-card metric-card--brand">
+          <span>Active</span>
+          <strong>{{ activeCount() }}</strong>
+          <small>Live deliveries right now</small>
+        </article>
+        <article class="metric-card">
+          <span>Delivered</span>
+          <strong>{{ deliveredCount() }}</strong>
+          <small>Completed food moments</small>
+        </article>
+        <article class="metric-card">
+          <span>Reviews</span>
+          <strong>{{ reviewCount() }}</strong>
+          <small>Saved customer reviews</small>
+        </article>
+        <article class="metric-card">
+          <span>Total spent</span>
+          <strong>Rs {{ totalSpent() }}</strong>
+          <small>Across your order history</small>
+        </article>
       </div>
     </section>
 
     <app-live-route-map
       *ngIf="activeOrder() as order"
-      title="Current Order Route"
-      [subtitle]="order.restaurantName + ' -> ' + (order.deliveryAddressLine ?? 'Delivery address')"
+      title="Live Delivery Route"
+      [subtitle]="order.restaurantName + ' to ' + (order.deliveryAddressLine ?? 'your address')"
       [status]="statusLabel(order.status)"
       [pickup]="pickupPoint(order)"
       [drop]="dropPoint(order)"
@@ -30,71 +56,64 @@ import { SessionService } from '../../services/session.service';
       [routeEnd]="dropPoint(order)"
     />
 
-    <section
-      class="card info-card"
-      *ngIf="activeOrder() as active"
-      style="padding:1.15rem;border-radius:24px;background:linear-gradient(180deg,#fff, #fff8f3);box-shadow:0 18px 45px rgba(28,28,42,.08);"
-    >
-      <div
-        style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1rem;"
-      >
+    <section class="orders-spotlight card" *ngIf="activeOrder() as active">
+      <div class="orders-spotlight__head">
         <div>
-          <h2 style="margin:0;font-family:'Space Grotesk',sans-serif;">Delivery Details</h2>
-          <p style="margin:.35rem 0 0;color:var(--muted);">A quick snapshot of your live order.</p>
+          <p class="orders-eyebrow">Current order</p>
+          <h2>{{ active.restaurantName }}</h2>
         </div>
         <span class="badge">{{ statusLabel(active.status) }}</span>
       </div>
 
-      <div style="display:grid;grid-template-columns:1.2fr .8fr;gap:.85rem;">
-        <article
-          style="padding:1rem;border-radius:18px;border:1px solid var(--line);background:var(--surface-2);display:grid;gap:.45rem;"
-        >
-          <span style="color:var(--muted);font-size:.85rem;font-weight:700;">Delivery address</span>
-          <strong style="font-family:'Space Grotesk',sans-serif;line-height:1.45;">{{
-            active.deliveryAddressLine
-          }}</strong>
-          <small style="color:var(--muted);"
-            >The restaurant owner will assign a delivery partner after the order is accepted.</small
-          >
+      <div class="orders-spotlight__grid">
+        <article class="spot-panel">
+          <span class="spot-panel__label">Delivery address</span>
+          <strong>{{ active.deliveryAddressLine || 'Preparing your route' }}</strong>
+          <p>The kitchen and delivery team will keep you updated as the order progresses.</p>
         </article>
 
-        <article
-          style="padding:1rem;border-radius:18px;border:1px solid rgba(255,90,0,.14);background:linear-gradient(180deg,#fff6ef,#fff);display:grid;gap:.5rem;"
-        >
-          <span style="color:var(--muted);font-size:.85rem;font-weight:700;">Status</span>
-          <strong style="font-family:'Space Grotesk',sans-serif;font-size:1.4rem;">{{
-            statusLabel(active.status)
-          }}</strong>
-          <div style="display:grid;gap:.35rem;color:var(--muted);font-size:.92rem;">
-            <span>Route live on the map above.</span>
-            <span>Updates appear as the order moves forward.</span>
+        <article class="spot-panel spot-panel--accent">
+          <span class="spot-panel__label">Order snapshot</span>
+          <strong>{{ active.items }}</strong>
+          <div class="spot-pill-row">
+            <span>{{ statusLabel(active.status) }}</span>
+            <span>Rs {{ active.total }}</span>
           </div>
+          <button
+            *ngIf="active.status === 'PLACED'"
+            type="button"
+            class="ghost small danger"
+            (click)="deleteOrder(active.id)"
+          >
+            Cancel order
+          </button>
         </article>
       </div>
     </section>
 
     <section class="orders-stack">
-      <article class="card order-card" *ngFor="let order of customerOrders()">
-        <div class="order-card__header">
-          <div>
-            <h3>{{ order.id }} - {{ order.restaurantName }}</h3>
+      <div class="section-heading">
+        <div>
+          <p class="orders-eyebrow">Past orders</p>
+          <h2>Recent deliveries</h2>
+        </div>
+        <p>Compact cards with richer hierarchy and stronger visual breathing room.</p>
+      </div>
+
+      <article class="card order-card order-card--premium" *ngFor="let order of customerOrders()">
+        <div class="order-card__top">
+          <div class="order-card__title">
+            <span class="order-card__eyebrow">#{{ order.id }}</span>
+            <h3>{{ order.restaurantName }}</h3>
             <p>{{ order.items }}</p>
           </div>
+
           <div class="order-card__meta">
             <strong>Rs {{ order.total }}</strong>
             <span class="badge">{{ statusLabel(order.status) }}</span>
           </div>
-          <div class="order-card__actions">
-            <button
-              *ngIf="order.status === 'PLACED'"
-              type="button"
-              class="ghost small danger"
-              (click)="deleteOrder(order.id)"
-            >
-              Cancel
-            </button>
-          </div>
         </div>
+
         <div class="timeline">
           <span class="done">Placed</span>
           <span [class.done]="isAccepted(order.status)">Accepted</span>
@@ -103,144 +122,154 @@ import { SessionService } from '../../services/session.service';
           <span [class.done]="isPicked(order.status)">Picked</span>
           <span [class.done]="order.status === 'DELIVERED'">Delivered</span>
         </div>
+
+        <div class="order-card__footer">
+          <small>{{ order.deliveryAddressLine || 'Delivery address unavailable' }}</small>
+          <button
+            *ngIf="order.status === 'PLACED'"
+            type="button"
+            class="ghost small danger"
+            (click)="deleteOrder(order.id)"
+          >
+            Cancel
+          </button>
+        </div>
       </article>
     </section>
 
-    <section class="card history">
-      <h2>Past Orders</h2>
-      <div
-        class="history__row"
-        *ngFor="
-          let order of customerOrders().filter(
-            (item) => item.status === 'DELIVERED' || item.status === 'CANCELLED'
-          )
-        "
-      >
-        <strong>{{ order.id }}</strong>
-        <span>{{ order.restaurantName }}</span>
-        <span>{{ order.items }}</span>
-        <strong>Rs {{ order.total }}</strong>
-        <span>{{ statusLabel(order.status) }}</span>
-      </div>
-    </section>
-
-    <section class="card review-card">
-      <div class="review-card__head">
-        <div>
-          <h2>Rate Your Delivered Orders</h2>
-          <p>One review per order, editable for 30 minutes.</p>
-        </div>
-        <span class="badge">Feedback</span>
-      </div>
-
-      <div class="review-list">
-        <article *ngFor="let order of deliveredOrders()" class="review-item">
+    <section class="reviews-layout">
+      <article class="card review-card review-card--compose">
+        <div class="review-card__head">
           <div>
-            <strong>{{ order.restaurantName }}</strong>
-            <p>{{ order.items }}</p>
+            <p class="orders-eyebrow">Feedback</p>
+            <h2>Rate your delivered orders</h2>
+            <p>One review per order, editable for 30 minutes.</p>
           </div>
+          <span class="badge">New</span>
+        </div>
 
-          <div class="review-rating-grid">
-            <label>
-              Restaurant rating
-              <div class="review-stars">
-                <button
-                  type="button"
-                  *ngFor="let star of stars"
-                  (click)="setDraft(order.id, 'restaurantRating', star)"
-                  [class.active]="draftValue(order.id, 'restaurantRating') >= star"
-                >
-                  ★
-                </button>
+        <div class="review-list">
+          <article *ngFor="let order of deliveredOrders()" class="review-item">
+            <div class="review-item__header">
+              <div>
+                <strong>{{ order.restaurantName }}</strong>
+                <p>{{ order.items }}</p>
               </div>
+              <span class="review-item__chip">Delivered</span>
+            </div>
+
+            <div class="review-rating-grid">
+              <label>
+                Restaurant rating
+                <div class="review-stars">
+                  <button
+                    type="button"
+                    *ngFor="let star of stars"
+                    (click)="setDraft(order.id, 'restaurantRating', star)"
+                    [class.active]="draftValue(order.id, 'restaurantRating') >= star"
+                  >
+                    ★
+                  </button>
+                </div>
+              </label>
+
+              <label>
+                Delivery rating
+                <div class="review-stars">
+                  <button
+                    type="button"
+                    *ngFor="let star of stars"
+                    (click)="setDraft(order.id, 'deliveryRating', star)"
+                    [class.active]="draftValue(order.id, 'deliveryRating') >= star"
+                  >
+                    ★
+                  </button>
+                </div>
+              </label>
+
+              <label>
+                Overall rating
+                <div class="review-stars">
+                  <button
+                    type="button"
+                    *ngFor="let star of stars"
+                    (click)="setDraft(order.id, 'overallRating', star)"
+                    [class.active]="draftValue(order.id, 'overallRating') >= star"
+                  >
+                    ★
+                  </button>
+                </div>
+              </label>
+            </div>
+
+            <textarea
+              rows="3"
+              [value]="draftText(order.id)"
+              (input)="setDraftText(order.id, $any($event.target).value)"
+              placeholder="Tell us what stood out about the taste, packaging, hygiene, and delivery..."
+            ></textarea>
+
+            <label class="review-upload">
+              Optional images
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                (change)="handleImages(order.id, $any($event.target).files)"
+              />
             </label>
 
-            <label>
-              Delivery rating
-              <div class="review-stars">
-                <button
-                  type="button"
-                  *ngFor="let star of stars"
-                  (click)="setDraft(order.id, 'deliveryRating', star)"
-                  [class.active]="draftValue(order.id, 'deliveryRating') >= star"
-                >
-                  ★
-                </button>
-              </div>
-            </label>
+            <div class="review-preview" *ngIf="draftImages(order.id).length">
+              <img *ngFor="let image of draftImages(order.id)" [src]="image" alt="Review image" />
+            </div>
 
-            <label>
-              Overall rating
-              <div class="review-stars">
-                <button
-                  type="button"
-                  *ngFor="let star of stars"
-                  (click)="setDraft(order.id, 'overallRating', star)"
-                  [class.active]="draftValue(order.id, 'overallRating') >= star"
-                >
-                  ★
-                </button>
-              </div>
-            </label>
+            <div class="review-actions">
+              <button type="button" class="primary-link" (click)="submitReview(order)">
+                Save Review
+              </button>
+              <button
+                type="button"
+                class="ghost small"
+                (click)="resetDraft(order.id)"
+                *ngIf="existingReview(order.id)"
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                class="ghost small danger"
+                (click)="deleteReview(order.id)"
+                *ngIf="existingReview(order.id) && canEdit(order.id)"
+              >
+                Delete
+              </button>
+            </div>
+
+            <p class="save-note" *ngIf="existingReview(order.id)">
+              Saved review can be edited for 30 minutes.
+            </p>
+          </article>
+        </div>
+      </article>
+
+      <article class="card review-feed">
+        <div class="review-feed__head">
+          <div>
+            <p class="orders-eyebrow">Your reviews</p>
+            <h3>What you’ve shared</h3>
           </div>
+          <p>{{ reviews.customerReviews().length }} review(s)</p>
+        </div>
 
-          <textarea
-            rows="3"
-            [value]="draftText(order.id)"
-            (input)="setDraftText(order.id, $any($event.target).value)"
-            placeholder="Tell us what you liked, packaging, taste, hygiene, and delivery..."
-          ></textarea>
-
-          <label class="review-upload">
-            Optional images
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              (change)="handleImages(order.id, $any($event.target).files)"
-            />
-          </label>
-
-          <div class="review-preview" *ngIf="draftImages(order.id).length">
-            <img *ngFor="let image of draftImages(order.id)" [src]="image" alt="Review image" />
-          </div>
-
-          <div class="review-actions">
-            <button type="button" class="primary-link" (click)="submitReview(order)">
-              Save Review
-            </button>
-            <button
-              type="button"
-              class="ghost small"
-              (click)="resetDraft(order.id)"
-              *ngIf="existingReview(order.id)"
-            >
-              Reset
-            </button>
-            <button
-              type="button"
-              class="ghost small danger"
-              (click)="deleteReview(order.id)"
-              *ngIf="existingReview(order.id) && canEdit(order.id)"
-            >
-              Delete
-            </button>
-          </div>
-
-          <p class="save-note" *ngIf="existingReview(order.id)">
-            Saved review can be edited for 30 minutes.
-          </p>
-        </article>
-      </div>
-
-      <div class="review-feed">
-        <h3>Your Reviews</h3>
         <article *ngFor="let review of reviews.customerReviews()" class="review-feed__item">
-          <strong>{{ review.restaurantName }}</strong>
-          <span
-            >{{ review.customerName }} · Food {{ review.restaurantRating }}/5 · Delivery
-            {{ review.deliveryAgentRating }}/5 · Overall {{ review.overallRating }}/5</span
-          >
+          <div class="review-feed__top">
+            <strong>{{ review.restaurantName }}</strong>
+            <span>{{ review.overallRating || 0 }}/5 overall</span>
+          </div>
+          <p class="review-feed__meta">
+            {{ review.customerName }} · Food {{ review.restaurantRating || 0 }}/5 · Delivery
+            {{ review.deliveryAgentRating || 0 }}/5
+          </p>
           <p>{{ review.comment }}</p>
           <div class="review-preview" *ngIf="review.images.length">
             <img *ngFor="let image of review.images" [src]="image" alt="Review image" />
@@ -252,17 +281,19 @@ import { SessionService } from '../../services/session.service';
             </div>
           </div>
         </article>
-      </div>
+      </article>
     </section>
   `,
-  styleUrl: './customer-pages.scss',
+  styleUrl: './orders-page.component.scss',
 })
 export class OrdersPageComponent {
   protected readonly orderService = inject(OrderService);
   private readonly locations = inject(LocationService);
   protected readonly reviews = inject(ReviewService);
   private readonly session = inject(SessionService);
+
   private readonly customerEmail = computed(() => this.session.user()?.email?.toLowerCase() ?? '');
+
   protected readonly customerOrders = computed(() =>
     this.orderService
       .orders()
@@ -278,6 +309,7 @@ export class OrdersPageComponent {
       (order) => order.status !== 'DELIVERED' && order.status !== 'CANCELLED',
     ),
   );
+
   protected readonly stars = [1, 2, 3, 4, 5];
   protected readonly ratingDraft = signal<
     Record<string, { restaurantRating: number; deliveryRating: number; overallRating: number }>
@@ -285,17 +317,29 @@ export class OrdersPageComponent {
   protected readonly textDraft = signal<Record<string, string>>({});
   protected readonly imagesDraft = signal<Record<string, string[]>>({});
 
+  protected readonly activeCount = computed(
+    () => this.customerOrders().filter((order) => order.status !== 'DELIVERED' && order.status !== 'CANCELLED').length,
+  );
+
+  protected readonly deliveredCount = computed(
+    () => this.customerOrders().filter((order) => order.status === 'DELIVERED').length,
+  );
+
+  protected readonly reviewCount = computed(() => this.reviews.customerReviews().length);
+
+  protected readonly totalSpent = computed(() =>
+    this.customerOrders().reduce((sum, order) => sum + (order.total ?? 0), 0),
+  );
+
   pickupPoint(order: Order) {
     return (
-      order.pickupLocation ??
-      this.locations.restaurantLocation(order.restaurantId ?? order.restaurantName)
+      order.pickupLocation ?? this.locations.restaurantLocation(order.restaurantId ?? order.restaurantName)
     );
   }
 
   dropPoint(order: Order) {
     return (
-      order.deliveryLocation ??
-      this.locations.addressLocation(order.deliveryAddressLine ?? order.customerName ?? order.id)
+      order.deliveryLocation ?? this.locations.addressLocation(order.deliveryAddressLine ?? order.customerName ?? order.id)
     );
   }
 

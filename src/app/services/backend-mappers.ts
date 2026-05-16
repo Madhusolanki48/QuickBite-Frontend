@@ -155,12 +155,15 @@ export function cuisineTypeFromText(value: string): string {
 
 export function restaurantImageForSlug(slug: string): string | undefined {
   const map: Record<string, string> = {
-    'burger-palace': '/assets/images/restaurants/Burger palace.jpg',
-    'pizza-hut-express': '/assets/images/restaurants/Pizza Hut express.jpg',
-    'sushi-zen': '/assets/images/restaurants/Sushi zen.jpg',
-    'spice-garden': '/assets/images/restaurants/spice garden.jpg',
-    'taco-fiesta': '/assets/images/restaurants/taco fiesta.jpg',
-    'noodle-house': '/assets/images/restaurants/noodles house.jpg',
+    'burger-palace': '/assets/images/restaurants/burger-palace.jpg',
+    'pizza-hut-express': '/assets/images/restaurants/pizza-hut.jpg',
+    'sushi-zen': '/assets/images/restaurants/sushi-zen.png',
+    'spice-garden': '/assets/images/restaurants/spice-kitchen.jpg',
+    'urban-cafe': '/assets/images/restaurants/urban-cafe.jpg',
+    'green-bowl': '/assets/images/restaurants/green-bowl.jpg',
+    'sweet-heaven': '/assets/images/restaurants/sweet-heaven.jpg',
+    'taco-fiesta': '/assets/images/restaurants/street-flavors.jpg',
+    'noodle-house': '/assets/images/restaurants/dragon-wok.jpg',
   };
   return map[slug];
 }
@@ -200,26 +203,63 @@ export function menuImageForSlug(slug: string): string | undefined {
 
 export function restaurantToFrontend(response: BackendRestaurantResponse): Restaurant {
   const slug = slugify(response.name);
+  const isBurger = slug.includes('burger');
+  const isPizza = slug.includes('pizza');
+  const isSushi = slug.includes('sushi');
+  const isTaco = slug.includes('taco');
+  const isNoodle = slug.includes('noodle');
+  const isSandwich = slug.includes('cafe') || slug.includes('sandwich');
+  const isDrink = slug.includes('drink') || slug.includes('bowl');
+  const isDessert = slug.includes('sweet') || slug.includes('dessert') || slug.includes('icecream');
+  const isBiryani = slug.includes('spice') || slug.includes('biryani') || slug.includes('indian');
   return {
     id: slug,
     backendId: response.id,
     name: response.name,
     cuisine: `${response.cuisineType.charAt(0)}${response.cuisineType.slice(1).toLowerCase()}`,
-    category: slug.includes('pizza')
+    category: isPizza
       ? 'pizza'
-      : slug.includes('sushi')
-        ? 'sushi'
-        : slug.includes('taco')
-          ? 'mexican'
-          : slug.includes('noodle')
-            ? 'chinese'
-            : 'burgers',
+      : isBurger
+        ? 'burgers'
+        : isBiryani
+          ? 'biryani'
+          : isSandwich
+            ? 'sandwich'
+            : isDrink
+              ? 'drinks'
+              : isDessert
+                ? 'dessert'
+                : isSushi
+                  ? 'sushi'
+                  : isTaco
+                    ? 'mexican'
+                    : isNoodle
+                      ? 'chinese'
+                      : 'burgers',
     rating: response.rating ?? 0,
     deliveryMinutes: '25-35',
     minOrder: 150,
     status: restaurantStatusFromBackend(response.status),
     heroEmoji:
-      slug.includes('pizza') ? '🍕' : slug.includes('sushi') ? '🍣' : slug.includes('taco') ? '🌮' : slug.includes('noodle') ? '🥡' : '🍔',
+      isPizza
+        ? '🍕'
+        : isBurger
+          ? '🍔'
+          : isBiryani
+            ? '🍛'
+            : isSandwich
+              ? '🥪'
+              : isDrink
+                ? '🥤'
+                : isDessert
+                  ? '🍰'
+                  : isSushi
+                    ? '🍣'
+                    : isTaco
+                      ? '🌮'
+                      : isNoodle
+                        ? '🥡'
+                        : '🍔',
     description: response.address || `${response.name} on QuickBite`,
     imageUrl: restaurantImageForSlug(slug),
   };

@@ -13,10 +13,12 @@ export interface AuthUser {
 }
 
 export interface AuthResponse {
-  token: string;
-  tokenType: string;
-  expiresInMs: number;
+  token?: string;
+  tokenType?: string;
+  expiresInMs?: number;
   user: AuthUser;
+  message?: string;
+  requiresVerification?: boolean;
 }
 
 export interface NotificationItem {
@@ -48,6 +50,34 @@ export interface AdminUserResponse {
 export interface LoginRequest {
   email: string;
   password: string;
+}
+
+export interface VerifyOtpRequest {
+  email: string;
+  otp: string;
+}
+
+export interface ResendRegistrationOtpRequest {
+  email: string;
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  newPassword: string;
+}
+
+export interface MessageResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface PasswordResetResponse {
+  success: boolean;
+  message: string;
 }
 
 export interface RegisterRequest {

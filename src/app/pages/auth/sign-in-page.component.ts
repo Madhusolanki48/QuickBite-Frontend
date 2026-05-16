@@ -32,6 +32,9 @@ import { SessionService } from '../../services/session.service';
               autocapitalize="off"
               placeholder="Enter your first name"
             />
+            <small *ngIf="hasError('firstName', 'required')" class="field-error">
+              First name is required.
+            </small>
           </label>
           <label>
             Last name
@@ -44,6 +47,9 @@ import { SessionService } from '../../services/session.service';
               autocapitalize="off"
               placeholder="Enter your last name"
             />
+            <small *ngIf="hasError('lastName', 'required')" class="field-error">
+              Last name is required.
+            </small>
           </label>
         </div>
 
@@ -58,6 +64,10 @@ import { SessionService } from '../../services/session.service';
             autocapitalize="off"
             placeholder="Enter your email address"
           />
+          <small *ngIf="hasError('email', 'required')" class="field-error">Email is required.</small>
+          <small *ngIf="hasError('email', 'email')" class="field-error">
+            Enter a valid email address.
+          </small>
         </label>
 
         <label>
@@ -71,6 +81,12 @@ import { SessionService } from '../../services/session.service';
             autocapitalize="off"
             placeholder="Enter a 10 to 15 digit phone number"
           />
+          <small *ngIf="hasError('phoneNumber', 'required')" class="field-error">
+            Phone number is required.
+          </small>
+          <small *ngIf="hasError('phoneNumber', 'pattern')" class="field-error">
+            Enter a valid 10 to 15 digit phone number.
+          </small>
         </label>
 
         <label>
@@ -83,6 +99,12 @@ import { SessionService } from '../../services/session.service';
             autocomplete="off"
             placeholder="Create a secure password"
           />
+          <small *ngIf="hasError('password', 'required')" class="field-error">
+            Password is required.
+          </small>
+          <small *ngIf="hasError('password', 'minlength')" class="field-error">
+            Password must be at least 8 characters.
+          </small>
         </label>
 
         <label *ngIf="isRestaurantOwner()">
@@ -93,6 +115,9 @@ import { SessionService } from '../../services/session.service';
               {{ restaurant.name }}
             </option>
           </select>
+          <small *ngIf="hasError('restaurantId', 'required')" class="field-error">
+            Select the restaurant you manage.
+          </small>
         </label>
 
         <p *ngIf="isRestaurantOwner()" class="helper">
@@ -115,9 +140,11 @@ import { SessionService } from '../../services/session.service';
           </div>
         </div>
 
-        <button class="primary" type="submit" [disabled]="form.invalid || loading">
+        <button class="primary" type="submit" [disabled]="loading">
           {{ loading ? 'Creating account...' : 'Create account' }}
         </button>
+
+        <p *ngIf="message" class="message">{{ message }}</p>
 
         <p class="helper">Already have an account? <a routerLink="/login">Go to login</a></p>
       </form>
@@ -133,6 +160,7 @@ export class SignInPageComponent {
   private readonly router = inject(Router);
 
   protected loading = false;
+  protected message = '';
   protected firstNameLocked = true;
   protected lastNameLocked = true;
   protected emailLocked = true;
@@ -158,14 +186,21 @@ export class SignInPageComponent {
     return this.form.controls.role.value === 'RESTAURANT_OWNER';
   }
 
+  protected hasError(controlName: keyof typeof this.form.controls, errorName: string): boolean {
+    const control = this.form.controls[controlName];
+    return control.touched && control.hasError(errorName);
+  }
+
   chooseRole(role: AppRole): void {
     this.session.setPendingRole(role);
+    this.message = '';
     this.form.patchValue({ role });
   }
 
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.message = 'Please fix the highlighted fields before creating your account.';
       return;
     }
 
@@ -173,12 +208,16 @@ export class SignInPageComponent {
       const restaurantId = this.form.controls.restaurantId.value.trim();
       if (!restaurantId) {
         this.form.controls.restaurantId.setErrors({ required: true });
+        this.form.controls.restaurantId.markAsTouched();
+        this.message = 'Please select the restaurant you manage.';
         return;
       }
     }
 
     this.loading = true;
+    this.message = '';
     const raw = this.form.getRawValue();
+    const pendingApprovalFlag = raw.role === 'CUSTOMER' ? '0' : '1';
     const request = {
       firstName: raw.firstName,
       lastName: raw.lastName,
@@ -189,18 +228,47 @@ export class SignInPageComponent {
       restaurantId: raw.role === 'RESTAURANT_OWNER' ? raw.restaurantId : undefined,
     } satisfies RegisterRequest;
     this.auth.register(request).subscribe({
-      next: () =>
-        void this.router.navigate(['/login'], {
-          queryParams: {
-            signedUp: '1',
-            role: request.role,
-            pendingApproval: request.role === 'RESTAURANT_OWNER' ? '1' : '0',
-          },
-        }),
-      error: () => {
+      next: (response) => {
+        if (response.token) {
+          this.session.startSession(response);
+          this.auth.getCurrentUser().subscribe({
+            next: (currentUser) => {
+              this.session.replaceUser(currentUser);
+              this.loading = false;
+              void this.router.navigateByUrl(this.session.routeAfterAuth(currentUser));
+            },
+            error: () => {
+              this.loading = false;
+              void this.router.navigateByUrl(this.session.routeAfterAuth(response.user));
+            },
+          });
+          return;
+        }
+
+        if (request.role === 'CUSTOMER') {
+          this.loading = false;
+          void this.router.navigate(['/verify-email'], {
+            queryParams: {
+              email: request.email,
+              pendingApproval: '0',
+            },
+          });
+          return;
+        }
+
         this.loading = false;
+        void this.router.navigate(['/verify-email'], {
+          queryParams: {
+            pendingApproval: pendingApprovalFlag,
+            email: request.email,
+          },
+        });
       },
-      complete: () => {
+      error: (error) => {
+        this.message = this.auth.authErrorMessage(
+          error,
+          'Account creation is taking too long. Please try again.',
+        );
         this.loading = false;
       },
     });
