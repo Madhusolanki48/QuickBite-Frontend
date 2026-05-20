@@ -296,7 +296,7 @@
   scrollbar-gutter: stable;
 }
 
-html[data-theme='dark'] {
+:host-context(html[data-theme='dark']) {
   .delivery-shell {
     background:
       radial-gradient(circle at 8% 0, rgba(255, 138, 42, 0.09), transparent 26rem),
@@ -321,6 +321,13 @@ html[data-theme='dark'] {
 }
 
 @media (max-width: 1120px) {
+  .delivery-shell {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
   .delivery-topbar {
     grid-template-columns: 1fr auto;
   }
@@ -342,6 +349,7 @@ html[data-theme='dark'] {
 
   .workspace {
     grid-template-columns: 1fr;
+    height: auto;
   }
 
   .sidebar {

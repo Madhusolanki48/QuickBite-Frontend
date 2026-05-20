@@ -428,7 +428,7 @@
   margin: 0.2rem 0 0;
 }
 
-html[data-theme='dark'] .review-feed__item {
+:host-context(html[data-theme='dark']) .review-feed__item {
   background: var(--surface-2);
 }
 
@@ -972,7 +972,7 @@ html[data-theme='dark'] .review-feed__item {
   background: linear-gradient(90deg, var(--brand), #22c55e);
 }
 
-html[data-theme='dark'] {
+:host-context(html[data-theme='dark']) {
   .ops-hero,
   .premium-card,
   .ops-pill {

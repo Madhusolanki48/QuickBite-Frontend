@@ -101,14 +101,7 @@ export class CategoryCollectionPageComponent {
   protected readonly items = computed(() =>
     this.catalog
       .menuItemsSignal()
-      .filter((item) => {
-        const restaurant = this.catalog.restaurantById(item.restaurantId);
-        return (
-          restaurant?.category === this.categoryId ||
-          item.category.toLowerCase().includes(this.categoryId) ||
-          restaurant?.name.toLowerCase().includes(this.categoryId)
-        );
-      })
+      .filter((item) => this.catalog.matchesDishCategory(item, this.categoryId))
       .sort((left, right) => right.rating - left.rating),
   );
 

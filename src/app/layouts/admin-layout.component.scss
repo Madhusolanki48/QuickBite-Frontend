@@ -172,7 +172,7 @@
   top: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 1rem;
   align-items: center;
   padding: 0.85rem 1rem;
@@ -253,7 +253,7 @@
   color: #15803d;
 }
 
-html[data-theme='dark'] {
+:host-context(html[data-theme='dark']) {
   .admin-shell {
     background: #0b1120;
   }

@@ -940,7 +940,7 @@
   margin-top: 0.2rem;
 }
 
-html[data-theme='dark'] .review-feed__item {
+:host-context(html[data-theme='dark']) .review-feed__item {
   background: var(--surface-2);
 }
 

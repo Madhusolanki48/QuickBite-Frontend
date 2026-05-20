@@ -11,21 +11,26 @@
 
 .hero-section {
   position: relative;
-  height: 420px;
-  width: calc(100% + 2rem);
-  margin: -1.25rem -1rem 2rem -1rem;
-  border-radius: 0;
+  width: 100%;
+  height: clamp(200px, 26vw, 360px);
+  margin: 0 0 1.5rem 0;
+  border-radius: 24px;
   overflow: hidden;
+  background: linear-gradient(135deg, #111827, #1f2937);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
 .hero-slider {
   position: relative;
+  width: 100%;
   height: 100%;
 }
 
 .hero-slide {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0;
   transform: scale(0.98);
   transition: opacity 0.8s ease, transform 0.8s ease;
@@ -41,6 +46,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  border-radius: inherit;
 }
 
 .search-filter-bar {
@@ -53,14 +60,15 @@
   background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 12px 32px rgba(17, 24, 39, 0.05);
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .search-group {
   display: flex;
   flex: 1 1 58%;
   gap: 1rem;
-  min-width: 320px;
+  min-width: 0;
+  width: 100%;
 }
 
 .search-bar {
@@ -121,7 +129,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  min-width: 260px;
+  min-width: 0;
 }
 
 .filter-chip {
@@ -174,13 +182,14 @@
 }
 
 .category-strip {
-  display: grid;
-  grid-auto-flow: column;
+  display: flex;
+  align-items: center;
   gap: 1rem;
-  padding-bottom: 0.35rem;
+  padding-bottom: 0.5rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 
 .category-strip::-webkit-scrollbar {
@@ -189,7 +198,8 @@
 
 .category-pill {
   scroll-snap-align: start;
-  min-width: 120px;
+  min-width: 100px;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -201,8 +211,8 @@
 }
 
 .category-pill .image-wrapper {
-  width: 110px;
-  height: 110px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   overflow: hidden;
   box-shadow: 0 12px 28px rgba(17, 24, 39, 0.08);
@@ -212,7 +222,7 @@
 
 .category-pill:hover .image-wrapper,
 .category-pill.active .image-wrapper {
-  transform: scale(1.1);
+  transform: scale(1.08);
   border-color: var(--brand);
 }
 
@@ -225,7 +235,7 @@
 .category-pill span {
   display: block;
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   color: var(--text);
   text-align: center;
 }
@@ -558,35 +568,36 @@
 
 @media (max-width: 760px) {
   .hero-section {
-    height: 280px;
-    margin-top: -0.5rem;
+    height: clamp(180px, 28vh, 260px);
+    margin-top: 0;
+    border-radius: 18px;
   }
+
   .customer-dashboard {
     width: 100%;
     margin: 0;
     padding: 0 0 6.8rem;
   }
 
-  .hero-offer-card {
-    position: static;
-    margin-top: -1rem;
-    width: calc(100% - 2rem);
-  }
-
   .search-filter-bar {
-    display: grid;
-    gap: 1rem;
-    padding: 1rem;
-    margin-top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    margin-top: 1rem;
   }
 
   .search-group {
     flex-direction: column;
   }
 
-  .category-strip {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding-bottom: 0.75rem;
+  .category-pill {
+    min-width: 80px;
+  }
+
+  .category-pill .image-wrapper {
+    width: 72px;
+    height: 72px;
   }
 
   .food-menu-grid,
@@ -595,8 +606,9 @@
     gap: 1rem;
   }
 
-  .hero-copy h1 {
-    font-size: 2.2rem;
+  .cart-fab {
+    bottom: 5.2rem;
+    right: 1rem;
   }
 }
 

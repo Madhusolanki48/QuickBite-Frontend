@@ -406,15 +406,15 @@
   color: var(--muted);
 }
 
-html[data-theme='dark'] .orders-hero,
-html[data-theme='dark'] .orders-spotlight,
-html[data-theme='dark'] .review-card,
-html[data-theme='dark'] .review-feed,
-html[data-theme='dark'] .order-card--premium,
-html[data-theme='dark'] .review-item,
-html[data-theme='dark'] .review-feed__item,
-html[data-theme='dark'] .metric-card,
-html[data-theme='dark'] .spot-panel {
+:host-context(html[data-theme='dark']) .orders-hero,
+:host-context(html[data-theme='dark']) .orders-spotlight,
+:host-context(html[data-theme='dark']) .review-card,
+:host-context(html[data-theme='dark']) .review-feed,
+:host-context(html[data-theme='dark']) .order-card--premium,
+:host-context(html[data-theme='dark']) .review-item,
+:host-context(html[data-theme='dark']) .review-feed__item,
+:host-context(html[data-theme='dark']) .metric-card,
+:host-context(html[data-theme='dark']) .spot-panel {
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
 }
 

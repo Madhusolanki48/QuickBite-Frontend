@@ -1,0 +1,2453 @@
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/home-page.component.ts:219:12:
+[37m      219 │       <div *[32mngIf[37m="toast()" class="toast">{{ toast() }}</div>
+          ╵             [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'toggleFavorite' does not exist on type 'HomePageComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/home-page.component.ts:144:25:
+[37m      144 │                 (click)="[32mtoggleFavorite[37m(dish.item, $event)"
+          ╵                          [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'isRestaurantFavorite' does not exist on type 'HomePageComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/home-page.component.ts:192:39:
+[37m      192 │ ...    [ngClass]="{ 'active': [32misRestaurantFavorite[37m(restaurant.id) }"
+          ╵                               [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'toggleRestaurantFavorite' does not exist on type 'HomePageComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/home-page.component.ts:193:25:
+[37m      193 │ ...          (click)="[32mtoggleRestaurantFavorite[37m(restaurant, $event)">
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'isRestaurantFavorite' does not exist on type 'HomePageComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/home-page.component.ts:194:19:
+[37m      194 │                 {{ [32misRestaurantFavorite[37m(restaurant.id) ? '♥' : ...
+          ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/home-page.component.ts:219:12:
+[37m      219 │       <div *[32mngIf[37m="toast()" class="toast">{{ toast() }}</div>
+          ╵             [32m~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/home-page.component.ts:219:12:
+[37m      219 │       <div *[32mngIf[37m="toast()" class="toast">{{ toast() }}</div>
+          ╵             [32m~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/home-page.component.ts:219:12:
+[37m      219 │       <div *[32mngIf[37m="toast()" class="toast">{{ toast() }}</div>
+          ╵             [32m~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/home-page.component.ts:219:12:
+[37m      219 │       <div *[32mngIf[37m="toast()" class="toast">{{ toast() }}</div>
+          ╵             [32m~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/home-page.component.ts:219:12:
+[37m      219 │       <div *[32mngIf[37m="toast()" class="toast">{{ toast() }}</div>
+          ╵             [32m~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/home-page.component.ts:219:12:
+[37m      219 │       <div *[32mngIf[37m="toast()" class="toast">{{ toast() }}</div>
+          ╵             [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type '"PENDING_COD"' is not assignable to type '"SUCCESS" | "PENDING" | "FAILED" | undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/customer/payment-page.component.ts:358:10:
+[37m      358 │           [32mpaymentStatus[37m: 'PENDING_COD',
+          ╵           [32m~~~~~~~~~~~~~[0m
+
+  The expected type comes from property 'paymentStatus' which is declared here on type '{ restaurantId?: string | undefined; restaurantName: string; items: string; total: number; customerName?: string | undefined; customerEmail?: string | undefined; customerPhone?: string | undefined; ... 8 more ...; paymentStatus?: "SUCCESS" | ... 2 more ... | undefined; }'
+
+    src/app/services/order.service.ts:89:4:
+[37m      89 │     [32mpaymentStatus[37m?: 'SUCCESS' | 'PENDING' | 'FAILED';
+         ╵     [32m~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: All imports are unused[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/owner/live-orders-page.component.ts:10:2:
+[37m      10 │   [32mimports[37m: [NgClass, NgFor, NgIf],
+         ╵   [32m~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Unexpected closing tag "article". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/owner/live-orders-page.component.ts:301:16:
+[37m      301 │                 [32m</article>[37m
+          ╵                 [32m~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: All imports are unused[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/owner/live-orders-page.component.ts:10:2:
+[37m      10 │   [32mimports[37m: [NgClass, NgFor, NgIf],
+         ╵   [32m~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Unexpected closing tag "article". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/owner/live-orders-page.component.ts:302:16:
+[37m      302 │                 [32m</article>[37m
+          ╵                 [32m~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: All imports are unused[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/owner/live-orders-page.component.ts:10:2:
+[37m      10 │   [32mimports[37m: [NgClass, NgFor, NgIf],
+         ╵   [32m~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Unexpected closing tag "article". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/owner/live-orders-page.component.ts:302:16:
+[37m      302 │                 [32m</article>[37m
+          ╵                 [32m~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'toggleAgentAvailability' does not exist on type 'LiveOrdersPageComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/owner/live-orders-page.component.ts:289:31:
+[37m      289 │ ...           (click)="[32mtoggleAgentAvailability[37m(agent.email, agent...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2554: Expected 2 arguments, but got 3.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/owner-dashboard.service.ts:139:6:
+[37m      139 │       [32magent ? { name: agent.name, phone: agent.phone } : undefined[37m,
+          ╵       [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'cancelOrder' does not exist on type 'LiveOrdersPageComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/owner/live-orders-page.component.ts:205:23:
+[37m      205 │               (click)="[32mcancelOrder[37m(order.id); $event.stopPropagat...
+          ╵                        [32m~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/delivery/delivery-dashboard-page.component.ts:110:17:
+[37m      110 │                 *[32mngIf[37m="displayDelivery().status !== 'ON_THE_WAY';...
+          ╵                  [32m~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8103: NG8103: The `*ngIf` directive was used in the template, but neither the `NgIf` directive nor the `CommonModule` was imported. Use Angular's built-in control flow @if or make sure that either the `NgIf` directive or the `CommonModule` is included in the `@Component.imports` array of this component. Find more at https://v21.angular.dev/extended-diagnostics/NG8103[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/delivery/delivery-dashboard-page.component.ts:110:17:
+[37m      110 │                 *[32mngIf[37m="displayDelivery().status !== 'ON_THE_WAY';...
+          ╵                  [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type '"username"' is not assignable to parameter of type '"firstName" | "lastName" | "email" | "phoneNumber" | "password" | "role" | "restaurantId"'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/sign-in-page.component.ts:67:33:
+[37m      67 │ ...    <small *ngIf="hasError([32m'username'[37m, 'required')" class="fiel...
+         ╵                               [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type '"username"' is not assignable to parameter of type '"firstName" | "lastName" | "email" | "phoneNumber" | "password" | "role" | "restaurantId"'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/sign-in-page.component.ts:70:33:
+[37m      70 │ ...    <small *ngIf="hasError([32m'username'[37m, 'minlength')" class="fie...
+         ╵                               [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1360: Type '{ firstName: string; lastName: string; email: string; phoneNumber: string; password: string; role: "CUSTOMER" | "RESTAURANT_OWNER" | "DELIVERY_PARTNER" | "ADMIN"; restaurantId: string | undefined; }' does not satisfy the expected type 'RegisterRequest'.
+  Property 'username' is missing in type '{ firstName: string; lastName: string; email: string; phoneNumber: string; password: string; role: "CUSTOMER" | "RESTAURANT_OWNER" | "DELIVERY_PARTNER" | "ADMIN"; restaurantId: string | undefined; }' but required in type 'RegisterRequest'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/sign-in-page.component.ts:249:6:
+[37m      249 │     } [32msatisfies[37m RegisterRequest;
+          ╵       [32m~~~~~~~~~[0m
+
+  'username' is declared here.
+
+    src/app/core/app.models.ts:87:2:
+[37m      87 │   [32musername[37m: string;
+         ╵   [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type '{ firstName: string; lastName: string; email: string; phoneNumber: string; password: string; role: "CUSTOMER" | "RESTAURANT_OWNER" | "DELIVERY_PARTNER" | "ADMIN"; restaurantId: string | undefined; }' is not assignable to parameter of type 'RegisterRequest'.
+  Property 'username' is missing in type '{ firstName: string; lastName: string; email: string; phoneNumber: string; password: string; role: "CUSTOMER" | "RESTAURANT_OWNER" | "DELIVERY_PARTNER" | "ADMIN"; restaurantId: string | undefined; }' but required in type 'RegisterRequest'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/auth/sign-in-page.component.ts:250:23:
+[37m      250 │     this.auth.register([32mrequest[37m).subscribe({
+          ╵                        [32m~~~~~~~[0m
+
+  'username' is declared here.
+
+    src/app/core/app.models.ts:87:2:
+[37m      87 │   [32musername[37m: string;
+         ╵   [32m~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2663: Cannot find name 'currentAgentEmail'. Did you mean the instance member 'this.currentAgentEmail'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:68:2:
+[37m      68 │   [32mcurrentAgentEmail[37m(): string {
+         ╵   [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ')' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:68:21:
+[37m      68 │   currentAgentEmail()[32m:[37m string {
+         ╵                      [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1434: Unexpected keyword or identifier.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:68:23:
+[37m      68 │   currentAgentEmail(): [32mstring[37m {
+         ╵                        [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'string' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:68:23:
+[37m      68 │   currentAgentEmail(): [32mstring[37m {
+         ╵                        [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type 'string' is not assignable to type 'DeliveryAgentDirectoryEntry'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:69:4:
+[37m      69 │     [32mreturn[37m this.session.user()?.email?.toLowerCase() ?? '';
+         ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2663: Cannot find name 'currentAgent'. Did you mean the instance member 'this.currentAgent'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:72:2:
+[37m      72 │   [32mcurrentAgent[37m(): DeliveryAgentDirectoryEntry | null {
+         ╵   [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:72:16:
+[37m      72 │   currentAgent()[32m:[37m DeliveryAgentDirectoryEntry | null {
+         ╵                 [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'DeliveryAgentDirectoryEntry' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:72:18:
+[37m      72 │   currentAgent(): [32mDeliveryAgentDirectoryEntry[37m | null {
+         ╵                   [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18050: The value 'null' cannot be used here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:72:48:
+[37m      72 │   currentAgent(): DeliveryAgentDirectoryEntry | [32mnull[37m {
+         ╵                                                 [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:72:53:
+[37m      72 │   currentAgent(): DeliveryAgentDirectoryEntry | null [32m{[37m
+         ╵                                                      [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2663: Cannot find name 'setCurrentAvailability'. Did you mean the instance member 'this.setCurrentAvailability'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:77:2:
+[37m      77 │   [32msetCurrentAvailability[37m(available: boolean): void {
+         ╵   [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'available'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:77:25:
+[37m      77 │   setCurrentAvailability([32mavailable[37m: boolean): void {
+         ╵                          [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:77:34:
+[37m      77 │   setCurrentAvailability(available[32m:[37m boolean): void {
+         ╵                                   [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'boolean' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:77:36:
+[37m      77 │   setCurrentAvailability(available: [32mboolean[37m): void {
+         ╵                                     [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:77:44:
+[37m      77 │   setCurrentAvailability(available: boolean)[32m:[37m void {
+         ╵                                             [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:78:10:
+[37m      78 │     const [32memail[37m = this.currentAgentEmail();
+         ╵           [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:78:42:
+[37m      78 │     const email = this.currentAgentEmail()[32m;[37m
+         ╵                                           [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1003: Identifier expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:79:8:
+[37m      79 │     if ([32m![37memail) {
+         ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter '(Missing)' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:79:8:
+[37m      79 │     if ([32m[37m!email) {
+         ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'email' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:79:9:
+[37m      79 │     if (![32memail[37m) {
+         ╵          [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:82:4:
+[37m      82 │     [32mthis[37m.setAvailability(email, available);
+         ╵     [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:82:8:
+[37m      82 │     this[32m.[37msetAvailability(email, available);
+         ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'available'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:82:32:
+[37m      82 │     this.setAvailability(email, [32mavailable[37m);
+         ╵                                 [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:82:42:
+[37m      82 │     this.setAvailability(email, available)[32m;[37m
+         ╵                                           [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2663: Cannot find name 'setAvailability'. Did you mean the instance member 'this.setAvailability'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:85:2:
+[37m      85 │   [32msetAvailability[37m(email: string, available: boolean): void {
+         ╵   [32m~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:85:23:
+[37m      85 │   setAvailability(email[32m:[37m string, available: boolean): void {
+         ╵                        [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'string' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:85:25:
+[37m      85 │   setAvailability(email: [32mstring[37m, available: boolean): void {
+         ╵                          [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'available'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:85:33:
+[37m      85 │   setAvailability(email: string, [32mavailable[37m: boolean): void {
+         ╵                                  [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:85:42:
+[37m      85 │   setAvailability(email: string, available[32m:[37m boolean): void {
+         ╵                                           [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'boolean' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:85:44:
+[37m      85 │   setAvailability(email: string, available: [32mboolean[37m): void {
+         ╵                                             [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:85:52:
+[37m      85 │   setAvailability(email: string, available: boolean)[32m:[37m void {
+         ╵                                                     [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:86:10:
+[37m      86 │     const [32mnormalized[37m = email.toLowerCase();
+         ╵           [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'normalized'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:86:10:
+[37m      86 │     const [32mnormalized[37m = email.toLowerCase();
+         ╵           [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18049: 'email' is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:86:23:
+[37m      86 │     const normalized = [32memail[37m.toLowerCase();
+         ╵                        [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:86:42:
+[37m      86 │     const normalized = email.toLowerCase()[32m;[37m
+         ╵                                           [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:87:8:
+[37m      87 │     this[32m.[37magentsSignal.update((agents) =>
+         ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'agents' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:87:30:
+[37m      87 │     this.agentsSignal.update(([32magents[37m) =>
+         ╵                               [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'agent' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:88:18:
+[37m      88 │       agents.map(([32magent[37m) =>
+         ╵                   [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'normalized'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:89:38:
+[37m      89 │         agent.email.toLowerCase() === [32mnormalized[37m
+         ╵                                       [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'available'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:90:24:
+[37m      90 │           ? { ...agent, [32mavailable[37m, online: available }
+         ╵                         [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'available'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:90:43:
+[37m      90 │           ? { ...agent, available, online: [32mavailable[37m }
+         ╵                                            [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:93:5:
+[37m      93 │     )[32m;[37m
+         ╵      [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:94:8:
+[37m      94 │     this[32m.[37mpersist();
+         ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:94:18:
+[37m      94 │     this.persist()[32m;[37m
+         ╵                   [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2663: Cannot find name 'assignableAgents'. Did you mean the instance member 'this.assignableAgents'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:97:2:
+[37m      97 │   [32massignableAgents[37m(): DeliveryAgentDirectoryEntry[] {
+         ╵   [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:97:20:
+[37m      97 │   assignableAgents()[32m:[37m DeliveryAgentDirectoryEntry[] {
+         ╵                     [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'DeliveryAgentDirectoryEntry' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:97:22:
+[37m      97 │   assignableAgents(): [32mDeliveryAgentDirectoryEntry[37m[] {
+         ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1011: An element access expression should take an argument.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:97:50:
+[37m      97 │   assignableAgents(): DeliveryAgentDirectoryEntry[[32m[37m] {
+         ╵                                                   [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:97:52:
+[37m      97 │   assignableAgents(): DeliveryAgentDirectoryEntry[] [32m{[37m
+         ╵                                                     [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2740: Type 'DeliveryAgentDirectoryEntry[]' is missing the following properties from type 'DeliveryAgentDirectoryEntry': name, email, phone, zone, and 6 more.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:98:4:
+[37m      98 │     [32mreturn[37m this.availableAgents();
+         ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2663: Cannot find name 'findAgent'. Did you mean the instance member 'this.findAgent'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:101:2:
+[37m      101 │   [32mfindAgent[37m(email?: string | null): DeliveryAgentDirectoryEntry |...
+          ╵   [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1109: Expression expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:101:18:
+[37m      101 │   findAgent(email?[32m:[37m string | null): DeliveryAgentDirectoryEntry |...
+          ╵                   [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'string' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:101:20:
+[37m      101 │   findAgent(email?: [32mstring[37m | null): DeliveryAgentDirectoryEntry |...
+          ╵                     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18050: The value 'null' cannot be used here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:101:29:
+[37m      101 │   findAgent(email?: string | [32mnull[37m): DeliveryAgentDirectoryEntry |...
+          ╵                              [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:101:34:
+[37m      101 │   findAgent(email?: string | null)[32m:[37m DeliveryAgentDirectoryEntry |...
+          ╵                                   [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'DeliveryAgentDirectoryEntry' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:101:36:
+[37m      101 │ ...gent(email?: string | null): [32mDeliveryAgentDirectoryEntry[37m | null {
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18050: The value 'null' cannot be used here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:101:66:
+[37m      101 │ ...gent(email?: string | null): DeliveryAgentDirectoryEntry | [32mnull[37m {
+          ╵                                                               [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:101:71:
+[37m      101 │ ...gent(email?: string | null): DeliveryAgentDirectoryEntry | null [32m{[37m
+          ╵                                                                    [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18049: 'email' is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:106:72:
+[37m      106 │ ...nt) => agent.email.toLowerCase() === [32memail[37m.toLowerCase()) ?? null
+          ╵                                         [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:110:2:
+[37m      110 │   [32mprivate[37m readAgents(): DeliveryAgentDirectoryEntry[] {
+          ╵   [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mExpected identifier but found ","[0m
+
+    src/app/services/delivery-agent-directory.service.ts:62:15:
+[37m      62 │             if([32m,[37m email) {
+         ╵                [32m^[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDuplicate member "agents" in class body[0m [duplicate-class-member]
+
+    src/app/services/delivery-agent-directory.service.ts:16:4:
+[37m      16 │     [32magents[37m = computed(() => this.agentsSignal(), ...(ngDevMode ? [...
+         ╵     [32m~~~~~~[0m
+
+  The original member "agents" is here:
+
+    src/app/services/delivery-agent-directory.service.ts:14:4:
+[37m      14 │     [32magents[37m = computed(() => this.agentsSignal(), ...(ngDevMode ? [...
+         ╵     [32m~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDuplicate member "availableAgents" in class body[0m [duplicate-class-member]
+
+    src/app/services/delivery-agent-directory.service.ts:17:4:
+[37m      17 │     [32mavailableAgents[37m = computed(() => this.agentsSignal().filter((a...
+         ╵     [32m~~~~~~~~~~~~~~~[0m
+
+  The original member "availableAgents" is here:
+
+    src/app/services/delivery-agent-directory.service.ts:15:4:
+[37m      15 │     [32mavailableAgents[37m = computed(() => this.agentsSignal().filter((a...
+         ╵     [32m~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'agents'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:24:11:
+[37m      24 │   readonly [32magents[37m = computed(() => this.agentsSignal());
+         ╵            [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'availableAgents'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-agent-directory.service.ts:25:11:
+[37m      25 │   readonly [32mavailableAgents[37m = computed(() =>
+         ╵            [32m~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2341: Property 'refreshFromBackend' is private and only accessible within class 'DeliveryAgentDirectoryService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/delivery-dashboard.service.ts:147:22:
+[37m      147 │           this.agents.[32mrefreshFromBackend[37m();
+          ╵                       [32m~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2451: Cannot redeclare block-scoped variable 'agent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:165:10:
+[37m      165 │     const [32magent[37m = this.agents.agents().find((a) => a.email.toLowe...
+          ╵           [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2451: Cannot redeclare block-scoped variable 'agent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:184:10:
+[37m      184 │     const [32magent[37m = this.agents.agents().find((a) => a.email.toLowe...
+          ╵           [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mThe symbol "agent" has already been declared[0m
+
+    src/app/services/order.service.ts:124:14:
+[37m      124 │         const [32magent[37m = this.agents.agents().find((a) => a.email.to...
+          ╵               [32m~~~~~[0m
+
+  The symbol "agent" was originally declared here:
+
+    src/app/services/order.service.ts:106:14:
+[37m      106 │         const [32magent[37m = this.agents.agents().find((a) => a.email.to...
+          ╵               [32m~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2451: Cannot redeclare block-scoped variable 'agent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:165:10:
+[37m      165 │     const [32magent[37m = this.agents.agents().find((a) => a.email.toLowe...
+          ╵           [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2451: Cannot redeclare block-scoped variable 'agent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:184:10:
+[37m      184 │     const [32magent[37m = this.agents.agents().find((a) => a.email.toLowe...
+          ╵           [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mThe symbol "agent" has already been declared[0m
+
+    src/app/services/order.service.ts:124:14:
+[37m      124 │         const [32magent[37m = this.agents.agents().find((a) => a.email.to...
+          ╵               [32m~~~~~[0m
+
+  The symbol "agent" was originally declared here:
+
+    src/app/services/order.service.ts:106:14:
+[37m      106 │         const [32magent[37m = this.agents.agents().find((a) => a.email.to...
+          ╵               [32m~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2451: Cannot redeclare block-scoped variable 'agent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:165:10:
+[37m      165 │     const [32magent[37m = this.agents.agents().find((a) => a.email.toLowe...
+          ╵           [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2451: Cannot redeclare block-scoped variable 'agent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:184:10:
+[37m      184 │     const [32magent[37m = this.agents.agents().find((a) => a.email.toLowe...
+          ╵           [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mThe symbol "agent" has already been declared[0m
+
+    src/app/services/order.service.ts:124:14:
+[37m      124 │         const [32magent[37m = this.agents.agents().find((a) => a.email.to...
+          ╵               [32m~~~~~[0m
+
+  The symbol "agent" was originally declared here:
+
+    src/app/services/order.service.ts:106:14:
+[37m      106 │         const [32magent[37m = this.agents.agents().find((a) => a.email.to...
+          ╵               [32m~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2451: Cannot redeclare block-scoped variable 'agent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:165:10:
+[37m      165 │     const [32magent[37m = this.agents.agents().find((a) => a.email.toLowe...
+          ╵           [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2451: Cannot redeclare block-scoped variable 'agent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:184:10:
+[37m      184 │     const [32magent[37m = this.agents.agents().find((a) => a.email.toLowe...
+          ╵           [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mThe symbol "agent" has already been declared[0m
+
+    src/app/services/order.service.ts:124:14:
+[37m      124 │         const [32magent[37m = this.agents.agents().find((a) => a.email.to...
+          ╵               [32m~~~~~[0m
+
+  The symbol "agent" was originally declared here:
+
+    src/app/services/order.service.ts:106:14:
+[37m      106 │         const [32magent[37m = this.agents.agents().find((a) => a.email.to...
+          ╵               [32m~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type '(Order | undefined)[]' is not assignable to type 'Order[]'.
+  Type 'Order | undefined' is not assignable to type 'Order'.
+    Type 'undefined' is not assignable to type 'Order'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:428:4:
+[37m      428 │     [32mreturn[37m base
+          ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7030: Not all code paths return a value.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:430:11:
+[37m      430 │       .map([32m(order) => {[37m
+          ╵            [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:467:7:
+[37m      467 │       }[32m)[37m
+          ╵        [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18048: 'b' is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:468:22:
+[37m      468 │       .sort((a, b) => [32mb[37m.createdAt.localeCompare(a.createdAt));
+          ╵                       [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18048: 'a' is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/order.service.ts:468:48:
+[37m      468 │       .sort((a, b) => b.createdAt.localeCompare([32ma[37m.createdAt));
+          ╵                                                 [32m^[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pendingOrders' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/layouts/admin-layout.component.ts:114:100:
+[37m      114 │ ...ders', icon: 'LA', count: this.admin.dashboard().[32mpendingOrders[37m },
+          ╵                                                     [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pendingApprovalCount' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/layouts/admin-layout.component.ts:129:95:
+[37m      129 │ ...stomers', icon: 'AP', count: this.admin.[32mpendingApprovalCount[37m() },
+          ╵                                            [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'customers' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-customers-page.component.ts:115:34:
+[37m      115 │     return this.admin.dashboard().[32mcustomers[37m.filter((customer) => {
+          ╵                                   [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'customer' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-customers-page.component.ts:115:52:
+[37m      115 │     return this.admin.dashboard().customers.filter(([32mcustomer[37m) => {
+          ╵                                                     [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'customers' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-customers-page.component.ts:157:44:
+[37m      157 │ ...r = this.admin.dashboard().[32mcustomers[37m.find((row) => row.email =...
+          ╵                               [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'row' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-customers-page.component.ts:157:60:
+[37m      157 │ ...s.admin.dashboard().customers.find(([32mrow[37m) => row.email === email);
+          ╵                                        [32m~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'refreshApprovalUsers' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-customers-page.component.ts:178:19:
+[37m      178 │         this.admin.[32mrefreshApprovalUsers[37m();
+          ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'recentOrders' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:175:53:
+[37m      175 │             <tr *ngFor="let row of admin.dashboard().[32mrecentOrders[37m">
+          ╵                                                      [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pendingOrders' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:245:57:
+[37m      245 │ ... value: String(dashboard.[32mpendingOrders[37m), delta: 'Watch', trend...
+          ╵                             [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pendingOrders' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:255:47:
+[37m      255 │ ...'Live orders', value: dashboard.[32mpendingOrders[37m, dot: 'dot blue' },
+          ╵                                    [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'recentOrders' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:286:42:
+[37m      286 │     const recent = this.admin.dashboard().[32mrecentOrders[37m.slice(0, 4);
+          ╵                                           [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'order' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:287:31:
+[37m      287 │     const events = recent.map(([32morder[37m) => ({
+          ╵                                [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pendingOwnerApprovals' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:303:69:
+[37m      303 │ ... hint: `${this.admin.[32mpendingOwnerApprovals[37m().length} pending o...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pendingOrders' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:325:87:
+[37m      325 │ ...${this.admin.dashboard().[32mpendingOrders[37m} active orders need SLA...
+          ╵                             [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pendingOwnerApprovals' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:326:79:
+[37m      326 │ ...etail: `${this.admin.[32mpendingOwnerApprovals[37m().length} restauran...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'restaurants' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:364:34:
+[37m      364 │     return this.admin.dashboard().[32mrestaurants[37m.map((restaurant) => ({
+          ╵                                   [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'restaurant' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:364:51:
+[37m      364 │     return this.admin.dashboard().restaurants.map(([32mrestaurant[37m) => ({
+          ╵                                                    [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'updateDeliveryAgent' does not exist on type 'AdminDashboardService'. Did you mean 'deliveryAgents'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-delivery-agents-page.component.ts:171:17:
+[37m      171 │       this.admin.[32mupdateDeliveryAgent[37m(this.editingName(), {
+          ╵                  [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  'deliveryAgents' is declared here.
+
+    src/app/services/admin-dashboard.service.ts:93:6:
+[37m      93 │       [32mdeliveryAgents[37m: this.agentsSignal(),
+         ╵       [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'addDeliveryAgent' does not exist on type 'AdminDashboardService'. Did you mean 'deliveryAgents'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-delivery-agents-page.component.ts:179:17:
+[37m      179 │       this.admin.[32maddDeliveryAgent[37m({
+          ╵                  [32m~~~~~~~~~~~~~~~~[0m
+
+  'deliveryAgents' is declared here.
+
+    src/app/services/admin-dashboard.service.ts:93:6:
+[37m      93 │       [32mdeliveryAgents[37m: this.agentsSignal(),
+         ╵       [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'deliveryAgents' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-delivery-agents-page.component.ts:196:41:
+[37m      196 │ ... this.admin.dashboard().[32mdeliveryAgents[37m.find((row) => row.name ...
+          ╵                            [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'row' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-delivery-agents-page.component.ts:196:62:
+[37m      196 │ ...dmin.dashboard().deliveryAgents.find(([32mrow[37m) => row.name === name);
+          ╵                                          [32m~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'toggleDeliveryAgentStatus' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-delivery-agents-page.component.ts:213:15:
+[37m      213 │     this.admin.[32mtoggleDeliveryAgentStatus[37m(name);
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'settings' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-settings-page.component.ts:91:59:
+[37m      91 │   protected readonly draft = signal(this.admin.dashboard().[32msettings[37m);
+         ╵                                                            [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSettings' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-settings-page.component.ts:110:15:
+[37m      110 │     this.admin.[32mupdateSettings[37m({
+          ╵                [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'settings' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-settings-page.component.ts:124:7:
+[37m      124 │       .[32msettings[37m.toggles.findIndex((toggle) => toggle.label === la...
+          ╵        [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'toggle' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-settings-page.component.ts:124:35:
+[37m      124 │ ... .settings.toggles.findIndex(([32mtoggle[37m) => toggle.label === label);
+          ╵                                  [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'toggleFeature' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-settings-page.component.ts:126:17:
+[37m      126 │       this.admin.[32mtoggleFeature[37m(index);
+          ╵                  [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'settings' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-settings-page.component.ts:127:44:
+[37m      127 │       this.draft.set(this.admin.dashboard().[32msettings[37m);
+          ╵                                             [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'settings' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-settings-page.component.ts:135:7:
+[37m      135 │       .[32msettings[37m.notifications.findIndex((toggle) => toggle.label ...
+          ╵        [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'toggle' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-settings-page.component.ts:135:41:
+[37m      135 │ ...ings.notifications.findIndex(([32mtoggle[37m) => toggle.label === label);
+          ╵                                  [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'toggleNotification' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-settings-page.component.ts:137:17:
+[37m      137 │       this.admin.[32mtoggleNotification[37m(index);
+          ╵                  [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'settings' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-settings-page.component.ts:138:44:
+[37m      138 │       this.draft.set(this.admin.dashboard().[32msettings[37m);
+          ╵                                             [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'readSettings' does not exist on type 'AdminDashboardService'. Did you mean 'settings'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:42:63:
+[37m      42 │ ...donly settingsSignal = signal<AdminSettings>(this.[32mreadSettings[37m());
+         ╵                                                      [32m~~~~~~~~~~~~[0m
+
+  'settings' is declared here.
+
+    src/app/services/admin-dashboard.service.ts:105:6:
+[37m      105 │       [32msettings[37m: { ...this.settingsSignal() },
+          ╵       [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'agentsSignal'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:43:19:
+[37m      43 │   private readonly [32magentsSignal[37m = signal<AdminDeliveryAgent[]>(thi...
+         ╵                    [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'readAgents' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:43:68:
+[37m      43 │ ...ly agentsSignal = signal<AdminDeliveryAgent[]>(this.[32mreadAgents[37m());
+         ╵                                                        [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'refreshApprovalUsers' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:47:9:
+[37m      47 │     this.[32mrefreshApprovalUsers[37m();
+         ╵          [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'money' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:59:25:
+[37m      59 │       totalRevenue: this.[32mmoney[37m(orders.reduce((sum, order) => sum +...
+         ╵                          [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'money' does not exist on type 'AdminDashboardService'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:71:22:
+[37m      71 │           value: this.[32mmoney[37m(orders.reduce((sum, order) => sum + or...
+         ╵                       [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'restaurant'. Did you mean 'restaurants'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:86:16:
+[37m      86 │         rating: [32mrestaurant[37m.rating.toFixed(1),
+         ╵                 [32m~~~~~~~~~~[0m
+
+  'restaurants' is declared here.
+
+    src/app/services/admin-dashboard.service.ts:51:10:
+[37m      51 │     const [32mrestaurants[37m = this.catalog.restaurantList();
+         ╵           [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'restaurant'. Did you mean 'restaurants'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:88:84:
+[37m      88 │ ...=> (order.restaurantId ?? order.restaurantName) === [32mrestaurant[37m.id)
+         ╵                                                        [32m~~~~~~~~~~[0m
+
+  'restaurants' is declared here.
+
+    src/app/services/admin-dashboard.service.ts:51:10:
+[37m      51 │     const [32mrestaurants[37m = this.catalog.restaurantList();
+         ╵           [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'restaurant'. Did you mean 'restaurants'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:91:16:
+[37m      91 │         status: [32mrestaurant[37m.status === 'OPEN' ? 'Open' : 'Closed',
+         ╵                 [32m~~~~~~~~~~[0m
+
+  'restaurants' is declared here.
+
+    src/app/services/admin-dashboard.service.ts:51:10:
+[37m      51 │     const [32mrestaurants[37m = this.catalog.restaurantList();
+         ╵           [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:92:7:
+[37m      92 │       }[32m)[37m),
+         ╵        [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:92:8:
+[37m      92 │       })[32m)[37m,
+         ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1068: Unexpected token. A constructor, method, accessor, or property was expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:92:9:
+[37m      92 │       }))[32m,[37m
+         ╵          [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2564: Property 'deliveryAgents' has no initializer and is not definitely assigned in the constructor.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:93:6:
+[37m      93 │       [32mdeliveryAgents[37m: this.agentsSignal(),
+         ╵       [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1442: Expected '=' for property initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:93:26:
+[37m      93 │       deliveryAgents: this[32m.[37magentsSignal(),
+         ╵                           [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'agentsSignal'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:93:27:
+[37m      93 │       deliveryAgents: this.[32magentsSignal[37m(),
+         ╵                            [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2300: Duplicate identifier 'agentsSignal'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:93:27:
+[37m      93 │       deliveryAgents: this.[32magentsSignal[37m(),
+         ╵                            [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7010: 'agentsSignal', which lacks return-type annotation, implicitly has an 'any' return type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:93:27:
+[37m      93 │       deliveryAgents: this.[32magentsSignal[37m(),
+         ╵                            [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1144: '{' or ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:93:41:
+[37m      93 │       deliveryAgents: this.agentsSignal()[32m,[37m
+         ╵                                          [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2564: Property 'customers' has no initializer and is not definitely assigned in the constructor.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:94:6:
+[37m      94 │       [32mcustomers[37m: [
+         ╵       [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2503: Cannot find namespace 'customer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:96:16:
+[37m      96 │           name: [32mcustomer[37m.name,
+         ╵                 [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2503: Cannot find namespace 'customer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:97:17:
+[37m      97 │           email: [32mcustomer[37m.email,
+         ╵                  [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:98:24:
+[37m      98 │           orders: String[32m([37mcustomer.totalOrders),
+         ╵                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7020: Call signature, which lacks return-type annotation, implicitly has an 'any' return type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:98:24:
+[37m      98 │           orders: String[32m(customer.totalOrders),[37m
+         ╵                         [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'customer' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:98:25:
+[37m      98 │           orders: String([32mcustomer[37m.totalOrders),
+         ╵                          [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:98:33:
+[37m      98 │           orders: String(customer[32m.[37mtotalOrders),
+         ╵                                  [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'totalOrders' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:98:34:
+[37m      98 │           orders: String(customer.[32mtotalOrders[37m),
+         ╵                                   [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2503: Cannot find namespace 'customer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:99:17:
+[37m      99 │           spent: [32mcustomer[37m.totalSpent,
+         ╵                  [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2503: Cannot find namespace 'customer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:100:18:
+[37m      100 │           joined: [32mcustomer[37m.memberSince,
+          ╵                   [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2503: Cannot find namespace 'customer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:102:19:
+[37m      102 │           initial: [32mcustomer[37m.name.charAt(0).toUpperCase(),
+          ╵                    [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:102:39:
+[37m      102 │           initial: customer.name.charAt[32m([37m0).toUpperCase(),
+          ╵                                        [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7020: Call signature, which lacks return-type annotation, implicitly has an 'any' return type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:102:39:
+[37m      102 │           initial: customer.name.charAt[32m(0)[37m.toUpperCase(),
+          ╵                                        [32m~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1003: Identifier expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:102:40:
+[37m      102 │           initial: customer.name.charAt([32m0[37m).toUpperCase(),
+          ╵                                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter '(Missing)' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:102:40:
+[37m      102 │           initial: customer.name.charAt([32m[37m0).toUpperCase(),
+          ╵                                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:102:42:
+[37m      102 │           initial: customer.name.charAt(0)[32m.[37mtoUpperCase(),
+          ╵                                           [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7010: 'toUpperCase', which lacks return-type annotation, implicitly has an 'any' return type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:102:43:
+[37m      102 │           initial: customer.name.charAt(0).[32mtoUpperCase(),[37m
+          ╵                                            [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1442: Expected '=' for property initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:104:7:
+[37m      104 │       ][32m,[37m
+          ╵        [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2564: Property 'settings' has no initializer and is not definitely assigned in the constructor.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:105:6:
+[37m      105 │       [32msettings[37m: { ...this.settingsSignal() },
+          ╵       [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1131: Property or signature expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:105:18:
+[37m      105 │       settings: { [32m...[37mthis.settingsSignal() },
+          ╵                   [32m~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1131: Property or signature expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:105:21:
+[37m      105 │       settings: { ...[32mthis[37m.settingsSignal() },
+          ╵                      [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:105:21:
+[37m      105 │       settings: { ...[32mthis[37m.settingsSignal() },
+          ╵                      [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:105:43:
+[37m      105 │       settings: { ...this.settingsSignal() [32m}[37m,
+          ╵                                            [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:105:44:
+[37m      105 │       settings: { ...this.settingsSignal() }[32m,[37m
+          ╵                                             [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:106:4:
+[37m      106 │     [32m}[37m;
+          ╵     [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:107:2:
+[37m      107 │   [32m}[37m);
+          ╵   [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:107:3:
+[37m      107 │   }[32m)[37m;
+          ╵    [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:109:2:
+[37m      109 │   [32mreadonly[37m pendingApprovals = computed(() => this.approvalUsersSi...
+          ╵   [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'pendingApprovals'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:109:11:
+[37m      109 │   readonly [32mpendingApprovals[37m = computed(() => this.approvalUsersSi...
+          ╵            [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:109:45:
+[37m      109 │ ...ly pendingApprovals = computed(() => [32mthis[37m.approvalUsersSignal());
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:111:2:
+[37m      111 │   [32mreadonly[37m pendingApprovalCount = computed(() => this.approvalUse...
+          ╵   [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'pendingApprovalCount'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:111:11:
+[37m      111 │   readonly [32mpendingApprovalCount[37m = computed(() => this.approvalUse...
+          ╵            [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:111:49:
+[37m      111 │ ...pprovalCount = computed(() => [32mthis[37m.approvalUsersSignal().length);
+          ╵                                  [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:113:2:
+[37m      113 │   [32mreadonly[37m pendingOwnerApprovals = computed(() =>
+          ╵   [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'pendingOwnerApprovals'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:113:11:
+[37m      113 │   readonly [32mpendingOwnerApprovals[37m = computed(() =>
+          ╵            [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:114:4:
+[37m      114 │     [32mthis[37m.approvalUsersSignal().filter((user) => user.role === 'RE...
+          ╵     [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'user' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:114:39:
+[37m      114 │ ...pprovalUsersSignal().filter(([32muser[37m) => user.role === 'RESTAURAN...
+          ╵                                 [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:117:2:
+[37m      117 │   [32mreadonly[37m pendingDeliveryApprovals = computed(() =>
+          ╵   [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'pendingDeliveryApprovals'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:117:11:
+[37m      117 │   readonly [32mpendingDeliveryApprovals[37m = computed(() =>
+          ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:118:4:
+[37m      118 │     [32mthis[37m.approvalUsersSignal().filter((user) => user.role === 'DE...
+          ╵     [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'user' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:118:39:
+[37m      118 │ ...pprovalUsersSignal().filter(([32muser[37m) => user.role === 'DELIVERY_...
+          ╵                                 [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'updateSettings'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:121:2:
+[37m      121 │   [32mupdateSettings[37m(
+          ╵   [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'patch'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:122:4:
+[37m      122 │     [32mpatch[37m: Partial<
+          ╵     [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:122:9:
+[37m      122 │     patch[32m:[37m Partial<
+          ╵          [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'Partial' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:122:11:
+[37m      122 │     patch: [32mPartial[37m<
+          ╵            [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:128:3:
+[37m      128 │   )[32m:[37m void {
+          ╵    [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:129:8:
+[37m      129 │     this[32m.[37msettingsSignal.update((current) => ({ ...current, ...pat...
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'current' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:129:32:
+[37m      129 │ ...this.settingsSignal.update(([32mcurrent[37m) => ({ ...current, ...patc...
+          ╵                                [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'patch'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:129:62:
+[37m      129 │ ...s.settingsSignal.update((current) => ({ ...current, ...[32mpatch[37m }));
+          ╵                                                           [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:129:71:
+[37m      129 │ ...s.settingsSignal.update((current) => ({ ...current, ...patch }))[32m;[37m
+          ╵                                                                    [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:130:8:
+[37m      130 │     this[32m.[37mpersistSettings();
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:130:26:
+[37m      130 │     this.persistSettings()[32m;[37m
+          ╵                           [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'toggleFeature'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:133:2:
+[37m      133 │   [32mtoggleFeature[37m(index: number): void {
+          ╵   [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'index'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:133:16:
+[37m      133 │   toggleFeature([32mindex[37m: number): void {
+          ╵                 [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:133:21:
+[37m      133 │   toggleFeature(index[32m:[37m number): void {
+          ╵                      [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'number' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:133:23:
+[37m      133 │   toggleFeature(index: [32mnumber[37m): void {
+          ╵                        [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:133:30:
+[37m      133 │   toggleFeature(index: number)[32m:[37m void {
+          ╵                               [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:134:8:
+[37m      134 │     this[32m.[37msettingsSignal.update((current) => ({
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'current' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:134:32:
+[37m      134 │     this.settingsSignal.update(([32mcurrent[37m) => ({
+          ╵                                 [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'toggle' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:136:36:
+[37m      136 │       toggles: current.toggles.map(([32mtoggle[37m, toggleIndex) =>
+          ╵                                     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'toggleIndex' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:136:44:
+[37m      136 │       toggles: current.toggles.map((toggle, [32mtoggleIndex[37m) =>
+          ╵                                             [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'index'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:137:24:
+[37m      137 │         toggleIndex === [32mindex[37m ? { ...toggle, on: !toggle.on } : t...
+          ╵                         [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:139:7:
+[37m      139 │     }))[32m;[37m
+          ╵        [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:140:8:
+[37m      140 │     this[32m.[37mpersistSettings();
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:140:26:
+[37m      140 │     this.persistSettings()[32m;[37m
+          ╵                           [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'toggleNotification'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:143:2:
+[37m      143 │   [32mtoggleNotification[37m(index: number): void {
+          ╵   [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'index'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:143:21:
+[37m      143 │   toggleNotification([32mindex[37m: number): void {
+          ╵                      [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:143:26:
+[37m      143 │   toggleNotification(index[32m:[37m number): void {
+          ╵                           [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'number' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:143:28:
+[37m      143 │   toggleNotification(index: [32mnumber[37m): void {
+          ╵                             [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:143:35:
+[37m      143 │   toggleNotification(index: number)[32m:[37m void {
+          ╵                                    [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:144:8:
+[37m      144 │     this[32m.[37msettingsSignal.update((current) => ({
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'current' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:144:32:
+[37m      144 │     this.settingsSignal.update(([32mcurrent[37m) => ({
+          ╵                                 [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'toggle' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:146:48:
+[37m      146 │ ...notifications: current.notifications.map(([32mtoggle[37m, toggleIndex) =>
+          ╵                                              [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'toggleIndex' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:146:56:
+[37m      146 │ ...notifications: current.notifications.map((toggle, [32mtoggleIndex[37m) =>
+          ╵                                                      [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'index'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:147:24:
+[37m      147 │         toggleIndex === [32mindex[37m ? { ...toggle, on: !toggle.on } : t...
+          ╵                         [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:149:7:
+[37m      149 │     }))[32m;[37m
+          ╵        [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:150:8:
+[37m      150 │     this[32m.[37mpersistSettings();
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:150:26:
+[37m      150 │     this.persistSettings()[32m;[37m
+          ╵                           [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'addDeliveryAgent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:153:2:
+[37m      153 │   [32maddDeliveryAgent[37m(agent: Omit<AdminDeliveryAgent, 'deliveries' |...
+          ╵   [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'agent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:153:19:
+[37m      153 │   addDeliveryAgent([32magent[37m: Omit<AdminDeliveryAgent, 'deliveries' |...
+          ╵                    [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:153:24:
+[37m      153 │   addDeliveryAgent(agent[32m:[37m Omit<AdminDeliveryAgent, 'deliveries' |...
+          ╵                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'Omit' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:153:26:
+[37m      153 │   addDeliveryAgent(agent: [32mOmit[37m<AdminDeliveryAgent, 'deliveries' |...
+          ╵                           [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:153:90:
+[37m      153 │ ...minDeliveryAgent, 'deliveries' | 'earnings' | 'initial'>)[32m:[37m void {
+          ╵                                                             [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:154:10:
+[37m      154 │     const [32mnext[37m: AdminDeliveryAgent = {
+          ╵           [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'next'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:154:10:
+[37m      154 │     const [32mnext[37m: AdminDeliveryAgent = {
+          ╵           [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:154:14:
+[37m      154 │     const next[32m:[37m AdminDeliveryAgent = {
+          ╵               [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'agent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:155:9:
+[37m      155 │       ...[32magent[37m,
+          ╵          [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'agent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:158:15:
+[37m      158 │       initial: [32magent[37m.name.charAt(0).toUpperCase(),
+          ╵                [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:159:5:
+[37m      159 │     }[32m;[37m
+          ╵      [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:161:8:
+[37m      161 │     this[32m.[37magentsSignal.update((current) => [next, ...current]);
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'current' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:161:30:
+[37m      161 │     this.agentsSignal.update(([32mcurrent[37m) => [next, ...current]);
+          ╵                               [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'next'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:161:43:
+[37m      161 │     this.agentsSignal.update((current) => [[32mnext[37m, ...current]);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:161:61:
+[37m      161 │     this.agentsSignal.update((current) => [next, ...current])[32m;[37m
+          ╵                                                              [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:162:8:
+[37m      162 │     this[32m.[37mpersistAgents();
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:162:24:
+[37m      162 │     this.persistAgents()[32m;[37m
+          ╵                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'updateDeliveryAgent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:165:2:
+[37m      165 │   [32mupdateDeliveryAgent[37m(
+          ╵   [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:166:8:
+[37m      166 │     name[32m:[37m string,
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'string' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:166:10:
+[37m      166 │     name: [32mstring[37m,
+          ╵           [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'patch'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:167:4:
+[37m      167 │     [32mpatch[37m: Omit<AdminDeliveryAgent, 'deliveries' | 'earnings' | '...
+          ╵     [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:167:9:
+[37m      167 │     patch[32m:[37m Omit<AdminDeliveryAgent, 'deliveries' | 'earnings' | '...
+          ╵          [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'Omit' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:167:11:
+[37m      167 │     patch: [32mOmit[37m<AdminDeliveryAgent, 'deliveries' | 'earnings' | '...
+          ╵            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:168:3:
+[37m      168 │   )[32m:[37m void {
+          ╵    [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:169:8:
+[37m      169 │     this[32m.[37magentsSignal.update((current) =>
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'current' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:169:30:
+[37m      169 │     this.agentsSignal.update(([32mcurrent[37m) =>
+          ╵                               [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'agent' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:170:19:
+[37m      170 │       current.map(([32magent[37m) =>
+          ╵                    [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'patch'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:172:27:
+[37m      172 │           ? { ...agent, ...[32mpatch[37m, initial: patch.name.charAt(0).t...
+          ╵                            [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'patch'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:172:43:
+[37m      172 │ ......agent, ...patch, initial: [32mpatch[37m.name.charAt(0).toUpperCase() }
+          ╵                                 [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:175:5:
+[37m      175 │     )[32m;[37m
+          ╵      [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:176:8:
+[37m      176 │     this[32m.[37mpersistAgents();
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:176:24:
+[37m      176 │     this.persistAgents()[32m;[37m
+          ╵                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'toggleDeliveryAgentStatus'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:179:2:
+[37m      179 │   [32mtoggleDeliveryAgentStatus[37m(name: string): void {
+          ╵   [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:179:32:
+[37m      179 │   toggleDeliveryAgentStatus(name[32m:[37m string): void {
+          ╵                                 [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'string' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:179:34:
+[37m      179 │   toggleDeliveryAgentStatus(name: [32mstring[37m): void {
+          ╵                                   [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:179:41:
+[37m      179 │   toggleDeliveryAgentStatus(name: string)[32m:[37m void {
+          ╵                                          [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:180:8:
+[37m      180 │     this[32m.[37magentsSignal.update((current) =>
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'current' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:180:30:
+[37m      180 │     this.agentsSignal.update(([32mcurrent[37m) =>
+          ╵                               [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'agent' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:181:19:
+[37m      181 │       current.map(([32magent[37m) =>
+          ╵                    [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:186:5:
+[37m      186 │     )[32m;[37m
+          ╵      [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:187:8:
+[37m      187 │     this[32m.[37mpersistAgents();
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:187:24:
+[37m      187 │     this.persistAgents()[32m;[37m
+          ╵                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:190:2:
+[37m      190 │   [32mprivate[37m money(amount: number): string {
+          ╵   [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'money'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:190:10:
+[37m      190 │   private [32mmoney[37m(amount: number): string {
+          ╵           [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'amount'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:190:16:
+[37m      190 │   private money([32mamount[37m: number): string {
+          ╵                 [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:190:22:
+[37m      190 │   private money(amount[32m:[37m number): string {
+          ╵                       [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'number' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:190:24:
+[37m      190 │   private money(amount: [32mnumber[37m): string {
+          ╵                         [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:190:31:
+[37m      190 │   private money(amount: number)[32m:[37m string {
+          ╵                                [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1434: Unexpected keyword or identifier.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:190:33:
+[37m      190 │   private money(amount: number): [32mstring[37m {
+          ╵                                  [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'string' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:190:33:
+[37m      190 │   private money(amount: number): [32mstring[37m {
+          ╵                                  [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'amount'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:191:8:
+[37m      191 │     if ([32mamount[37m >= 100000) {
+          ╵         [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'amount'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:194:8:
+[37m      194 │     if ([32mamount[37m >= 1000) {
+          ╵         [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:200:2:
+[37m      200 │   [32mprivate[37m prettyStatus(status: string): string {
+          ╵   [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'prettyStatus'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:200:10:
+[37m      200 │   private [32mprettyStatus[37m(status: string): string {
+          ╵           [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:200:29:
+[37m      200 │   private prettyStatus(status[32m:[37m string): string {
+          ╵                              [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'string' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:200:31:
+[37m      200 │   private prettyStatus(status: [32mstring[37m): string {
+          ╵                                [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:200:38:
+[37m      200 │   private prettyStatus(status: string)[32m:[37m string {
+          ╵                                       [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1434: Unexpected keyword or identifier.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:200:40:
+[37m      200 │   private prettyStatus(status: string): [32mstring[37m {
+          ╵                                         [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'string' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:200:40:
+[37m      200 │   private prettyStatus(status: string): [32mstring[37m {
+          ╵                                         [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:219:2:
+[37m      219 │   [32mprivate[37m readSettings(): AdminSettings {
+          ╵   [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'readSettings'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:219:10:
+[37m      219 │   private [32mreadSettings[37m(): AdminSettings {
+          ╵           [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:219:24:
+[37m      219 │   private readSettings()[32m:[37m AdminSettings {
+          ╵                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1434: Unexpected keyword or identifier.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:219:26:
+[37m      219 │   private readSettings(): [32mAdminSettings[37m {
+          ╵                           [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'AdminSettings' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:219:26:
+[37m      219 │   private readSettings(): [32mAdminSettings[37m {
+          ╵                           [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:254:2:
+[37m      254 │   [32mprivate[37m persistSettings(): void {
+          ╵   [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'persistSettings'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:254:10:
+[37m      254 │   private [32mpersistSettings[37m(): void {
+          ╵           [32m~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:254:27:
+[37m      254 │   private persistSettings()[32m:[37m void {
+          ╵                            [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:255:16:
+[37m      255 │     localStorage[32m.[37msetItem(ADMIN_SETTINGS_KEY, JSON.stringify(this....
+          ╵                 [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:255:60:
+[37m      255 │ ...tItem(ADMIN_SETTINGS_KEY, JSON.stringify([32mthis[37m.settingsSignal()));
+          ╵                                             [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:255:83:
+[37m      255 │ ...tItem(ADMIN_SETTINGS_KEY, JSON.stringify(this.settingsSignal()))[32m;[37m
+          ╵                                                                    [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:258:2:
+[37m      258 │   [32mprivate[37m readAgents(): AdminDeliveryAgent[] {
+          ╵   [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'readAgents'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:258:10:
+[37m      258 │   private [32mreadAgents[37m(): AdminDeliveryAgent[] {
+          ╵           [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:258:22:
+[37m      258 │   private readAgents()[32m:[37m AdminDeliveryAgent[] {
+          ╵                       [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2693: 'AdminDeliveryAgent' only refers to a type, but is being used as a value here.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:258:24:
+[37m      258 │   private readAgents(): [32mAdminDeliveryAgent[37m[] {
+          ╵                         [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1011: An element access expression should take an argument.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:258:43:
+[37m      258 │   private readAgents(): AdminDeliveryAgent[[32m[37m] {
+          ╵                                            [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:258:45:
+[37m      258 │   private readAgents(): AdminDeliveryAgent[] [32m{[37m
+          ╵                                              [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:259:20:
+[37m      259 │     const profile = [32mthis[37m.delivery.profile();
+          ╵                     [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:266:27:
+[37m      266 │         deliveries: String([32mthis[37m.delivery.history().length),
+          ╵                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:267:18:
+[37m      267 │         earnings: [32mthis[37m.delivery.earnings().month,
+          ╵                   [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:268:16:
+[37m      268 │         status: [32mthis[37m.delivery.isOnline() ? 'available' : 'offline',
+          ╵                 [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:285:2:
+[37m      285 │   [32mprivate[37m persistAgents(): void {
+          ╵   [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'persistAgents'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:285:10:
+[37m      285 │   private [32mpersistAgents[37m(): void {
+          ╵           [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:285:25:
+[37m      285 │   private persistAgents()[32m:[37m void {
+          ╵                          [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:286:16:
+[37m      286 │     localStorage[32m.[37msetItem(ADMIN_AGENTS_KEY, JSON.stringify(this.ag...
+          ╵                 [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:286:58:
+[37m      286 │ ...e.setItem(ADMIN_AGENTS_KEY, JSON.stringify([32mthis[37m.agentsSignal()));
+          ╵                                               [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:286:79:
+[37m      286 │ ...e.setItem(ADMIN_AGENTS_KEY, JSON.stringify(this.agentsSignal()))[32m;[37m
+          ╵                                                                    [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'refreshApprovalUsers'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:289:2:
+[37m      289 │   [32mrefreshApprovalUsers[37m(): void {
+          ╵   [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ';' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:289:24:
+[37m      289 │   refreshApprovalUsers()[32m:[37m void {
+          ╵                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:290:8:
+[37m      290 │     this[32m.[37mauth.listAdminUsers().subscribe({
+          ╵         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'users' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:291:13:
+[37m      291 │       next: ([32musers[37m) => {
+          ╵              [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:292:8:
+[37m      292 │         [32mthis[37m.approvalUsersSignal.set(
+          ╵         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'user' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:294:13:
+[37m      294 │             ([32muser[37m) =>
+          ╵              [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:300:6:
+[37m      300 │     })[32m;[37m
+          ╵       [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1128: Declaration or statement expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/services/admin-dashboard.service.ts:302:0:
+[37m      302 │ [32m}[37m
+          ╵ [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUnexpected "."[0m
+
+    src/app/services/admin-dashboard.service.ts:85:10:
+[37m      85 │     this: [32m.[37msettingsSignal.update((current) => ({ ...current, ...pa...
+         ╵           [32m^[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'recentOrders' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:175:53:
+[37m      175 │             <tr *ngFor="let row of admin.dashboard().[32mrecentOrders[37m">
+          ╵                                                      [32m~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'recentOrders' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:175:53:
+[37m      175 │             <tr *ngFor="let row of admin.dashboard().[32mrecentOrders[37m">
+          ╵                                                      [32m~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'recentOrders' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:175:53:
+[37m      175 │             <tr *ngFor="let row of admin.dashboard().[32mrecentOrders[37m">
+          ╵                                                      [32m~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'recentOrders' does not exist on type '{ totalOrdersCount: number; totalOrders: string; totalRevenue: any; activeRestaurants: number; deliveryAgentsCount: number; metrics: ({ label: string; value: any; delta: string; tone: string; owner?: undefined; rating?: undefined; orders?: undefined; status?: undefined; } | { ...; })[]; }'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/admin/admin-dashboard-page.component.ts:175:53:
+[37m      175 │             <tr *ngFor="let row of admin.dashboard().[32mrecentOrders[37m">
+          ╵                                                      [32m~~~~~~~~~~~~[0m
+
+[39m[22m

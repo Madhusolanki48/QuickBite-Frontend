@@ -14,7 +14,7 @@
   top: 0.75rem;
   z-index: 30;
   display: grid;
-  grid-template-columns: auto minmax(260px, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 1rem;
   min-height: 78px;
@@ -131,7 +131,7 @@
 
 .owner-hero {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: 1rem;
   margin: 0.85rem 0 1rem;
   padding: 1rem;
@@ -431,7 +431,7 @@
   }
 }
 
-html[data-theme='dark'] {
+:host-context(html[data-theme='dark']) {
   .owner-shell {
     background: #0b1120;
   }

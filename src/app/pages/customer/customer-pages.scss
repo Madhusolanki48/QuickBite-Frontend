@@ -192,7 +192,7 @@
 .payment-grid,
 .profile-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   gap: 1.25rem;
   align-items: start;
 }
@@ -917,7 +917,7 @@
   }
 }
 
-html[data-theme='dark'] {
+:host-context(html[data-theme='dark']) {
   .methods button {
     background: rgba(15, 23, 42, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.08);

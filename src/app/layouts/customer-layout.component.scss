@@ -77,6 +77,16 @@
   justify-content: center;
 }
 
+@media (max-width: 767px) {
+  .topbar-nav {
+    display: none;
+  }
+  
+  .brand-text span {
+    display: none;
+  }
+}
+
 .topbar-nav a {
   display: inline-flex;
   align-items: center;
@@ -178,7 +188,7 @@
   }
 }
 
-html[data-theme='dark'] {
+:host-context(html[data-theme='dark']) {
   .customer-shell {
     background: radial-gradient(circle at top left, rgba(255, 122, 0, 0.08), transparent 30%),
       #0b1120;

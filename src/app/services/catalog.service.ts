@@ -641,6 +641,75 @@ export class CatalogService {
     return this.menuItemsSignal().filter((item) => item.restaurantId === id);
   }
 
+  matchesDishCategory(item: MenuItem, categoryId: string): boolean {
+    if (!categoryId || categoryId === 'all') {
+      return true;
+    }
+    const cat = categoryId.toLowerCase().trim();
+    const itemCat = (item.category || '').toLowerCase().trim();
+    const itemName = (item.name || '').toLowerCase().trim();
+
+    if (cat === 'burgers' || cat === 'burger') {
+      return itemCat.includes('burger') || itemName.includes('burger');
+    }
+    if (cat === 'pizza') {
+      return itemCat.includes('pizza') || itemName.includes('pizza');
+    }
+    if (cat === 'indian') {
+      return (
+        itemCat.includes('curry') ||
+        itemCat.includes('curries') ||
+        itemCat.includes('starter') ||
+        itemCat.includes('bread') ||
+        itemCat.includes('indian') ||
+        itemName.includes('paneer') ||
+        itemName.includes('dal') ||
+        itemName.includes('naan') ||
+        itemName.includes('tikka') ||
+        itemName.includes('lassi') ||
+        itemName.includes('lababdar') ||
+        itemName.includes('makhani')
+      );
+    }
+    if (cat === 'mexican') {
+      return (
+        itemCat.includes('taco') ||
+        itemCat.includes('burrito') ||
+        itemCat.includes('mexican') ||
+        itemName.includes('taco') ||
+        itemName.includes('burrito') ||
+        itemName.includes('nacho') ||
+        itemName.includes('quesadilla')
+      );
+    }
+    if (cat === 'sushi') {
+      return (
+        itemCat.includes('nigiri') ||
+        itemCat.includes('roll') ||
+        itemCat.includes('platter') ||
+        itemCat.includes('sushi') ||
+        itemName.includes('sushi') ||
+        itemName.includes('nigiri') ||
+        itemName.includes('roll') ||
+        itemName.includes('tempura')
+      );
+    }
+    if (cat === 'chinese') {
+      return (
+        itemCat.includes('noodle') ||
+        itemCat.includes('wok') ||
+        itemCat.includes('chinese') ||
+        itemName.includes('noodle') ||
+        itemName.includes('hakka') ||
+        itemName.includes('wok') ||
+        itemName.includes('dragon') ||
+        itemName.includes('szechuan')
+      );
+    }
+
+    return itemCat.includes(cat) || itemName.includes(cat);
+  }
+
   updateRestaurantAvailability(id: string, status: 'OPEN' | 'CLOSED'): void {
     const restaurant = this.restaurantsSignal().find((entry) => entry.id === id);
     if (!restaurant?.backendId) {

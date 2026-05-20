@@ -310,12 +310,7 @@ export class HomePageComponent implements OnDestroy {
     return this.catalog
       .menuItemsSignal()
       .filter((item) => {
-        const restaurant = this.catalog.restaurantById(item.restaurantId);
-        const itemCategory = this.normalize(item.category);
-        const matchesCategory =
-          selected === 'all' ||
-          restaurant?.category === selected ||
-          itemCategory.includes(selected);
+        const matchesCategory = this.catalog.matchesDishCategory(item, selected);
         const matchesQuery = queryTerms.every((term) =>
           this.normalize(this.itemIndex(item)).includes(term),
         );

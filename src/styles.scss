@@ -52,6 +52,8 @@ html[data-theme='dark'] {
 html,
 body {
   height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -62,8 +64,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+img, svg, video {
+  max-width: 100%;
+}
+
 html[data-theme='dark'] body {
-  background: #0b1120;
+  background:
+    radial-gradient(circle at 0 0, rgba(255, 138, 42, 0.08), transparent 28rem),
+    linear-gradient(180deg, #0b1120 0%, #111827 100%);
 }
 
 * {
@@ -301,5 +309,299 @@ html[data-theme='dark'] {
   }
   50% {
     transform: translateY(-4px);
+  }
+}
+
+html[data-theme='dark'] {
+  app-root,
+  app-customer-layout,
+  app-owner-layout,
+  app-delivery-layout,
+  app-admin-layout,
+  app-auth-layout,
+  .customer-dashboard,
+  .customer-main,
+  .admin-content,
+  .content,
+  .console-main,
+  .console-side {
+    color: var(--text);
+  }
+
+  .customer-topbar,
+  .mobile-bottom-nav,
+  .brand-link,
+  .topbar,
+  .delivery-topbar,
+  .admin-sidebar,
+  .admin-topbar,
+  .search-filter-bar,
+  .searchbar,
+  .search-bar,
+  .location-pill,
+  .restaurant,
+  .restaurant-card,
+  .food-card:hover,
+  .payment-card,
+  .receipt,
+  .stats-card,
+  .methods button,
+  .cart-item__media,
+  .stepper,
+  .timeline span,
+  .delivery-estimate,
+  .review-card,
+  .review-feed,
+  .review-item,
+  .review-feed__item,
+  .order-card,
+  .order-card--premium,
+  .orders-hero,
+  .orders-spotlight,
+  .spot-panel,
+  .metric-card,
+  .premium-card,
+  .ops-hero,
+  .ops-pill,
+  .event-row,
+  .quick-action,
+  .issue-row,
+  .rank-row,
+  .queue-item,
+  .driver-dock,
+  .floating-actions,
+  .inline-editor {
+    background: var(--surface);
+    border-color: var(--line);
+    color: var(--text);
+    box-shadow: var(--shadow);
+  }
+
+  .toolbar-btn,
+  .action-btn,
+  .ghost-btn,
+  .search-btn,
+  .primary-action,
+  .ghost-action,
+  .chip,
+  .ghost,
+  .primary-link,
+  .back,
+  .hero-cta,
+  .topbar-badge,
+  .topbar-theme-toggle,
+  .owner-search,
+  .sidebar,
+  .order-tabs,
+  .spot,
+  .detail-card,
+  .time-box,
+  .review-stars button,
+  .filter-chip,
+  .category-pill .image-wrapper,
+  .delivery-badge,
+  .favorite-btn,
+  .methods button.active,
+  .detail-pills span,
+  .order-timeline span,
+  .line-chart__track,
+  .bar-track,
+  .timeline-step span,
+  .document-row,
+  .search-shell {
+    background: var(--surface-2);
+    border-color: var(--line);
+    color: var(--text);
+  }
+
+  input,
+  textarea,
+  select,
+  .search-input,
+  .form-grid input,
+  .form-grid textarea,
+  .form-grid select,
+  .menu-toolbar__bulk input,
+  .custom-range input,
+  .time-input,
+  .input-row input,
+  .summary select,
+  .summary textarea,
+  .profile-card input,
+  .address-edit input,
+  .address-edit textarea,
+  .review-item textarea,
+  .owner-search input,
+  .search-shell input {
+    background: var(--surface-2) !important;
+    border-color: var(--line) !important;
+    color: var(--text) !important;
+    caret-color: var(--text);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--muted) !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  strong,
+  .brand-text strong,
+  .brand-copy strong,
+  .brand-wordmark,
+  .admin-brand strong,
+  .restaurant-card__top h3,
+  .food-card h3,
+  .food-card__footer strong,
+  .delivery-estimate strong,
+  .cart-item__total,
+  .info-row strong {
+    color: var(--text);
+  }
+
+  p,
+  small,
+  .brand-text span,
+  .brand-copy small,
+  .brand small,
+  .section-heading p,
+  .restaurant-card__body p,
+  .restaurant-card__meta,
+  .food-card p,
+  .food-card__meta,
+  .cart-item p,
+  .address-card p,
+  .payment-card__line.muted,
+  .receipt-note,
+  .info-card__note,
+  .delivery-email,
+  .empty-state,
+  .empty-cart-state p,
+  .online-label,
+  .nav-group__title,
+  .sidebar__title {
+    color: var(--muted);
+  }
+
+  table th,
+  .card-table th,
+  .history-table th,
+  .table th,
+  .hours-table th {
+    background: rgba(30, 41, 59, 0.94);
+    color: var(--muted);
+  }
+
+  table td,
+  .card-table td,
+  .history-table td,
+  .table td,
+  .hours-table td {
+    border-color: var(--line);
+  }
+
+  .filters .active,
+  .chip.active,
+  .ghost-action.active,
+  .ghost-btn.active,
+  .filter-chip.active,
+  .filter-chip:hover,
+  .topbar-nav a.active,
+  .topbar-nav a:hover {
+    background: rgba(255, 138, 42, 0.16);
+    border-color: rgba(255, 138, 42, 0.38);
+    color: var(--brand);
+  }
+
+  .status.open,
+  .badge,
+  .status-pill.success,
+  .status-chip.green,
+  .pill.green,
+  .doc-pill.verified {
+    background: rgba(74, 222, 128, 0.14);
+    color: var(--success);
+  }
+
+  .status.closed,
+  .status-chip.gray,
+  .toggle.off,
+  .small-switch.off,
+  .switch.off {
+    background: rgba(148, 163, 184, 0.18);
+    color: var(--muted);
+  }
+
+  .status-pill.warning,
+  .status-chip.orange,
+  .pill.orange,
+  .pill.yellow,
+  .doc-pill.pending {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+  }
+
+  .status-pill.danger,
+  .status-chip.red,
+  .status-chip.status-danger,
+  .pill.red {
+    background: rgba(251, 113, 133, 0.14);
+    color: var(--danger);
+  }
+
+  .primary-link,
+  .pay,
+  .hero-cta--primary,
+  .action-btn.primary,
+  .save-btn,
+  .search-btn.primary,
+  .primary-action,
+  .btn-add:hover {
+    color: #fff;
+  }
+
+  .hero-section,
+  .hero-slider,
+  .hero-slide img {
+    background-color: #020617;
+  }
+}
+
+html[data-theme='dark'] {
+  .bg-white\/70,
+  .bg-white\/75,
+  .bg-white\/80,
+  .bg-white\/85,
+  .bg-white\/90 {
+    background-color: rgba(15, 23, 42, 0.9) !important;
+  }
+
+  .border-white\/70,
+  .border-slate-300 {
+    border-color: var(--line) !important;
+  }
+
+  .text-ink,
+  .text-slate-600,
+  .text-slate-500,
+  .text-slate-400 {
+    color: var(--text) !important;
+  }
+
+  p.text-slate-600,
+  p.text-slate-500,
+  div.text-slate-500,
+  span.text-slate-400 {
+    color: var(--muted) !important;
+  }
+
+  .bg-emerald-50 {
+    background-color: rgba(74, 222, 128, 0.14) !important;
+  }
+
+  .text-emerald-600 {
+    color: var(--success) !important;
   }
 }

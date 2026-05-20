@@ -356,8 +356,8 @@
   flex-wrap: wrap;
 }
 
-html[data-theme='dark'] .review-feed__item,
-html[data-theme='dark'] .review-item {
+:host-context(html[data-theme='dark']) .review-feed__item,
+:host-context(html[data-theme='dark']) .review-item {
   background: var(--surface-2);
 }
 
@@ -543,7 +543,7 @@ html[data-theme='dark'] .review-item {
   margin-left: 0;
 }
 
-html[data-theme='dark'] {
+:host-context(html[data-theme='dark']) {
   .delivery-hero,
   .shift-console,
   .order-brief > div,
@@ -1222,7 +1222,7 @@ html[data-theme='dark'] {
   display: none;
 }
 
-html[data-theme='dark'] {
+:host-context(html[data-theme='dark']) {
   .console-header,
   .queue-item {
     border-color: var(--line);
