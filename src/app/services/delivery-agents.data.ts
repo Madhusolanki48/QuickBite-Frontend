@@ -1,6 +1,7 @@
 import { GeoPoint } from '../core/app.models';
 
 export interface DeliveryAgentDirectoryEntry {
+  id?: number;
   name: string;
   email: string;
   phone: string;

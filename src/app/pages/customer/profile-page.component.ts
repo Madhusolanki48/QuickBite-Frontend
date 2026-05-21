@@ -1,7 +1,9 @@
 import { NgIf } from '@angular/common';
 import { Component, effect, inject, signal } from '@angular/core';
 
+import { AuthApiService } from '../../services/auth-api.service';
 import { CustomerProfileService } from '../../services/customer-profile.service';
+import { SessionService } from '../../services/session.service';
 
 @Component({
   selector: 'app-profile-page',
@@ -41,7 +43,16 @@ import { CustomerProfileService } from '../../services/customer-profile.service'
             (input)="updateField('email', $any($event.target).value)"
         /></label>
         <button type="button" class="primary-link" (click)="save()">Save Changes</button>
+        <button
+          type="button"
+          class="ghost small danger"
+          [disabled]="deleting()"
+          (click)="deleteAccount()"
+        >
+          {{ deleting() ? 'Deleting…' : 'Delete account' }}
+        </button>
         <p class="save-note" *ngIf="saved()">Profile saved successfully.</p>
+        <p class="field-error" *ngIf="deleteMessage()">{{ deleteMessage() }}</p>
       </div>
 
       <div class="card stats-card">
@@ -64,10 +75,14 @@ import { CustomerProfileService } from '../../services/customer-profile.service'
   styleUrl: './customer-pages.scss',
 })
 export class ProfilePageComponent {
+  private readonly auth = inject(AuthApiService);
   private readonly profileService = inject(CustomerProfileService);
+  private readonly session = inject(SessionService);
 
   protected readonly draft = signal(this.profileService.profile());
   protected readonly saved = signal(false);
+  protected readonly deleting = signal(false);
+  protected readonly deleteMessage = signal('');
 
   protected readonly avatarInitial = signal(
     this.profileService.profile().name.charAt(0).toUpperCase(),
@@ -94,5 +109,25 @@ export class ProfilePageComponent {
     this.profileService.updateProfile(this.draft());
     this.saved.set(true);
     window.setTimeout(() => this.saved.set(false), 1800);
+  }
+
+  deleteAccount(): void {
+    if (!window.confirm('Delete your account and all stored auth data? This cannot be undone.')) {
+      return;
+    }
+
+    this.deleting.set(true);
+    this.deleteMessage.set('');
+    this.auth.deleteAccount().subscribe({
+      next: () => {
+        this.session.logout();
+      },
+      error: (error) => {
+        this.deleteMessage.set(
+          this.auth.authErrorMessage(error, 'Unable to delete account. Please try again later.'),
+        );
+        this.deleting.set(false);
+      },
+    });
   }
 }

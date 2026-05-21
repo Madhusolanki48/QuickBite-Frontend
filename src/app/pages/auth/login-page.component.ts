@@ -13,8 +13,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthApiService } from '../../services/auth-api.service';
 import { SessionService } from '../../services/session.service';
-
-const GOOGLE_CLIENT_ID = '657167715760-nl47ceicarqnu2q296mpl2fmm3oubh5t.apps.googleusercontent.com';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login-page',
@@ -106,11 +105,13 @@ export class LoginPageComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     const query = this.route.snapshot.queryParamMap;
     if (query.get('logout') === '1') {
-      this.showToast('You have been logged out successfully.', 'success');
-      void this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: {},
-        replaceUrl: true,
+      window.setTimeout(() => {
+        this.showToast('You have been logged out successfully.', 'success');
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true,
+        });
       });
     }
     if (query.get('verified') === '1' && query.get('pendingApproval') === '1') {
@@ -128,6 +129,7 @@ export class LoginPageComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    this.session.clearSession();
     this.loading = true;
     this.message = '';
     this.showToast('Signing in...', 'info');
@@ -227,7 +229,7 @@ export class LoginPageComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
+      client_id: environment.googleClientId,
       callback: (response: { credential: string }) =>
         this.handleGoogleCredential(response.credential),
     });
@@ -307,4 +309,5 @@ export class LoginPageComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }, 2200);
   }
+
 }

@@ -51,7 +51,13 @@ export class CartService {
 
   addItem(next: CartItem): void {
     const current = this.itemsSignal();
-    const existing = current.find((item) => item.backendMenuItemId === next.backendMenuItemId && item.backendRestaurantId === next.backendRestaurantId);
+    const existing = current.find(
+      (item) =>
+        (item.backendMenuItemId &&
+          item.backendMenuItemId === next.backendMenuItemId &&
+          item.backendRestaurantId === next.backendRestaurantId) ||
+        item.id === next.id
+    );
     if (existing) {
       this.updateQuantityLocal(existing.id, existing.quantity + next.quantity, existing.quantity);
       return;

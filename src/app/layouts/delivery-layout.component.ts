@@ -1,5 +1,4 @@
 import { Component, computed, inject } from '@angular/core';
-import { NgIf } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { NotificationBellComponent } from '../components/notification-bell.component';
@@ -11,7 +10,6 @@ import { ThemeService } from '../services/theme.service';
 @Component({
   selector: 'app-delivery-layout',
   imports: [
-    NgIf,
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
@@ -20,18 +18,49 @@ import { ThemeService } from '../services/theme.service';
   ],
   template: `
     <div class="shell delivery-shell">
-      <header class="topbar card">
+      <header class="topbar card delivery-topbar">
         <a routerLink="/delivery/my-deliveries" class="brand">
           <span class="brand-mark">
-            <img src="/assets/images/logo/squre%20logo.png?v=20260428" alt="QuickBite logo" />
+            <img src="/assets/images/logo/logo.png" alt="QuickBite logo" />
           </span>
-          <span class="brand-wordmark">QuickBite</span>
+          <span>
+            <span class="brand-wordmark">QuickBite</span>
+            <small>Delivery Partner</small>
+          </span>
         </a>
 
+        <div class="topbar-live" aria-label="Delivery live status">
+          <span class="pulse-dot" [class.off]="!dashboard.isOnline()"></span>
+          <strong>{{ dashboard.isOnline() ? 'Online' : 'Offline' }}</strong>
+          <button class="toggle mini" type="button" [class.off]="!dashboard.isOnline()" (click)="toggleOnline()">
+            <span></span>
+          </button>
+        </div>
+
+        <div class="topbar-ops">
+          <span class="ops-pill gps"><b>GPS</b> Strong</span>
+          <span class="ops-pill">Delhi Central</span>
+          <span class="ops-pill">29 C Clear</span>
+          <span class="ops-pill">{{ dashboard.earnings().today }} today</span>
+          <span class="ops-pill streak">7 day streak</span>
+          <span class="device-bars" aria-label="Battery and network status">
+            <i></i><i></i><i></i><b>82%</b>
+          </span>
+        </div>
+
         <div class="topbar__actions">
-          <button class="topbar-theme-toggle" type="button" (click)="toggleTheme()">
-            <span *ngIf="theme.theme() === 'dark'">&#9728;</span>
-            <span *ngIf="theme.theme() !== 'dark'">&#127769;</span>
+          <button class="quick-top-action" type="button">SOS</button>
+          <button
+            class="topbar-theme-toggle theme-toggle-control"
+            type="button"
+            (click)="toggleTheme()"
+            [attr.aria-label]="
+              theme.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+            "
+          >
+            <span class="theme-toggle-control__icon">{{
+              theme.theme() === 'dark' ? '☀' : '☾'
+            }}</span>
           </button>
           <app-notification-bell />
           <app-role-topbar-menu
@@ -45,26 +74,30 @@ import { ThemeService } from '../services/theme.service';
         </div>
       </header>
 
-      <section class="role-banner card delivery-banner">
-        <div class="role-banner__copy">
-          <span class="role-banner__eyebrow">Delivery Agent</span>
-          <h1>Track live delivery routes, earnings, and availability without losing context.</h1>
-          <p>Your GPS, orders, and history stay synced with the customer and restaurant flow.</p>
-        </div>
-      </section>
-
       <div class="workspace">
         <aside class="sidebar card">
           <div class="sidebar__group">
-            <span class="sidebar__title">Deliveries</span>
+            <span class="sidebar__title">Operations</span>
             <a routerLink="/delivery/my-deliveries" routerLinkActive="active" class="sidebar__link"
-              >&#128230; My Deliveries <span class="count">1</span></a
+              >Dashboard <span class="count">{{ dashboard.activeDeliveries().length || 3 }}</span></a
             >
+          </div>
+          <div class="sidebar__group">
+            <span class="sidebar__title">Records</span>
             <a routerLink="/delivery/history" routerLinkActive="active" class="sidebar__link"
-              >&#128196; History</a
+              >History</a
             >
+          </div>
+          <div class="sidebar__group">
+            <span class="sidebar__title">Money</span>
             <a routerLink="/delivery/earnings" routerLinkActive="active" class="sidebar__link"
-              >&#128176; Earnings</a
+              >Earnings</a
+            >
+          </div>
+          <div class="sidebar__group">
+            <span class="sidebar__title">Settings</span>
+            <a routerLink="/delivery/profile" routerLinkActive="active" class="sidebar__link"
+              >Profile & Support</a
             >
           </div>
         </aside>
@@ -79,7 +112,7 @@ import { ThemeService } from '../services/theme.service';
 })
 export class DeliveryLayoutComponent {
   private readonly session = inject(SessionService);
-  private readonly dashboard = inject(DeliveryDashboardService);
+  protected readonly dashboard = inject(DeliveryDashboardService);
   protected readonly theme = inject(ThemeService);
 
   constructor() {
@@ -104,5 +137,9 @@ export class DeliveryLayoutComponent {
 
   protected toggleTheme(): void {
     this.theme.toggle();
+  }
+
+  protected toggleOnline(): void {
+    this.dashboard.toggleOnline();
   }
 }

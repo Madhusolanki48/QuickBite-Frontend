@@ -9,9 +9,12 @@ import {
   orderStatusFromBackend,
   orderStatusToBackend,
   paymentMethodToBackend,
+  slugify,
 } from './backend-mappers';
 import { CatalogService } from './catalog.service';
 import { SessionService } from './session.service';
+import { RealtimeSyncService } from './realtime-sync.service';
+import { DeliveryAgentDirectoryService } from './delivery-agent-directory.service';
 import { environment } from '../../environments/environment';
 
 const ORDER_OVERRIDES_KEY = 'quickbite.order.overrides';
@@ -36,15 +39,35 @@ export class OrderService {
   private readonly session = inject(SessionService);
   private readonly catalog = inject(CatalogService);
   private readonly cart = inject(CartService);
+  private readonly sync = inject(RealtimeSyncService);
+  private readonly agents = inject(DeliveryAgentDirectoryService);
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly ordersSignal = signal<Order[]>(this.readLocalOrders());
   private readonly overridesSignal = signal<OrderOverrides>(this.readOverrides());
   private readonly hiddenOrdersSignal = signal<string[]>(this.readHiddenOrders());
+  private readonly deliveriesSignal = signal<any[]>([]);
 
   readonly orders = computed(() => this.mergeOrders(this.ordersSignal(), this.overridesSignal()));
 
   constructor() {
     this.refreshFromBackend();
+    this.setupSyncAndPolling();
+  }
+
+  private setupSyncAndPolling(): void {
+    // Listen to cross-tab updates
+    this.sync.on('orders', () => {
+      this.ordersSignal.set(this.readLocalOrders());
+      this.overridesSignal.set(this.readOverrides());
+      this.hiddenOrdersSignal.set(this.readHiddenOrders());
+    });
+
+    // Periodic database polling (every 5 seconds)
+    if (typeof window !== 'undefined') {
+      setInterval(() => {
+        this.refreshFromBackend();
+      }, 5000);
+    }
   }
 
   placeOrder(payload: {
@@ -123,18 +146,59 @@ export class OrderService {
           this.persistLocalState();
         },
       });
+
+    const delivery = this.deliveriesSignal().find((d) => String(d.orderId) === String(order.backendId));
+    if (delivery) {
+      const deliveryStatus = status === 'ON_THE_WAY' ? 'PICKED_UP' : status === 'DELIVERED' ? 'DELIVERED' : 'ASSIGNED';
+      this.http.patch(`${this.baseUrl}/deliveries/${delivery.id}/status`, null, {
+        params: { status: deliveryStatus }
+      }).subscribe({
+        next: () => {
+          this.refreshFromBackend();
+        },
+        error: (err) => console.error('Failed to update delivery assignment status in DB', err)
+      });
+    }
   }
 
-  assignDeliveryAgent(orderId: string, agentEmail: string): void {
+  assignDeliveryAgent(orderId: string, agentEmail: string, agentDetails?: { name: string; phone: string }): void {
+    const agent = this.agents.agents().find((a) => a.email.toLowerCase() === agentEmail.toLowerCase());
+    const name = agentDetails?.name ?? agent?.name ?? this.currentAgentName(agentEmail) ?? 'Delivery Partner';
+    const phone = agentDetails?.phone ?? agent?.phone ?? '+91 98765 43210';
     this.overridesSignal.update((current) => ({
       ...current,
       [orderId]: {
         ...(current[orderId] ?? {}),
-        agent: this.currentAgentName(agentEmail) ?? current[orderId]?.agent,
+        agent: name,
+        deliveryAgentName: name,
         deliveryAgentEmail: agentEmail,
+        deliveryAgentPhone: phone,
+        deliveryAgentStatus: 'ASSIGNED',
+        deliveryAgentEtaMinutes: 12,
+        deliveryAgentDistanceKm: 2.4,
+        deliveryAgentEarnings: 45,
       },
     }));
     this.persistLocalState();
+
+    const order = this.orders().find((o) => o.id === orderId);
+    if (order) {
+      const backendOrderId = order.backendId || Number(orderId.replace('ORD-', ''));
+      const payload = {
+        orderId: backendOrderId,
+        riderId: agent?.id || 1,
+        riderName: name,
+        riderPhone: phone,
+        deliveryAddress: order.deliveryAddressLine || 'Customer address pending'
+      };
+
+      this.http.post(`${this.baseUrl}/deliveries`, payload).subscribe({
+        next: () => {
+          this.refreshFromBackend();
+        },
+        error: (err) => console.error('Failed to save delivery assignment on backend', err)
+      });
+    }
   }
 
   deleteOrder(orderId: string): void {
@@ -168,23 +232,47 @@ export class OrderService {
         this.persistLocalState();
       },
     });
+
+    this.http.get<any[]>(`${this.baseUrl}/deliveries`).subscribe({
+      next: (deliveries) => {
+        this.deliveriesSignal.set(deliveries);
+      },
+      error: (err) => console.error('Failed to load deliveries from backend', err)
+    });
   }
 
   private fromBackendOrder(response: BackendOrderResponse, fallback?: Order): Order {
-    const restaurant = this.catalog
+    let restaurant = this.catalog
       .restaurantList()
       .find((entry) => entry.backendId === response.restaurantId);
+
+    // Robust Fallback: If restaurant is not registered in backend (e.g. backendId is 0 or empty DB)
+    // search catalog menu items to map the order to the correct local restaurant
+    if (!restaurant && response.items && response.items.length > 0) {
+      for (const item of response.items) {
+        const catalogItem = this.catalog
+          .menuItemsSignal()
+          .find((entry) => entry.name.toLowerCase() === item.itemName.toLowerCase());
+        if (catalogItem) {
+          restaurant = this.catalog.restaurantById(catalogItem.restaurantId);
+          if (restaurant) {
+            break;
+          }
+        }
+      }
+    }
+
     const restaurantName = fallback?.restaurantName ?? restaurant?.name ?? `Restaurant ${response.restaurantId}`;
     return {
       id: `ORD-${response.id}`,
       backendId: response.id,
-      restaurantId: fallback?.restaurantId ?? restaurant?.id,
+      restaurantId: fallback?.restaurantId ?? restaurant?.id ?? slugify(restaurantName),
       backendRestaurantId: response.restaurantId,
       restaurantName,
       items: response.items.map((item) => `${item.itemName} x${item.quantity}`).join(', '),
       total: response.totalAmount,
       status: orderStatusFromBackend(response.orderStatus),
-      paymentStatus: response.paymentStatus,
+      paymentStatus: response.paymentStatus === 'PAID' ? 'SUCCESS' : response.paymentStatus,
       paymentId: response.paymentId ?? fallback?.paymentId,
       paymentOrderId: response.razorpayOrderId ?? fallback?.paymentOrderId,
       paymentSignature: response.razorpaySignature ?? fallback?.paymentSignature,
@@ -333,9 +421,51 @@ export class OrderService {
   }
 
   private mergeOrders(base: Order[], overrides: OrderOverrides): Order[] {
+    const hidden = this.hiddenOrdersSignal();
+    const deliveries = this.deliveriesSignal();
+    const agentsList = this.agents.agents();
+
     return base
-      .filter((order) => !this.hiddenOrdersSignal().includes(order.id))
-      .map((order) => ({ ...order, ...(overrides[order.id] ?? {}) }))
+      .filter((order) => !hidden.includes(order.id))
+      .map((order) => {
+        const delivery = deliveries.find((d) => String(d.orderId) === String(order.backendId));
+        
+        let dbOverrides = {};
+        if (delivery) {
+          const agentEntry = agentsList.find((a) => 
+            String(a.id) === String(delivery.riderId) || 
+            a.name.toLowerCase() === delivery.riderName.toLowerCase() ||
+            a.phone === delivery.riderPhone
+          );
+          dbOverrides = {
+            deliveryAgentName: delivery.riderName,
+            deliveryAgentPhone: delivery.riderPhone,
+            deliveryAgentEmail: agentEntry?.email || '',
+            deliveryAgentStatus: delivery.deliveryStatus,
+            agent: delivery.riderName,
+            deliveryAgentEtaMinutes: 12,
+            deliveryAgentDistanceKm: 2.4,
+            deliveryAgentEarnings: 45,
+          };
+        }
+
+        const itemOverride = overrides[order.id] || {};
+        let merged: Order = { 
+          ...order, 
+          ...itemOverride,
+          ...dbOverrides 
+        } as Order;
+
+        if (delivery) {
+          if (delivery.deliveryStatus === 'PICKED_UP' && (merged.status === 'READY' || merged.status === 'PREPARING')) {
+            merged.status = 'ON_THE_WAY';
+          } else if (delivery.deliveryStatus === 'DELIVERED' && merged.status !== 'DELIVERED') {
+            merged.status = 'DELIVERED';
+          }
+        }
+
+        return merged;
+      })
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
@@ -412,6 +542,7 @@ export class OrderService {
     localStorage.setItem('quickbite.orders.local', JSON.stringify(this.ordersSignal()));
     localStorage.setItem(ORDER_OVERRIDES_KEY, JSON.stringify(this.overridesSignal()));
     localStorage.setItem(HIDDEN_ORDERS_KEY, JSON.stringify(this.hiddenOrdersSignal()));
+    this.sync.publish('orders');
   }
 
   private currentTime(): string {

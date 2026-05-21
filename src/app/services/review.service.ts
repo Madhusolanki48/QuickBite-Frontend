@@ -293,26 +293,7 @@ export class ReviewService {
   private readReviews(): ReviewRecord[] {
     const raw = localStorage.getItem(REVIEWS_KEY);
     if (!raw) {
-      return [
-        {
-          id: 'REV-1001',
-          kind: 'CUSTOMER',
-          orderId: 'ORD-1001',
-          restaurantName: 'Burger Palace',
-          customerName: 'Demo Customer',
-          deliveryAgentName: 'Rahul Kumar',
-          restaurantRating: 5,
-          deliveryAgentRating: 5,
-          overallRating: 5,
-          comment: 'Hot, fresh, and fast delivery.',
-          images: [],
-          responses: [],
-          flagged: false,
-          blocked: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
+      return [];
     }
 
     try {

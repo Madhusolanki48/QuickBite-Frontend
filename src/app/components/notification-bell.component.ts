@@ -35,20 +35,28 @@ import { NotificationService } from '../services/notification.service';
           </div>
         </div>
 
-        <button
-          type="button"
+        <div
           class="notification-bell__item"
           *ngFor="let item of notifications()"
-          (click)="markRead(item)"
         >
-          <span class="category-pill" [ngClass]="categoryClass(item.category)">
-            {{ categoryIcon(item.category) }}
-          </span>
-          <span class="body">
-            <strong>{{ item.title }}</strong>
-            <small>{{ item.message }}</small>
-          </span>
-        </button>
+          <div class="notification-bell__item-click" (click)="markRead(item)">
+            <span class="category-pill" [ngClass]="categoryClass(item.category)">
+              {{ categoryIcon(item.category) }}
+            </span>
+            <span class="body">
+              <strong>{{ item.title }}</strong>
+              <small>{{ item.message }}</small>
+            </span>
+          </div>
+          <button 
+            type="button" 
+            class="notification-bell__item-delete"
+            (click)="deleteNotification($event, item.id)"
+            title="Delete notification"
+          >
+            &times;
+          </button>
+        </div>
 
         <p *ngIf="notifications().length === 0" class="empty">No notifications yet.</p>
       </div>
@@ -78,6 +86,17 @@ export class NotificationBellComponent {
 
   toggleOpen(): void {
     this.open.update((value) => !value);
+  }
+
+  deleteNotification(event: Event, id: number): void {
+    event.stopPropagation();
+    this.notifications.update((current) => current.filter((item) => item.id !== id));
+    this.updateUnreadCount();
+    this.notificationService.delete(id).subscribe({
+      error: (err) => {
+        console.warn('Background delete failed, kept optimistic local delete:', err);
+      }
+    });
   }
 
   markRead(item: NotificationItem): void {

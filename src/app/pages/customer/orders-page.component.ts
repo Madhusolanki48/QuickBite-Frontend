@@ -1,5 +1,6 @@
 import { NgFor, NgIf } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { LiveRouteMapComponent } from '../../components/live-route-map.component';
 import { Order } from '../../core/app.models';
@@ -7,6 +8,7 @@ import { LocationService } from '../../services/location.service';
 import { OrderService } from '../../services/order.service';
 import { ReviewService } from '../../services/review.service';
 import { SessionService } from '../../services/session.service';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-orders-page',
@@ -17,7 +19,8 @@ import { SessionService } from '../../services/session.service';
         <p class="orders-eyebrow">My Orders</p>
         <h1>Track every delivery with a premium QuickBite feel.</h1>
         <p class="orders-hero__text">
-          Follow live progress, revisit past orders, and leave thoughtful reviews after your food lands.
+          Follow live progress, revisit past orders, and leave thoughtful reviews after your food
+          lands.
         </p>
       </div>
 
@@ -79,14 +82,35 @@ import { SessionService } from '../../services/session.service';
             <span>{{ statusLabel(active.status) }}</span>
             <span>Rs {{ active.total }}</span>
           </div>
-          <button
-            *ngIf="active.status === 'PLACED'"
-            type="button"
-            class="ghost small danger"
-            (click)="deleteOrder(active.id)"
-          >
-            Cancel order
-          </button>
+          <ng-container *ngIf="active.status === 'PLACED'">
+            <button
+              *ngIf="confirmingCancelId() !== active.id; else confirmActiveCancel"
+              type="button"
+              class="ghost small danger"
+              (click)="confirmCancel(active.id)"
+            >
+              Cancel order
+            </button>
+            <ng-template #confirmActiveCancel>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button
+                  type="button"
+                  class="primary small danger"
+                  style="background: #ef4444; color: white;"
+                  (click)="executeCancel(active.id)"
+                >
+                  ⚠️ Confirm Cancel?
+                </button>
+                <button
+                  type="button"
+                  class="ghost small"
+                  (click)="confirmingCancelId.set('')"
+                >
+                  Keep Order
+                </button>
+              </div>
+            </ng-template>
+          </ng-container>
         </article>
       </div>
     </section>
@@ -124,15 +148,46 @@ import { SessionService } from '../../services/session.service';
         </div>
 
         <div class="order-card__footer">
-          <small>{{ order.deliveryAddressLine || 'Delivery address unavailable' }}</small>
-          <button
-            *ngIf="order.status === 'PLACED'"
-            type="button"
-            class="ghost small danger"
-            (click)="deleteOrder(order.id)"
-          >
-            Cancel
-          </button>
+          <small>📍 {{ order.deliveryAddressLine || 'Delivery address unavailable' }}</small>
+          <div class="order-card__actions">
+            <ng-container *ngIf="order.status === 'PLACED'">
+              <button
+                *ngIf="confirmingCancelId() !== order.id; else confirmPastCancel"
+                type="button"
+                class="ghost small danger"
+                (click)="confirmCancel(order.id)"
+              >
+                Cancel
+              </button>
+              <ng-template #confirmPastCancel>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <button
+                    type="button"
+                    class="primary small danger"
+                    style="background: #ef4444; color: white;"
+                    (click)="executeCancel(order.id)"
+                  >
+                    ⚠️ Confirm Cancel?
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost small"
+                    (click)="confirmingCancelId.set('')"
+                  >
+                    Keep
+                  </button>
+                </div>
+              </ng-template>
+            </ng-container>
+            <button
+              *ngIf="order.status === 'DELIVERED' || order.status === 'CANCELLED'"
+              type="button"
+              class="ghost small"
+              (click)="reorder(order)"
+            >
+              <span aria-hidden="true">↻</span> Reorder
+            </button>
+          </div>
         </div>
       </article>
     </section>
@@ -291,6 +346,9 @@ export class OrdersPageComponent {
   private readonly locations = inject(LocationService);
   protected readonly reviews = inject(ReviewService);
   private readonly session = inject(SessionService);
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly cart = inject(CartService);
 
   private readonly customerEmail = computed(() => this.session.user()?.email?.toLowerCase() ?? '');
 
@@ -304,12 +362,23 @@ export class OrdersPageComponent {
       ),
   );
 
-  protected readonly activeOrder = computed(() =>
-    this.customerOrders().find(
-      (order) => order.status !== 'DELIVERED' && order.status !== 'CANCELLED',
-    ),
+  protected readonly selectedOrderId = computed(
+    () => this.activatedRoute.snapshot.queryParamMap.get('orderId') ?? '',
   );
 
+  protected readonly selectedOrder = computed(() =>
+    this.customerOrders().find((order) => order.id === this.selectedOrderId()),
+  );
+
+  protected readonly activeOrder = computed(
+    () =>
+      this.selectedOrder() ??
+      this.customerOrders().find(
+        (order) => order.status !== 'DELIVERED' && order.status !== 'CANCELLED',
+      ),
+  );
+
+  protected readonly confirmingCancelId = signal<string>('');
   protected readonly stars = [1, 2, 3, 4, 5];
   protected readonly ratingDraft = signal<
     Record<string, { restaurantRating: number; deliveryRating: number; overallRating: number }>
@@ -318,7 +387,10 @@ export class OrdersPageComponent {
   protected readonly imagesDraft = signal<Record<string, string[]>>({});
 
   protected readonly activeCount = computed(
-    () => this.customerOrders().filter((order) => order.status !== 'DELIVERED' && order.status !== 'CANCELLED').length,
+    () =>
+      this.customerOrders().filter(
+        (order) => order.status !== 'DELIVERED' && order.status !== 'CANCELLED',
+      ).length,
   );
 
   protected readonly deliveredCount = computed(
@@ -333,13 +405,15 @@ export class OrdersPageComponent {
 
   pickupPoint(order: Order) {
     return (
-      order.pickupLocation ?? this.locations.restaurantLocation(order.restaurantId ?? order.restaurantName)
+      order.pickupLocation ??
+      this.locations.restaurantLocation(order.restaurantId ?? order.restaurantName)
     );
   }
 
   dropPoint(order: Order) {
     return (
-      order.deliveryLocation ?? this.locations.addressLocation(order.deliveryAddressLine ?? order.customerName ?? order.id)
+      order.deliveryLocation ??
+      this.locations.addressLocation(order.deliveryAddressLine ?? order.customerName ?? order.id)
     );
   }
 
@@ -522,13 +596,30 @@ export class OrdersPageComponent {
     }
   }
 
-  deleteOrder(orderId: string): void {
-    const order = this.orderService.orders().find((item) => item.id === orderId);
-    const label = order ? `${order.id} - ${order.restaurantName}` : orderId;
-    if (!window.confirm(`Delete order ${label}? This cannot be undone.`)) {
-      return;
-    }
+  confirmCancel(orderId: string): void {
+    this.confirmingCancelId.set(orderId);
+    setTimeout(() => {
+      if (this.confirmingCancelId() === orderId) {
+        this.confirmingCancelId.set('');
+      }
+    }, 5000);
+  }
 
-    this.orderService.deleteOrder(orderId);
+  executeCancel(orderId: string): void {
+    const order = this.orderService.orders().find((item) => item.id === orderId);
+    if (order && order.status === 'PLACED') {
+      this.orderService.deleteOrder(orderId);
+    }
+    this.confirmingCancelId.set('');
+  }
+
+  reorder(order: Order): void {
+    // Basic reorder implementation: Navigate to the restaurant to order again,
+    // or add items back to cart if the structure allows.
+    if (order.restaurantId) {
+      this.router.navigate(['/restaurants', order.restaurantId]);
+    } else {
+      this.router.navigate(['/home']);
+    }
   }
 }

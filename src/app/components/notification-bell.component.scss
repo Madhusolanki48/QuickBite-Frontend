@@ -77,19 +77,50 @@
 
 .notification-bell__item {
   width: 100%;
-  border: 0;
-  background: transparent;
-  text-align: left;
   display: flex;
-  gap: 0.75rem;
-  padding: 0.8rem 0.35rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   border-radius: 12px;
-  cursor: pointer;
   color: var(--text);
+  position: relative;
+  transition: all 0.2s ease;
+  padding: 0 0.35rem;
 }
 
 .notification-bell__item:hover {
   background: var(--brand-soft);
+}
+
+.notification-bell__item-click {
+  flex: 1;
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.8rem 0;
+  cursor: pointer;
+}
+
+.notification-bell__item-delete {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: 1.35rem;
+  font-weight: 300;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.notification-bell__item-delete:hover {
+  opacity: 1;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .category-pill {

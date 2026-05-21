@@ -132,9 +132,13 @@ export class OwnerDashboardService {
   }
 
   assignDeliveryAgent(orderId: string, agentEmail: string): void {
-    this.orderService.assignDeliveryAgent(orderId, agentEmail);
-    const order = this.orderService.orders().find((item) => item.id === orderId);
     const agent = this.agents.findAgent(agentEmail);
+    this.orderService.assignDeliveryAgent(
+      orderId,
+      agentEmail,
+      agent ? { name: agent.name, phone: agent.phone } : undefined,
+    );
+    const order = this.orderService.orders().find((item) => item.id === orderId);
     if (order?.customerEmail) {
       this.notifications
         .create({
@@ -162,6 +166,12 @@ export class OwnerDashboardService {
     const order = this.orderService.orders().find((item) => item.id === orderId);
     this.orderService.updateOrderStatus(orderId, 'PREPARING');
     this.notifyOrderUpdate(order, 'PREPARING');
+  }
+
+  cancelOrder(orderId: string): void {
+    const order = this.orderService.orders().find((item) => item.id === orderId);
+    this.orderService.updateOrderStatus(orderId, 'CANCELLED');
+    this.notifyOrderUpdate(order, 'CANCELLED');
   }
 
   updateRestaurantOpen(open: boolean): void {
@@ -225,7 +235,8 @@ export class OwnerDashboardService {
   private buildAnalytics(period: AnalyticsPeriod): OwnerAnalytics {
     const orders = this.orderService.orders();
     const filtered = orders.filter((order) => this.isWithinPeriod(order.createdAt, period));
-    const totalRevenue = filtered.reduce((sum, order) => sum + order.total, 0);
+    const validOrders = filtered.filter((order) => order.status !== 'CANCELLED');
+    const totalRevenue = validOrders.reduce((sum, order) => sum + order.total, 0);
     const totalOrders = filtered.length;
     const delivered = filtered.filter((order) => order.status === 'DELIVERED').length;
     const cancelled = filtered.filter((order) => order.status === 'CANCELLED').length;
@@ -363,7 +374,7 @@ export class OwnerDashboardService {
 
   private notifyOrderUpdate(
     order: { customerEmail?: string; restaurantName: string } | undefined,
-    status: 'PLACED' | 'PREPARING' | 'READY' | 'ON_THE_WAY' | 'DELIVERED' | 'CONFIRMED',
+    status: 'PLACED' | 'PREPARING' | 'READY' | 'ON_THE_WAY' | 'DELIVERED' | 'CONFIRMED' | 'CANCELLED',
   ): void {
     if (!order?.customerEmail) {
       return;
@@ -382,7 +393,9 @@ export class OwnerDashboardService {
                 ? 'Out for delivery'
                 : status === 'DELIVERED'
                   ? 'Order delivered'
-                  : 'Order confirmed';
+                  : status === 'CANCELLED'
+                    ? 'Order cancelled'
+                    : 'Order confirmed';
     const message =
       status === 'PLACED'
         ? `${order.restaurantName} has received your order and is finding a delivery partner.`
@@ -396,7 +409,9 @@ export class OwnerDashboardService {
                 ? `${order.restaurantName} has handed your order to the delivery partner.`
                 : status === 'DELIVERED'
                   ? `${order.restaurantName} order has been delivered.`
-                  : `${order.restaurantName} has confirmed your order.`;
+                  : status === 'CANCELLED'
+                    ? `${order.restaurantName} has cancelled your order.`
+                    : `${order.restaurantName} has confirmed your order.`;
 
     this.notifications
       .create({
@@ -430,12 +445,13 @@ export class OwnerDashboardService {
   }
 
   private buildRevenueTrend(
-    orders: Array<{ createdAt: string; total: number }>,
+    orders: Array<{ createdAt: string; total: number; status: string }>,
     period: AnalyticsPeriod,
   ): Array<{ label: string; value: number }> {
-    const series = this.buildTrendSeries(orders, period);
+    const validOrders = orders.filter((o) => o.status !== 'CANCELLED');
+    const series = this.buildTrendSeries(validOrders, period);
     const total = Math.max(
-      orders.reduce((sum, order) => sum + order.total, 0),
+      validOrders.reduce((sum, order) => sum + order.total, 0),
       1,
     );
     const maxCount = Math.max(...series.map((item) => item.value), 1);

@@ -90,9 +90,9 @@ export class AdminDashboardService {
         .filter((order) => order.status === 'CONFIRMED' || order.status === 'PREPARING').length,
       recentOrders: orders.slice(0, 6).map((order) => ({
         id: order.id,
-        customer: order.customerName ?? customer.name,
+        customer: order.customerName || 'Customer',
         restaurant: order.restaurantName,
-        agent: order.agent ?? this.delivery.profile().name,
+        agent: order.deliveryAgentName || order.agent || 'Unassigned',
         total: this.money(order.total),
         status: this.prettyStatus(order.status),
         items: order.items,

@@ -36,6 +36,13 @@ export class NotificationService {
     return this.patchRead(id, true);
   }
 
+  delete(id: number): Observable<void> {
+    this.notificationsSignal.update((items) => items.filter((item) => item.id !== id));
+    this.persist();
+    this.bump();
+    return this.http.delete<void>(`${this.baseUrl}/auth/notifications/${id}`);
+  }
+
   create(request: NotificationCreateRequest): Observable<NotificationItem> {
     const payload = {
       recipientEmail: request.recipientEmail,

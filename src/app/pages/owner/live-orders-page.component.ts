@@ -39,6 +39,14 @@ import { OwnerDashboardService } from '../../services/owner-dashboard.service';
       </div>
     </section>
 
+    <section class="order-tabs card">
+      <button type="button" class="active">New</button>
+      <button type="button">Preparing</button>
+      <button type="button">Ready</button>
+      <button type="button">Out for delivery</button>
+      <button type="button">Completed</button>
+    </section>
+
     <section class="status-note card section-card">
       <div class="status-note__row">
         <strong>{{ dashboard.restaurantProfile().open ? 'Open' : 'Closed' }}</strong>
@@ -97,8 +105,12 @@ import { OwnerDashboardService } from '../../services/owner-dashboard.service';
 
     <ng-template #orderContent>
       <section class="empty-state card section-card" *ngIf="!orders().length">
+        <div class="empty-state__visual">
+          <img src="/assets/images/hero-banners/free-delivery.jpg" alt="No active orders" />
+        </div>
         <h2>No active orders</h2>
         <p>New customer orders will appear here automatically.</p>
+        <button class="action-btn primary" type="button">Promote today's specials</button>
       </section>
 
       <section class="card-stack" *ngIf="orders().length">
@@ -118,6 +130,11 @@ import { OwnerDashboardService } from '../../services/owner-dashboard.service';
               </div>
               <p>{{ order.customerName }} · {{ order.time }}</p>
               <p class="order-items">{{ order.items }}</p>
+              <div class="detail-pills">
+                <span>Paid online</span>
+                <span>Kitchen timer {{ prepCountdown(order) }}</span>
+                <span>{{ order.deliveryAgentName || 'Partner pending' }}</span>
+              </div>
             </div>
             <div class="owner-toolbar order-summary">
               <strong>Rs {{ order.total }}</strong>
@@ -181,6 +198,17 @@ import { OwnerDashboardService } from '../../services/owner-dashboard.service';
             >
               {{ isExpanded(order.id) ? 'Collapse' : 'Expand' }}
             </button>
+            <button
+              *ngIf="order.status !== 'DELIVERED' && order.status !== 'CANCELLED'"
+              class="ghost-btn danger-text"
+              type="button"
+              (click)="cancelOrder(order.id); $event.stopPropagation()"
+              style="color: #dc3545; border-color: rgba(220, 53, 69, 0.2);"
+            >
+              Cancel Order
+            </button>
+            <button class="ghost-btn" type="button">Call</button>
+            <button class="ghost-btn" type="button">Chat</button>
           </div>
 
           <section class="order-details" *ngIf="isExpanded(order.id)">
@@ -245,7 +273,7 @@ import { OwnerDashboardService } from '../../services/owner-dashboard.service';
                 style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;"
               >
                 <article
-                  *ngFor="let agent of agents.availableAgents()"
+                  *ngFor="let agent of agents.agents()"
                   style="display:grid;gap:.65rem;padding:1rem;border-radius:18px;background:rgba(255,255,255,.9);border:1px solid rgba(255,90,0,.12);"
                 >
                   <div
@@ -255,21 +283,32 @@ import { OwnerDashboardService } from '../../services/owner-dashboard.service';
                       <strong style="display:block;">{{ agent.name }}</strong>
                       <small style="color:var(--muted);">{{ agent.zone }}</small>
                     </div>
-                    <span class="status-chip status-ready">Available</span>
+                    <span class="status-chip" [ngClass]="agent.available ? 'status-ready' : 'status-danger'">{{ agent.available ? '🟢 Active' : '🔴 Offline' }}</span>
                   </div>
                   <div style="display:grid;gap:.25rem;color:var(--muted);font-size:.88rem;">
                     <span>{{ agent.phone }}</span>
                     <span>{{ agent.email }}</span>
                     <span>{{ agent.rating }}</span>
                   </div>
-                  <button
+                  <div style="display:flex;align-items:center;gap:0.5rem;justify-content:space-between;width:100%;margin-top:0.4rem;border-top:1px solid rgba(0,0,0,0.04);padding-top:0.6rem;">
+                    <button
+                      class="ghost-btn"
+                      type="button"
+                      style="font-size:0.75rem;padding:0.35rem 0.5rem;"
+                      (click)="toggleAgentAvailability(agent.email, agent.available); $event.stopPropagation()"
+                    >
+                      {{ agent.available ? 'Set Offline' : 'Set Active' }}
+                    </button>
+                    <button
                     class="action-btn primary"
                     type="button"
-                    style="justify-self:start;"
+                    style="font-size:0.75rem;padding:0.35rem 0.6rem;"
+                    [disabled]="!agent.available"
                     (click)="assignAgent(order.id, agent.email); $event.stopPropagation()"
                   >
-                    Assign this agent
+                    Assign Agent
                   </button>
+                  </div>
                 </article>
               </div>
 
@@ -351,8 +390,18 @@ export class LiveOrdersPageComponent {
     this.expanded.update((state) => ({ ...state, [orderId]: true }));
   }
 
+  cancelOrder(orderId: string): void {
+    if (confirm('Are you sure you want to cancel this order?')) {
+      this.dashboard.cancelOrder(orderId);
+    }
+  }
+
   assignAgent(orderId: string, agentEmail: string): void {
     this.dashboard.assignDeliveryAgent(orderId, agentEmail);
+  }
+
+  toggleAgentAvailability(email: string, currentStatus: boolean): void {
+    this.agents.setAvailability(email, !currentStatus);
   }
 
   isExpanded(orderId: string): boolean {

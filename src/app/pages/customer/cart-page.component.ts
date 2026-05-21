@@ -14,10 +14,18 @@ import { CartService } from '../../services/cart.service';
         <p>{{ cart.itemCount() }} item(s)</p>
       </div>
       <a routerLink="/home" class="ghost">+ Add More</a>
+
     </section>
 
     <section class="checkout-grid">
-      <div class="card stack">
+      <div class="card stack cart-items-list">
+        <h2>Your Items</h2>
+        <div class="empty-cart-state" *ngIf="cart.items().length === 0">
+           <div class="icon">🛒</div>
+           <h3>Your cart is empty</h3>
+           <p>Looks like you haven't added anything yet.</p>
+           <a routerLink="/home" class="primary-link">Explore Restaurants</a>
+        </div>
         <article *ngFor="let item of cart.items()" class="cart-item">
           <div class="cart-item__media">
             <img
@@ -30,57 +38,63 @@ import { CartService } from '../../services/cart.service';
           </div>
 
           <div class="cart-item__content">
-            <h3>{{ item.name }}</h3>
+            <div class="cart-item__title-row">
+              <span class="diet-indicator veg"><div class="circle"></div></span>
+              <h3>{{ item.name }}</h3>
+            </div>
             <p>{{ item.restaurantName }}</p>
-            <strong>Rs {{ item.price }}</strong>
+            <strong>₹{{ item.price }}</strong>
           </div>
 
-          <div class="cart-item__actions">
-            <button type="button" (click)="cart.decreaseQuantity(item.id)">-</button>
-            <span>{{ item.quantity }}</span>
-            <button type="button" (click)="cart.increaseQuantity(item.id)">+</button>
+          <div class="cart-item__actions-group">
+            <div class="stepper">
+              <button type="button" (click)="cart.decreaseQuantity(item.id)">-</button>
+              <span>{{ item.quantity }}</span>
+              <button type="button" (click)="cart.increaseQuantity(item.id)">+</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div class="cart-item__total">₹{{ item.price * item.quantity }}</div>
+              <button 
+                type="button" 
+                class="ghost" 
+                style="color: #ef4444; border-color: rgba(239, 68, 68, 0.25); padding: 0.35rem 0.6rem; font-size: 0.85rem;" 
+                (click)="cart.removeItem(item.id)"
+                title="Remove item"
+              >
+                🗑️ Remove
+              </button>
+            </div>
           </div>
-
-          <button
-            type="button"
-            class="ghost small danger cart-item__remove"
-            (click)="cart.removeItem(item.id)"
-          >
-            Remove
-          </button>
-          <div class="cart-item__total">Rs {{ item.price * item.quantity }}</div>
         </article>
       </div>
 
       <div class="card summary">
         <h2>Order Summary</h2>
-        <div class="summary__rows">
-          <span>Subtotal</span><strong>Rs {{ cart.subtotal() }}</strong> <span>Delivery Fee</span
-          ><strong>Rs {{ cart.deliveryFee() }}</strong> <span>GST (5%)</span
-          ><strong>Rs {{ cart.gst() }}</strong>
+        <div class="delivery-estimate">
+           <span class="icon">⏱</span>
+           <div>
+             <strong>Delivery in 30-40 mins</strong>
+             <p>To your selected address</p>
+           </div>
         </div>
 
-        <hr />
+        <div class="summary__rows">
+          <span>Item Total</span><strong>₹{{ cart.subtotal() }}</strong> 
+          <span>Delivery Fee</span><strong>₹{{ cart.deliveryFee() }}</strong> 
+          <span>Taxes & Charges</span><strong>₹{{ cart.gst() }}</strong>
+        </div>
+
+        <hr class="divider" />
 
         <div class="total-row">
-          <span>Total</span>
-          <strong>Rs {{ cart.total() }}</strong>
+          <span>To Pay</span>
+          <strong>₹{{ cart.total() }}</strong>
         </div>
 
-        <label>
-          Promo Code
-          <div class="input-row">
-            <input
-              [value]="cart.promoCode()"
-              (input)="cart.setPromoCode($any($event.target).value)"
-              placeholder="Enter code"
-            />
-            <button type="button">Apply</button>
-          </div>
-        </label>
 
-        <label>
-          Delivery Address
+
+        <div class="address-box">
+          <label>Delivery Address</label>
           <select
             [value]="cart.selectedAddress().id"
             (change)="cart.selectAddress($any($event.target).value)"
@@ -89,18 +103,21 @@ import { CartService } from '../../services/cart.service';
               {{ address.title }} - {{ formatAddress(address) }}
             </option>
           </select>
-        </label>
+        </div>
 
-        <label>
-          Notes
+        <div class="notes-box">
+          <label>Any restaurant requests?</label>
           <textarea
-            rows="3"
+            rows="2"
+            placeholder="e.g. Don't send cutlery, less spicy"
             [value]="cart.note()"
             (input)="cart.setNote($any($event.target).value)"
           ></textarea>
-        </label>
+        </div>
 
-        <a routerLink="/payment" class="primary-link">Proceed to Payment &middot; Rs {{ cart.total() }}</a>
+        <a routerLink="/payment" class="primary-link block-btn">
+          Proceed to Pay &nbsp;&middot;&nbsp; ₹{{ cart.total() }}
+        </a>
       </div>
     </section>
   `,

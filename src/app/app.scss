@@ -1,4 +1,79 @@
-:host {
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root {
+  color-scheme: light;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  background: #F8F9FB;
+  color: #111827;
+  --bg: #F8F9FB;
+  --surface: #FFFFFF;
+  --surface-soft: #F6F7FB;
+  --surface-muted: #F3F4F6;
+  --text: #111827;
+  --text-muted: #6B7280;
+  --brand: #FF6B00;
+  --brand-soft: rgba(255, 107, 0, 0.12);
+  --border: rgba(17, 24, 39, 0.08);
+  --shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+  --radius: 28px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
   display: block;
-  min-height: 100dvh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(255, 107, 0, 0.18);
+  color: var(--text);
+}
+
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+input {
+  outline: none;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius);
 }

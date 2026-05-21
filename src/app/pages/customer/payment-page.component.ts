@@ -79,26 +79,44 @@ import { environment } from '../../../environments/environment';
           >
             Wallets
           </button>
+          <button
+            type="button"
+            [class.active]="selectedMethod() === 'COD'"
+            (click)="setMethod('COD')"
+          >
+            💵 COD
+          </button>
         </div>
 
         <p class="pay-note">
-          Razorpay checkout will open with UPI, cards, netbanking, and wallets enabled.
+          {{ selectedMethod() === 'COD' ? 'Cash on Delivery selected. Place your order directly.' : 'Razorpay checkout will open with UPI, cards, netbanking, and wallets enabled.' }}
         </p>
         <p *ngIf="errorMessage()" class="pay-error">{{ errorMessage() }}</p>
 
-        <button type="button" class="pay" [disabled]="!canPay()" (click)="startPayment()">
+        <button type="button" class="pay" [disabled]="!canPay()" (click)="selectedMethod() === 'COD' ? placeCodOrder() : startPayment()">
           <span *ngIf="processing(); else payLabel">Processing...</span>
-          <ng-template #payLabel>Pay Rs {{ cart.total() }} and Create Order</ng-template>
+          <ng-template #payLabel>{{ selectedMethod() === 'COD' ? 'Place Cash on Delivery Order' : 'Pay Rs ' + cart.total() + ' and Create Order' }}</ng-template>
         </button>
+
       </div>
 
       <div class="card receipt">
         <h2>Payment Summary</h2>
-        <p>Address: {{ formatAddress(cart.selectedAddress()) }}</p>
+        <div class="address-summary">
+          <p>Address: {{ formatAddress(cart.selectedAddress()) }}</p>
+          <button 
+            type="button" 
+            class="ghost small" 
+            style="margin: 0.5rem 0 1rem; padding: 0.35rem 0.6rem; font-size: 0.85rem;" 
+            (click)="goToCartForAddress()"
+          >
+            ✏️ Change Address
+          </button>
+        </div>
         <p>Method: {{ selectedMethod() }}</p>
         <p>Promo: {{ cart.promoCode() || 'None' }}</p>
         <p class="receipt-note">
-          After successful payment, you will be redirected to the order success page.
+          {{ selectedMethod() === 'COD' ? 'Confirming order directly with Cash on Delivery status.' : 'After successful payment, you will be redirected to the order success page.' }}
         </p>
       </div>
     </section>
@@ -115,15 +133,17 @@ export class PaymentPageComponent {
   private readonly razorpay = inject(RazorpayService);
   protected readonly errorMessage = signal('');
   protected readonly processing = signal(false);
-  protected readonly selectedMethod = signal<'UPI' | 'CARD' | 'NETBANKING' | 'WALLET'>('UPI');
+  protected readonly selectedMethod = signal<'UPI' | 'CARD' | 'NETBANKING' | 'WALLET' | 'COD'>('UPI');
 
   protected readonly canPay = computed(
     () => this.cart.itemCount() > 0 && this.cart.total() > 0 && !this.processing(),
   );
 
-  setMethod(method: 'UPI' | 'CARD' | 'NETBANKING' | 'WALLET'): void {
+  setMethod(method: 'UPI' | 'CARD' | 'NETBANKING' | 'WALLET' | 'COD'): void {
     this.selectedMethod.set(method);
-    this.cart.setPaymentMethod(method);
+    if (method !== 'COD') {
+      this.cart.setPaymentMethod(method);
+    }
   }
 
   async startPayment(): Promise<void> {
@@ -167,14 +187,19 @@ export class PaymentPageComponent {
           },
         }),
       );
+      const razorpayOrderId = createResponse.orderId || createResponse.razorpayOrderId || createResponse.id;
+      const razorpayKeyId = createResponse.keyId || environment.razorpayKeyId;
+      if (!razorpayOrderId || !razorpayKeyId) {
+        throw new Error('Razorpay order could not be initialized. Please try again.');
+      }
 
       const checkoutResult = await this.razorpay.openCheckout({
-        key: createResponse.keyId || environment.razorpayKeyId,
+        key: razorpayKeyId,
         amount: createResponse.amountInPaise ?? createResponse.amount ?? this.cart.total() * 100,
         currency: createResponse.currency || 'INR',
         name: 'QuickBite',
         description: `${restaurant.restaurantName} order`,
-        order_id: createResponse.orderId || createResponse.razorpayOrderId || createResponse.id || '',
+        order_id: razorpayOrderId,
         prefill: {
           name: customerName,
           email: customer?.email,
@@ -276,5 +301,89 @@ export class PaymentPageComponent {
       return imageUrl.replace('/assets/food-items/', '/assets/images/food-items/');
     }
     return imageUrl;
+  }
+
+  goToCartForAddress(): void {
+    this.router.navigate(['/cart']);
+  }
+
+  async placeCodOrder(): Promise<void> {
+    if (!this.canPay()) {
+      this.errorMessage.set('Add at least one item before paying.');
+      return;
+    }
+
+    const restaurant = this.cart.items()[0];
+    if (!restaurant) {
+      this.errorMessage.set('Your cart is empty.');
+      return;
+    }
+
+    const customer = this.session.user();
+    const selectedAddress = this.cart.selectedAddress();
+    const formattedAddress = selectedAddress ? this.cart.formatAddress(selectedAddress) : undefined;
+    const customerName = customer?.firstName
+      ? `${customer.firstName} ${customer.lastName ?? ''}`.trim()
+      : 'Customer';
+    const orderSummary = this.cart
+      .items()
+      .map((item) => `${item.name} x${item.quantity}`)
+      .join(', ');
+
+    this.processing.set(true);
+    this.errorMessage.set('');
+
+    try {
+      const orderTotal = this.cart.total();
+      const order = await firstValueFrom(
+        this.orders.placeOrderAfterPayment({
+          restaurantId: restaurant.restaurantId,
+          restaurantName: restaurant.restaurantName,
+          items: orderSummary,
+          total: orderTotal,
+          customerName,
+          customerEmail: customer?.email,
+          customerPhone: customer?.phoneNumber,
+          deliveryAddressLine: formattedAddress,
+          deliveryLocation: selectedAddress
+            ? this.locations.addressLocation(selectedAddress)
+            : undefined,
+          pickupLocation: restaurant.restaurantId
+            ? this.locations.restaurantLocation(restaurant.restaurantId)
+            : undefined,
+          paymentMethod: 'COD',
+          paymentId: 'cod-pay-' + Date.now(),
+          paymentOrderId: 'cod-order-' + Date.now(),
+          paymentSignature: 'cod-sig-mock',
+          paymentStatus: 'PENDING',
+        }),
+      );
+
+      if (customer?.email) {
+        this.notifications
+          .create({
+            recipientEmail: customer.email,
+            title: 'COD Order Confirmed',
+            message: `Your Cash on Delivery order for ${order.restaurantName} is confirmed.`,
+            category: 'ORDER',
+          })
+          .subscribe();
+      }
+
+      this.cart.clear();
+      await this.router.navigate(['/order-success'], {
+        queryParams: {
+          orderId: order.backendId ?? order.id,
+          paymentId: 'cod-pay-mock',
+          paymentOrderId: 'cod-order-mock',
+          total: orderTotal,
+          restaurant: order.restaurantName,
+        },
+      });
+    } catch (error) {
+      this.errorMessage.set('Could not place Cash on Delivery order. Please try again.');
+    } finally {
+      this.processing.set(false);
+    }
   }
 }

@@ -1,4 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 import { GeoPoint, Order } from '../core/app.models';
 import { DeliveryAgentDirectoryService } from './delivery-agent-directory.service';
@@ -47,6 +49,7 @@ interface DeliverySummary {
 
 @Injectable({ providedIn: 'root' })
 export class DeliveryDashboardService {
+  private readonly http = inject(HttpClient);
   private readonly orderService = inject(OrderService);
   private readonly session = inject(SessionService);
   private readonly agents = inject(DeliveryAgentDirectoryService);
@@ -88,6 +91,7 @@ export class DeliveryDashboardService {
     if (next) {
       this.startTracking();
     }
+    this.saveProfile();
   }
 
   setHistoryPeriod(period: 'today' | 'week' | 'month'): void {
@@ -120,7 +124,31 @@ export class DeliveryDashboardService {
   }
 
   saveProfile(): void {
-    localStorage.setItem(this.profileKey(), JSON.stringify(this.buildProfile()));
+    const profile = this.buildProfile();
+    localStorage.setItem(this.profileKey(), JSON.stringify(profile));
+
+    const user = this.session.user();
+    if (user && user.id) {
+      const payload = {
+        userId: user.id,
+        fullName: profile.name,
+        email: profile.email,
+        phoneNumber: profile.phone || 'N/A',
+        vehicleType: profile.vehicleType || 'Bike',
+        vehicleNumber: profile.vehicleNumber || 'DL-00-0000',
+        vehicleModel: 'Standard',
+        licenseNumber: 'DL-LIC-STANDARD',
+        serviceArea: profile.zone || 'General',
+        active: this.onlineSignal()
+      };
+
+      this.http.put(`${environment.apiBaseUrl}/delivery-agents/${user.id}`, payload).subscribe({
+        next: () => {
+          this.agents.refreshFromBackend();
+        },
+        error: (err) => console.error('Failed to sync delivery agent status with backend database', err)
+      });
+    }
   }
 
   private buildActiveDeliveries(): DeliverySummary[] {
@@ -306,8 +334,16 @@ export class DeliveryDashboardService {
 
   private isAssignedToCurrentAgent(order: Order, agentEmail: string): boolean {
     const normalized = agentEmail.toLowerCase();
-    const assignedEmail = (order.deliveryAgentEmail ?? order.agent ?? '').toLowerCase();
-    return Boolean(normalized) && assignedEmail === normalized;
+    const assignedEmail = (order.deliveryAgentEmail ?? '').toLowerCase();
+    if (Boolean(normalized) && assignedEmail === normalized) {
+      return true;
+    }
+    const currentName = this.session.user()?.firstName?.toLowerCase() || '';
+    const assignedName = (order.deliveryAgentName ?? order.agent ?? '').toLowerCase();
+    if (currentName && assignedName.includes(currentName)) {
+      return true;
+    }
+    return false;
   }
 
   private currentAgentEmail(): string {

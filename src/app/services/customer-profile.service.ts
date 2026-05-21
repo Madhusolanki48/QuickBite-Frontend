@@ -1,8 +1,8 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
 import { AuthUser, CustomerProfile } from '../core/app.models';
 import { environment } from '../../environments/environment';
+import { AuthApiService } from './auth-api.service';
 import { SessionService } from './session.service';
 
 const PROFILE_KEY_PREFIX = 'quickbite.customerProfile';
@@ -20,9 +20,8 @@ const DEFAULT_PROFILE: CustomerProfile = {
 
 @Injectable({ providedIn: 'root' })
 export class CustomerProfileService {
-  private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthApiService);
   private readonly session = inject(SessionService);
-  private readonly baseUrl = environment.apiBaseUrl;
   private readonly profileSignal = signal<CustomerProfile>(DEFAULT_PROFILE);
 
   readonly profile = computed(() => this.profileSignal());
@@ -49,18 +48,22 @@ export class CustomerProfileService {
       localStorage.setItem(this.profileKeyFor(user.email), JSON.stringify(next));
     }
 
-    this.http
-      .put(`${this.baseUrl}/auth/me`, {
+    this.auth
+      .updateUserProfile({
         firstName: next.name.split(' ')[0] ?? next.name,
         lastName: next.name.split(' ').slice(1).join(' ') || 'User',
         phoneNumber: next.phone,
       })
-      .subscribe();
+      .subscribe({
+        next: (updatedUser) => {
+          this.session.replaceUser(updatedUser);
+        },
+      });
   }
 
   private refreshFromBackend(user: AuthUser): void {
-    this.http.get<any>(`${this.baseUrl}/auth/me`).subscribe({
-      next: (backendUser) => {
+    this.auth.getCurrentUser().subscribe({
+      next: (backendUser: AuthUser) => {
         const nextUser: AuthUser = {
           ...user,
           ...backendUser,
@@ -86,7 +89,9 @@ export class CustomerProfileService {
     return {
       ...DEFAULT_PROFILE,
       email: user?.email ?? '',
-      name: user ? `${user.firstName ?? 'Customer'} ${user.lastName ?? ''}`.trim() : DEFAULT_PROFILE.name,
+      name: user
+        ? `${user.firstName ?? 'Customer'} ${user.lastName ?? ''}`.trim()
+        : DEFAULT_PROFILE.name,
       phone: user?.phoneNumber ?? '',
     };
   }

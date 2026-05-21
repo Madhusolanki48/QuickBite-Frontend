@@ -8,73 +8,53 @@ import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-customer-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, NotificationBellComponent, RoleTopbarMenuComponent],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+    NotificationBellComponent,
+    RoleTopbarMenuComponent,
+  ],
   template: `
-    <div class="min-h-dvh">
-      <header class="sticky top-3 z-40 w-full px-3 pt-3">
-        <div
-          class="flex flex-col gap-3 rounded-[28px] border border-[var(--line)] bg-[var(--surface-soft)] px-4 py-3 shadow-glow backdrop-blur-xl md:flex-row md:items-center md:justify-between"
-        >
-          <a routerLink="/home" class="flex items-center gap-3">
-            <span
-              class="grid h-12 w-12 place-items-center overflow-hidden rounded-[18px] bg-gradient-to-br from-brand to-orange-500 shadow-soft"
-            >
-              <img
-                src="/assets/images/logo/logo.png?v=20260428"
-                alt="QuickBite logo"
-                class="h-full w-full object-cover"
-              />
+    <div class="customer-shell">
+      <header class="customer-topbar">
+        <div class="topbar-inner">
+          <a routerLink="/home" class="brand-link">
+            <span class="brand-mark">
+              <img src="/assets/images/logo/logo.png?v=20260428" alt="QuickBite logo" />
             </span>
-            <span class="flex flex-col leading-tight">
-              <strong class="font-['Space_Grotesk'] text-lg tracking-[-0.04em] text-ink">QuickBite</strong>
-            <small class="text-sm text-[var(--muted)]">Premium food delivery</small>
-          </span>
-        </a>
+            <div class="brand-text">
+              <strong>QuickBite</strong>
+              <span>Premium food delivery</span>
+            </div>
+          </a>
 
-          <nav class="flex items-center gap-2 overflow-x-auto pb-1 md:justify-center md:pb-0">
+          <nav class="topbar-nav" aria-label="Customer navigation">
             <a
               routerLink="/home"
-              routerLinkActive="bg-white text-brand shadow-soft"
+              routerLinkActive="active"
               [routerLinkActiveOptions]="{ exact: true }"
-              class="rounded-full px-4 py-2 text-sm font-semibold text-[var(--muted)] transition hover:-translate-y-0.5 hover:bg-white hover:text-brand"
+              >Home</a
             >
-              Home
-            </a>
-            <a
-              routerLink="/cart"
-              routerLinkActive="bg-white text-brand shadow-soft"
-              class="rounded-full px-4 py-2 text-sm font-semibold text-[var(--muted)] transition hover:-translate-y-0.5 hover:bg-white hover:text-brand"
-            >
-              Cart
-            </a>
-            <a
-              routerLink="/favorites"
-              routerLinkActive="bg-white text-brand shadow-soft"
-              class="rounded-full px-4 py-2 text-sm font-semibold text-[var(--muted)] transition hover:-translate-y-0.5 hover:bg-white hover:text-brand"
-            >
-              Favorites
-            </a>
-            <a
-              routerLink="/orders"
-              routerLinkActive="bg-white text-brand shadow-soft"
-              class="rounded-full px-4 py-2 text-sm font-semibold text-[var(--muted)] transition hover:-translate-y-0.5 hover:bg-white hover:text-brand"
-            >
-              Orders
-            </a>
+            <a routerLink="/cart" routerLinkActive="active">Cart</a>
+            <a routerLink="/favorites" routerLinkActive="active">Favorites</a>
+            <a routerLink="/orders" routerLinkActive="active">Orders</a>
           </nav>
 
-          <div class="flex items-center gap-2">
+          <div class="topbar-actions">
             <app-notification-bell />
-
             <button
               type="button"
-              class="grid h-11 w-11 place-items-center rounded-2xl border border-[var(--line)] bg-[var(--surface)] text-[var(--text)] transition hover:-translate-y-0.5 hover:border-brand/40 hover:text-brand"
+              class="icon-button theme-toggle-control"
               (click)="toggleTheme()"
-              [attr.aria-label]="theme.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+              [attr.aria-label]="
+                theme.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+              "
             >
-              {{ theme.theme() === 'dark' ? '☀' : '☾' }}
+              <span class="theme-toggle-control__icon">{{
+                theme.theme() === 'dark' ? '☀' : '☾'
+              }}</span>
             </button>
-
             <app-role-topbar-menu
               [displayName]="displayName()"
               [roleLabel]="roleLabel()"
@@ -83,7 +63,7 @@ import { ThemeService } from '../services/theme.service';
               [items]="[
                 { label: 'My Profile', route: '/profile' },
                 { label: 'Saved Addresses', route: '/addresses' },
-                { label: 'Orders', route: '/orders' }
+                { label: 'Orders', route: '/orders' },
               ]"
               (logoutClick)="logout()"
             />
@@ -91,10 +71,33 @@ import { ThemeService } from '../services/theme.service';
         </div>
       </header>
 
-        <main class="w-full px-3 pb-8 pt-4 text-[var(--text)]">
-          <router-outlet />
-        </main>
-      </div>
+      <main class="customer-main">
+        <router-outlet />
+      </main>
+
+      <nav class="mobile-bottom-nav" aria-label="Customer quick actions">
+        <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <span aria-hidden="true">⌂</span>
+          <strong>Home</strong>
+        </a>
+        <a routerLink="/orders" routerLinkActive="active">
+          <span aria-hidden="true">▤</span>
+          <strong>Orders</strong>
+        </a>
+        <a routerLink="/favorites" routerLinkActive="active">
+          <span aria-hidden="true">♡</span>
+          <strong>Saved</strong>
+        </a>
+        <a routerLink="/cart" routerLinkActive="active">
+          <span aria-hidden="true">🛒</span>
+          <strong>Cart</strong>
+        </a>
+        <a routerLink="/profile" routerLinkActive="active">
+          <span aria-hidden="true">♙</span>
+          <strong>Profile</strong>
+        </a>
+      </nav>
+    </div>
   `,
   styleUrl: './customer-layout.component.scss',
 })

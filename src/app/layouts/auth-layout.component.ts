@@ -8,7 +8,7 @@ import { RouterOutlet } from '@angular/router';
     <div class="auth-layout">
       <div class="auth-hero">
         <div class="auth-hero__badge">
-          <img src="/assets/images/logo/squre logo.png?v=20260428" alt="QuickBite logo" />
+          <img src="/assets/images/logo/white-logo-64.png" width="32" height="32" alt="QuickBite logo" />
           <span>QuickBite</span>
         </div>
         <h1>Fast food ordering.</h1>

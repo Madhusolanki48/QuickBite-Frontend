@@ -80,6 +80,12 @@ export class SessionService {
     void this.router.navigate(['/login'], { queryParams: { logout: '1' } });
   }
 
+  clearSession(): void {
+    this.clearAuthStorage();
+    this.tokenSignal.set(null);
+    this.userSignal.set(null);
+  }
+
   setPendingRole(role: AppRole): void {
     this.pendingRoleSignal.set(role);
     localStorage.setItem(PENDING_ROLE_KEY, role);

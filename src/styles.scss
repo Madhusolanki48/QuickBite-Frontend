@@ -1,7 +1,8 @@
+@use 'swiper/css' as *;
+@use 'swiper/css/navigation' as *;
+@use 'swiper/css/pagination' as *;
+
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
-@import 'swiper/css';
-@import 'swiper/css/navigation';
-@import 'swiper/css/pagination';
 
 @tailwind base;
 @tailwind components;
@@ -9,17 +10,23 @@
 
 :root {
   color-scheme: light;
-  --brand: #ff6b00;
-  --brand-soft: rgba(255, 107, 0, 0.12);
+  --brand: #FF7A00;
+  --brand-soft: rgba(255, 122, 0, 0.12);
   --accent: #22c55e;
+  --bg: #F8F9FB;
   --text: #111827;
-  --muted: #667085;
-  --line: rgba(17, 24, 39, 0.1);
-  --surface: rgba(255, 255, 255, 0.92);
+  --text-muted: #6B7280;
+  --muted: #4B5563;
+  --border: rgba(17, 24, 39, 0.08);
+  --line: rgba(17, 24, 39, 0.08);
+  --surface: #ffffff;
   --surface-soft: rgba(255, 255, 255, 0.76);
-  --surface-2: #fffaf5;
+  --surface-2: #FFF8F3;
+  --surface-muted: #F3F4F6;
+  --shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
   --success: #16a34a;
   --danger: #ef4444;
+  --radius: 28px;
 }
 
 html[data-theme='dark'] {
@@ -27,12 +34,17 @@ html[data-theme='dark'] {
   --brand: #ff8a2a;
   --brand-soft: rgba(255, 138, 42, 0.18);
   --accent: #4ade80;
+  --bg: #0b1120;
   --text: #f8fafc;
+  --text-muted: #94a3b8;
   --muted: #94a3b8;
+  --border: rgba(255, 255, 255, 0.12);
   --line: rgba(255, 255, 255, 0.12);
   --surface: rgba(15, 23, 42, 0.84);
   --surface-soft: rgba(15, 23, 42, 0.68);
   --surface-2: rgba(30, 41, 59, 0.88);
+  --surface-muted: rgba(51, 65, 85, 0.82);
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
   --success: #4ade80;
   --danger: #fb7185;
 }
@@ -45,18 +57,13 @@ body {
 body {
   margin: 0;
   font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(255, 107, 0, 0.12), transparent 24%),
-    radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.08), transparent 24%),
-    #fff8f2;
+  background: var(--bg);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
 html[data-theme='dark'] body {
-  background:
-    radial-gradient(circle at top left, rgba(255, 138, 42, 0.14), transparent 24%),
-    radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.1), transparent 24%),
-    #0b1120;
+  background: #0b1120;
 }
 
 * {
@@ -73,16 +80,176 @@ input {
   font: inherit;
 }
 
+.theme-toggle-control {
+  position: relative;
+  display: inline-grid !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  place-items: center;
+  padding: 0 !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.theme-toggle-control::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 122, 0, 0.16), rgba(37, 99, 235, 0.1));
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.theme-toggle-control:hover::before {
+  opacity: 1;
+}
+
+.theme-toggle-control__icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 1.45rem;
+  height: 1.45rem;
+  place-items: center;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+html[data-theme='dark'] .theme-toggle-control {
+  background: rgba(15, 23, 42, 0.9) !important;
+  color: #facc15 !important;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+}
+
 .card {
   border: 1px solid var(--line);
   background: var(--surface);
-  border-radius: 28px;
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.04);
   backdrop-filter: blur(18px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(17, 24, 39, 0.08);
 }
 
 html[data-theme='dark'] .card {
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme='dark'] {
+  .page-head,
+  .admin-banner,
+  .delivery-banner,
+  .delivery-context,
+  .status-note,
+  .stat-card,
+  .section-card,
+  .metric,
+  .menu-card,
+  .panel,
+  .info-card,
+  .profile-card,
+  .delivery-card,
+  .summary,
+  .stack,
+  .history,
+  .address-card,
+  .order-tabs,
+  .menu-toolbar,
+  .glass-card {
+    background: var(--surface);
+    border-color: var(--line);
+    color: var(--text);
+    box-shadow: var(--shadow);
+  }
+
+  .toolbar-btn,
+  .action-btn,
+  .ghost-btn,
+  .search-btn,
+  .primary-action,
+  .ghost-action,
+  .chip,
+  .ghost,
+  .primary-link,
+  .back,
+  .hero-cta,
+  .topbar-badge,
+  .topbar-theme-toggle,
+  .owner-search,
+  .sidebar,
+  .order-tabs,
+  .spot,
+  .detail-card,
+  .time-box,
+  .review-stars button {
+    background: var(--surface-2);
+    border-color: var(--line);
+    color: var(--text);
+  }
+
+  input,
+  textarea,
+  select,
+  .search-input,
+  .form-grid input,
+  .form-grid textarea,
+  .form-grid select,
+  .menu-toolbar__bulk input,
+  .custom-range input,
+  .time-input {
+    background: var(--surface-2) !important;
+    border-color: var(--line);
+    color: var(--text);
+    caret-color: var(--text);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--muted);
+  }
+
+  table th,
+  .card-table th,
+  .history-table th,
+  .table th,
+  .hours-table th {
+    background: rgba(30, 41, 59, 0.94);
+    color: var(--muted);
+  }
+
+  table td,
+  .card-table td,
+  .history-table td,
+  .table td,
+  .hours-table td {
+    border-color: var(--line);
+  }
+
+  .filters .active,
+  .chip.active,
+  .ghost-action.active,
+  .ghost-btn.active {
+    background: rgba(255, 138, 42, 0.16);
+    border-color: rgba(255, 138, 42, 0.38);
+    color: var(--brand);
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.9), rgba(30, 41, 59, 0.9));
+    background-size: 200% 100%;
+  }
 }
 
 .swiper-button-next,

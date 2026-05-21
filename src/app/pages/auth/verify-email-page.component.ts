@@ -16,8 +16,8 @@ import { SessionService } from '../../services/session.service';
       </div>
       <div class="auth-card__header">
         <p class="eyebrow">Verify email</p>
-        <h2>Enter the one-time code sent to your inbox.</h2>
-        <p>We sent a 6-digit OTP to your email address after registration.</p>
+        <h2>Enter the 6-digit code from your inbox.</h2>
+        <p>Use the code we just sent to your registered email.</p>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="verify()" class="form" autocomplete="off">
@@ -49,9 +49,7 @@ import { SessionService } from '../../services/session.service';
           {{ resendLoading ? 'Sending new code...' : 'Resend OTP' }}
         </button>
 
-        <p class="helper">
-          Already verified? <a routerLink="/login">Back to login</a>
-        </p>
+        <p class="helper">Already verified? <a routerLink="/login">Back to login</a></p>
 
         <p *ngIf="message" class="message">{{ message }}</p>
       </form>
@@ -120,7 +118,10 @@ export class VerifyEmailPageComponent implements OnInit {
         }
 
         if (response.user.approvalStatus === 'PENDING') {
-          this.showToast('Your email is verified. Your account is waiting for admin approval.', 'info');
+          this.showToast(
+            'Your email is verified. Your account is waiting for admin approval.',
+            'info',
+          );
           this.loading = false;
           void this.router.navigate(['/approval-pending'], {
             queryParams: {

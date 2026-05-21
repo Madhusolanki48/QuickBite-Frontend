@@ -4,7 +4,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { RealtimeSyncService } from './realtime-sync.service';
 import { SessionService } from './session.service';
-import { DELIVERY_AGENT_SEEDS, DeliveryAgentDirectoryEntry } from './delivery-agents.data';
+import { DeliveryAgentDirectoryEntry } from './delivery-agents.data';
 
 const DIRECTORY_KEY = 'quickbite.delivery.agents.directory';
 
@@ -70,21 +70,14 @@ export class DeliveryAgentDirectoryService {
 
   private readAgents(): DeliveryAgentDirectoryEntry[] {
     const raw = localStorage.getItem(DIRECTORY_KEY);
-    const seed = DELIVERY_AGENT_SEEDS;
     if (!raw) {
-      return seed;
+      return [];
     }
 
     try {
-      const parsed = JSON.parse(raw) as Partial<DeliveryAgentDirectoryEntry>[];
-      return seed.map((agent) => {
-        const match = parsed.find(
-          (item) => item.email?.toLowerCase() === agent.email.toLowerCase(),
-        );
-        return match ? { ...agent, ...match } : agent;
-      });
+      return JSON.parse(raw) as DeliveryAgentDirectoryEntry[];
     } catch {
-      return seed;
+      return [];
     }
   }
 
@@ -97,34 +90,27 @@ export class DeliveryAgentDirectoryService {
     this.agentsSignal.set(this.readAgents());
   }
 
-  private refreshFromBackend(): void {
+  public refreshFromBackend(): void {
     this.http.get<Array<{ userId: number; fullName: string; email: string; phoneNumber: string; vehicleType?: string; vehicleNumber?: string; vehicleModel?: string; licenseNumber?: string; serviceArea?: string; active: boolean }>>(`${this.baseUrl}/delivery-agents`).subscribe({
       next: (agents) => {
-        if (!agents.length) {
-          return;
-        }
-
-        const merged = this.agentsSignal().map((seed) => {
-          const match = agents.find((agent) => agent.email.toLowerCase() === seed.email.toLowerCase());
-          if (!match) {
-            return seed;
-          }
-
+        const mapped = agents.map((agent) => {
           return {
-            ...seed,
-            name: match.fullName || seed.name,
-            email: match.email || seed.email,
-            phone: match.phoneNumber || seed.phone,
-            zone: match.serviceArea || seed.zone,
-            role: match.vehicleType ? `${match.vehicleType} - ID #${match.userId}` : seed.role,
-            initial: (match.fullName || seed.name).charAt(0).toUpperCase(),
-            available: match.active,
-            online: match.active,
+            id: agent.userId,
+            name: agent.fullName,
+            email: agent.email,
+            phone: agent.phoneNumber || 'N/A',
+            zone: agent.serviceArea || 'General',
+            rating: '4.8 - Registered Partner',
+            role: agent.vehicleType ? `${agent.vehicleType} - ID #${agent.userId}` : `Delivery Agent - ID #DA-${agent.userId}`,
+            initial: agent.fullName ? agent.fullName.charAt(0).toUpperCase() : 'D',
+            available: agent.active,
+            online: agent.active,
+            location: { lat: 28.7041, lng: 77.1025, accuracy: 18 }
           };
         });
 
-        this.agentsSignal.set(merged);
-        localStorage.setItem(DIRECTORY_KEY, JSON.stringify(merged));
+        this.agentsSignal.set(mapped);
+        localStorage.setItem(DIRECTORY_KEY, JSON.stringify(mapped));
       },
     });
   }

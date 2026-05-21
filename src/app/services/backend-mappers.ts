@@ -30,7 +30,7 @@ export interface BackendOrderResponse {
   customerEmail: string;
   totalAmount: number;
   orderStatus: 'CREATED' | 'CONFIRMED' | 'PREPARING' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED';
-  paymentStatus: 'PENDING' | 'SUCCESS' | 'FAILED' | 'REFUNDED';
+  paymentStatus: 'PENDING' | 'SUCCESS' | 'PAID' | 'FAILED' | 'REFUNDED';
   createdAt: string;
   paymentId?: string | null;
   razorpayOrderId?: string | null;

@@ -1,5 +1,7 @@
 .auth-layout {
+  min-height: 100vh;
   min-height: 100dvh;
+  overflow-x: hidden;
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
   background:
@@ -76,7 +78,24 @@
   background: transparent;
 }
 
+.auth-card {
+  width: min(100%, 560px);
+  max-height: min(100vh, 100dvh);
+  overflow: hidden;
+}
+
 @media (max-width: 980px) {
+  .auth-stage {
+    align-items: flex-start;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .auth-card {
+    width: min(100%, 100%);
+    max-height: calc(100vh - 3rem);
+  }
+
   .auth-layout {
     grid-template-columns: 1fr;
   }

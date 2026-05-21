@@ -8,6 +8,7 @@
   backdrop-filter: none;
   color: #fff;
   overflow: hidden;
+  max-height: min(calc(100vh - 3rem), calc(100dvh - 3rem));
 }
 
 .auth-card--wide {
@@ -62,12 +63,17 @@ html[data-theme='dark'] .auth-card .secondary {
   margin-bottom: 1rem;
 }
 
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.78rem;
-  color: var(--brand);
-  font-weight: 800;
+@media (max-width: 980px) {
+  .auth-card {
+    width: 100%;
+    padding: 1.1rem 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+  }
+
+  .auth-card__header {
+    margin-bottom: 1rem;
+  }
 }
 
 .auth-card__header h2 {
@@ -398,6 +404,25 @@ html[data-theme='dark'] .role-chip.active {
   margin-bottom: 0.2rem;
 }
 
+.step-banner {
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin-bottom: 0.2rem;
+  border: 1px solid transparent;
+}
+
+.step-banner--success {
+  background: rgba(79, 195, 124, 0.14);
+  border-color: rgba(79, 195, 124, 0.24);
+  color: #e9fff0;
+}
+
+.step-banner--success strong {
+  color: #fff;
+}
+
 .step-copy strong {
   color: #fff;
 }
@@ -604,6 +629,7 @@ html[data-theme='dark'] .role-chip.active {
   background: rgba(255, 255, 255, 0.92);
   border-radius: 18px;
   padding: 0.9rem;
+  color: #0f172a;
   text-align: left;
   cursor: pointer;
   display: flex;
@@ -614,14 +640,16 @@ html[data-theme='dark'] .role-chip.active {
 .role-chip.active {
   border-color: rgba(255, 90, 0, 0.45);
   background: #fff4ec;
+  color: #0f172a;
 }
 
 .role-chip strong {
   font-size: 0.98rem;
+  color: #0f172a;
 }
 
 .role-chip span {
-  color: var(--muted);
+  color: #475569;
   font-size: 0.88rem;
   line-height: 1.4;
 }

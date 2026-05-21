@@ -179,11 +179,20 @@ export class RazorpayService {
         typeof body === 'string'
           ? body
           : body?.message || body?.error || body?.detail || body?.title || '';
+      if (
+        (error.status === 500 || error.status === 503) &&
+        backendMessage.toLowerCase().includes('razorpay key_id/key_secret')
+      ) {
+        return 'Razorpay is not configured in the running API gateway. Restart the gateway after loading RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.';
+      }
       if (backendMessage) {
         return backendMessage;
       }
       if (error.status === 0) {
         return 'Could not reach the backend. Please check the server and proxy.';
+      }
+      if (error.status === 503) {
+        return 'Razorpay is not configured on the backend. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to the API gateway environment, then restart it.';
       }
       return `Payment request failed (${error.status}).`;
     }

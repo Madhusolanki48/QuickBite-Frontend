@@ -1,6 +1,6 @@
 import { NgFor, NgIf } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -15,6 +15,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthApiService } from '../../services/auth-api.service';
 
 type ResetStep = 1 | 2 | 3;
+const RESET_CODE_TTL_SECONDS = 5 * 60;
 
 const PASSWORD_RULES = [
   {
@@ -62,13 +63,13 @@ function passwordMatchValidator(): ValidatorFn {
   imports: [NgFor, NgIf, ReactiveFormsModule, RouterLink],
   template: `
     <section class="card auth-card auth-card--reset">
-      <div *ngIf="toastMessage" class="toast" [class.toast--error]="toastType === 'error'">
-        {{ toastMessage }}
+      <div *ngIf="toastMessage()" class="toast" [class.toast--error]="toastType() === 'error'">
+        {{ toastMessage() }}
       </div>
 
       <div class="auth-card__header auth-card__header--reset">
         <p class="eyebrow">Reset password</p>
-        <div *ngIf="step === 3" class="status-chip status-chip--success status-chip--reset">
+        <div *ngIf="step() === 3" class="status-chip status-chip--success status-chip--reset">
           <span class="status-chip__icon" aria-hidden="true">
             <svg viewBox="0 0 20 20" fill="none" focusable="false" aria-hidden="true">
               <path
@@ -87,11 +88,18 @@ function passwordMatchValidator(): ValidatorFn {
       </div>
 
       <div class="wizard-stage wizard-stage--reset">
-        <form *ngIf="step === 1" [formGroup]="requestForm" (ngSubmit)="requestReset()" class="form" autocomplete="off">
+        <form
+          *ngIf="step() === 1"
+          [formGroup]="requestForm"
+          (ngSubmit)="requestReset()"
+          class="form"
+          autocomplete="off"
+        >
           <label class="field">
             Email
             <div class="field-shell field-shell--status">
               <input
+                type="email"
                 formControlName="email"
                 placeholder="Enter your registered email"
                 autocomplete="email"
@@ -114,37 +122,39 @@ function passwordMatchValidator(): ValidatorFn {
               </span>
             </div>
           </label>
+          <small
+            *ngIf="requestForm.controls.email.touched && requestForm.controls.email.invalid"
+            class="field-error"
+          >
+            Enter a valid email address.
+          </small>
 
-          <button class="primary auth-action" type="submit" [disabled]="requestLoading || requestForm.invalid">
-            <span *ngIf="requestLoading" class="btn-spinner" aria-hidden="true"></span>
-            <span>{{ requestLoading ? 'Sending...' : 'Send Reset Code' }}</span>
+          <button
+            class="primary auth-action"
+            type="submit"
+            [disabled]="requestLoading() || requestForm.invalid"
+          >
+            <span *ngIf="requestLoading()" class="btn-spinner" aria-hidden="true"></span>
+            <span>{{ requestLoading() ? 'Sending...' : 'Send Reset Code' }}</span>
           </button>
         </form>
 
-        <form *ngIf="step === 2" [formGroup]="verifyForm" (ngSubmit)="verifyCode()" class="form" autocomplete="off">
-          <label class="field">
-            Email
-            <div class="field-shell field-shell--status">
-              <input [value]="requestForm.controls.email.value" readonly />
-              <span class="field-status field-status--success" aria-hidden="true">
-                <svg viewBox="0 0 20 20" fill="none" focusable="false" aria-hidden="true">
-                  <path
-                    d="M16.667 5.833 8.333 14.167l-4.166-4.167"
-                    stroke="currentColor"
-                    stroke-width="2.2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </span>
-            </div>
-          </label>
-
-          <div class="step-copy">
-            Enter the reset code sent to <strong>{{ requestForm.controls.email.value }}</strong>.
+        <form
+          *ngIf="step() === 2"
+          [formGroup]="verifyForm"
+          (ngSubmit)="verifyCode()"
+          class="form"
+          autocomplete="off"
+        >
+          <div class="step-banner step-banner--success">
+            Code sent to <strong>{{ requestForm.controls.email.value }}</strong
+            >. Expires in <strong>{{ codeExpiryLabel() }}</strong
+            >.
           </div>
 
-          <label class="field">
+          <div class="step-copy">Enter the 6-digit code from your email.</div>
+
+          <label class="field field--compact">
             Reset Code
             <div class="field-shell field-shell--code field-shell--inline-meta">
               <input
@@ -153,7 +163,7 @@ function passwordMatchValidator(): ValidatorFn {
                 inputmode="numeric"
                 maxlength="6"
                 autocomplete="one-time-code"
-                placeholder="Enter the 6-digit code"
+                placeholder="Enter your code"
                 (input)="onResetCodeInput($event)"
               />
               <div class="code-meta">
@@ -162,9 +172,9 @@ function passwordMatchValidator(): ValidatorFn {
                   type="button"
                   class="text-button"
                   (click)="resendOtp()"
-                  [disabled]="resendLoading || resendCountdown > 0"
+                  [disabled]="resendLoading() || resendCountdown() > 0"
                 >
-                  {{ resendLoading ? 'Resending...' : 'Resend' }}
+                  {{ resendLoading() ? 'Resending...' : 'Resend' }}
                 </button>
               </div>
             </div>
@@ -176,14 +186,27 @@ function passwordMatchValidator(): ValidatorFn {
           <small *ngIf="hasVerifyError('otp', 'pattern')" class="field-error">
             Enter the 6-digit code from your email.
           </small>
+          <small *ngIf="verifyErrorMessage()" class="field-error">
+            {{ verifyErrorMessage() }}
+          </small>
 
-          <button class="primary auth-action" type="submit" [disabled]="verifyLoading || verifyForm.invalid">
-            <span *ngIf="verifyLoading" class="btn-spinner" aria-hidden="true"></span>
-            <span>{{ verifyLoading ? 'Verifying...' : 'Verify Code' }}</span>
+          <button
+            class="primary auth-action"
+            type="submit"
+            [disabled]="verifyLoading() || verifyForm.invalid"
+          >
+            <span *ngIf="verifyLoading()" class="btn-spinner" aria-hidden="true"></span>
+            <span>{{ verifyLoading() ? 'Verifying...' : 'Verify Code' }}</span>
           </button>
         </form>
 
-        <form *ngIf="step === 3" [formGroup]="passwordForm" (ngSubmit)="resetPassword()" class="form" autocomplete="off">
+        <form
+          *ngIf="step() === 3"
+          [formGroup]="passwordForm"
+          (ngSubmit)="resetPassword()"
+          class="form"
+          autocomplete="off"
+        >
           <label class="field password-field">
             New Password
             <div class="password-input">
@@ -199,17 +222,38 @@ function passwordMatchValidator(): ValidatorFn {
                 (click)="toggleNewPassword()"
                 [attr.aria-label]="showNewPassword ? 'Hide new password' : 'Show new password'"
               >
-                <svg *ngIf="!showNewPassword" viewBox="0 0 24 24" fill="none" focusable="false" aria-hidden="true">
+                <svg
+                  *ngIf="!showNewPassword"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  focusable="false"
+                  aria-hidden="true"
+                >
                   <path
                     d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
                     stroke="currentColor"
                     stroke-width="1.8"
                     stroke-linejoin="round"
                   />
-                  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8" />
+                  <path
+                    d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  />
                 </svg>
-                <svg *ngIf="showNewPassword" viewBox="0 0 24 24" fill="none" focusable="false" aria-hidden="true">
-                  <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <svg
+                  *ngIf="showNewPassword"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  focusable="false"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 3l18 18"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
                   <path
                     d="M10.58 10.58A3 3 0 0 0 12 15a3 3 0 0 0 1.42-.36"
                     stroke="currentColor"
@@ -234,7 +278,10 @@ function passwordMatchValidator(): ValidatorFn {
               </button>
             </div>
 
-            <section class="password-rules" [class.password-rules--hidden]="!shouldShowPasswordRules()">
+            <section
+              class="password-rules"
+              [class.password-rules--hidden]="!shouldShowPasswordRules()"
+            >
               <ul class="password-rules__list" aria-live="polite">
                 <li
                   *ngFor="let rule of passwordRulesView(); trackBy: trackPasswordRule"
@@ -242,7 +289,13 @@ function passwordMatchValidator(): ValidatorFn {
                   [class.password-rules__item--met]="rule.met"
                 >
                   <span class="password-rules__bullet" aria-hidden="true">
-                    <svg *ngIf="rule.met" viewBox="0 0 20 20" fill="none" focusable="false" aria-hidden="true">
+                    <svg
+                      *ngIf="rule.met"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      focusable="false"
+                      aria-hidden="true"
+                    >
                       <path
                         d="M16.667 5.833 8.333 14.167l-4.166-4.167"
                         stroke="currentColor"
@@ -271,19 +324,42 @@ function passwordMatchValidator(): ValidatorFn {
                 type="button"
                 class="password-toggle"
                 (click)="toggleConfirmPassword()"
-                [attr.aria-label]="showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'"
+                [attr.aria-label]="
+                  showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'
+                "
               >
-                <svg *ngIf="!showConfirmPassword" viewBox="0 0 24 24" fill="none" focusable="false" aria-hidden="true">
+                <svg
+                  *ngIf="!showConfirmPassword"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  focusable="false"
+                  aria-hidden="true"
+                >
                   <path
                     d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
                     stroke="currentColor"
                     stroke-width="1.8"
                     stroke-linejoin="round"
                   />
-                  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8" />
+                  <path
+                    d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  />
                 </svg>
-                <svg *ngIf="showConfirmPassword" viewBox="0 0 24 24" fill="none" focusable="false" aria-hidden="true">
-                  <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <svg
+                  *ngIf="showConfirmPassword"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  focusable="false"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 3l18 18"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
                   <path
                     d="M10.58 10.58A3 3 0 0 0 12 15a3 3 0 0 0 1.42-.36"
                     stroke="currentColor"
@@ -308,12 +384,18 @@ function passwordMatchValidator(): ValidatorFn {
               </button>
             </div>
 
-            <small *ngIf="showPasswordMismatch()" class="field-error">Passwords do not match.</small>
+            <small *ngIf="showPasswordMismatch()" class="field-error"
+              >Passwords do not match.</small
+            >
           </label>
 
-          <button class="primary auth-action" type="submit" [disabled]="resetLoading || !canResetPassword()">
-            <span *ngIf="resetLoading" class="btn-spinner" aria-hidden="true"></span>
-            <span>{{ resetLoading ? 'Resetting...' : 'Reset Password' }}</span>
+          <button
+            class="primary auth-action"
+            type="submit"
+            [disabled]="resetLoading() || !canResetPassword()"
+          >
+            <span *ngIf="resetLoading()" class="btn-spinner" aria-hidden="true"></span>
+            <span>{{ resetLoading() ? 'Resetting...' : 'Reset Password' }}</span>
           </button>
         </form>
       </div>
@@ -331,16 +413,18 @@ export class ForgotPasswordPageComponent implements OnDestroy {
   private readonly router = inject(Router);
   private toastTimer?: ReturnType<typeof setTimeout>;
   private resendTimer?: ReturnType<typeof setInterval>;
-  private operationTimeoutTimer?: ReturnType<typeof setTimeout>;
+  private codeExpiryTimer?: ReturnType<typeof setInterval>;
 
-  protected requestLoading = false;
-  protected verifyLoading = false;
-  protected resetLoading = false;
-  protected resendLoading = false;
-  protected step: ResetStep = 1;
-  protected toastMessage = '';
-  protected toastType: 'success' | 'error' = 'success';
-  protected resendCountdown = 0;
+  protected readonly requestLoading = signal(false);
+  protected readonly verifyLoading = signal(false);
+  protected readonly resetLoading = signal(false);
+  protected readonly resendLoading = signal(false);
+  protected readonly step = signal<ResetStep>(1);
+  protected readonly toastMessage = signal('');
+  protected readonly toastType = signal<'success' | 'error'>('success');
+  protected readonly resendCountdown = signal(0);
+  protected readonly codeExpiryCountdown = signal(0);
+  protected readonly verifyErrorMessage = signal('');
   protected showNewPassword = false;
   protected showConfirmPassword = false;
 
@@ -367,32 +451,32 @@ export class ForgotPasswordPageComponent implements OnDestroy {
     if (this.resendTimer) {
       clearInterval(this.resendTimer);
     }
-    if (this.operationTimeoutTimer) {
-      clearTimeout(this.operationTimeoutTimer);
+    if (this.codeExpiryTimer) {
+      clearInterval(this.codeExpiryTimer);
     }
   }
 
   heading(): string {
-    switch (this.step) {
+    switch (this.step()) {
       case 2:
-        return 'Verify your email';
+        return 'Verify code';
       case 3:
-        return 'Create New Password';
+        return 'Set a new password';
       case 1:
       default:
-        return 'Forgot your password?';
+        return 'Reset password';
     }
   }
 
   subtitle(): string {
-    switch (this.step) {
+    switch (this.step()) {
       case 2:
-        return 'Enter the reset code sent to your email.';
+        return 'Enter the 6-digit code we emailed to you.';
       case 3:
-        return 'Enter and confirm your new password to reset your account password.';
+        return 'Choose a secure password for your account.';
       case 1:
       default:
-        return 'Enter your registered email to receive a reset code.';
+        return 'Send a code to your registered email.';
     }
   }
 
@@ -402,30 +486,34 @@ export class ForgotPasswordPageComponent implements OnDestroy {
       return;
     }
 
+    this.verifyErrorMessage.set('');
     console.log('Forgot password request received');
-    this.requestLoading = true;
+    this.requestLoading.set(true);
     this.showToast('');
     const email = this.requestForm.controls.email.value.trim().toLowerCase();
-    this.startOperationTimeout('Request timed out. Please try again.');
 
     try {
       const response = await firstValueFrom(this.auth.forgotPassword({ email }));
-      if (!response.success) {
+      if (response.success === false) {
         this.showToast(response.message || 'Could not send reset code. Please try again.', 'error');
         return;
       }
 
-      console.log('OTP sent');
-      this.step = 2;
-      this.resetVerifyState();
-      this.startResendCountdown();
+      this.moveToCodeStep();
       this.showToast(response.message || 'OTP sent successfully');
     } catch (error) {
       console.error(error);
-      this.showToast(this.readErrorMessage(error, 'Could not send reset code. Please try again.'), 'error');
+      if (this.shouldContinueAfterEmptyResetResponse(error)) {
+        this.moveToCodeStep();
+        this.showToast('OTP sent. Enter the code from your email within 5 minutes.');
+        return;
+      }
+      this.showToast(
+        this.readErrorMessage(error, 'Could not send reset code. Please try again.'),
+        'error',
+      );
     } finally {
-      this.requestLoading = false;
-      this.clearOperationTimeout();
+      this.requestLoading.set(false);
     }
   }
 
@@ -435,11 +523,11 @@ export class ForgotPasswordPageComponent implements OnDestroy {
       return;
     }
 
-    this.verifyLoading = true;
+    this.verifyErrorMessage.set('');
+    this.verifyLoading.set(true);
     this.showToast('');
     const email = this.requestForm.controls.email.value.trim().toLowerCase();
     const otp = this.verifyForm.controls.otp.value.trim();
-    this.startOperationTimeout('Code verification timed out. Please try again.');
 
     try {
       const response = await firstValueFrom(this.auth.verifyResetOtp({ email, otp }));
@@ -448,15 +536,20 @@ export class ForgotPasswordPageComponent implements OnDestroy {
         return;
       }
 
-      this.step = 3;
+      this.step.set(3);
+      this.stopCodeExpiryTimer();
       this.passwordForm.reset({ newPassword: '', confirmNewPassword: '' });
       this.showToast(response.message || 'OTP verified');
     } catch (error) {
       console.error(error);
-      this.showToast(this.readErrorMessage(error, 'Code verification failed. Please check the code and try again.'), 'error');
+      const message = this.readErrorMessage(
+        error,
+        'Code verification failed. Please check the code and try again.',
+      );
+      this.verifyErrorMessage.set(message);
+      this.showToast(message, 'error');
     } finally {
-      this.verifyLoading = false;
-      this.clearOperationTimeout();
+      this.verifyLoading.set(false);
     }
   }
 
@@ -466,11 +559,10 @@ export class ForgotPasswordPageComponent implements OnDestroy {
       return;
     }
 
-    this.resetLoading = true;
+    this.resetLoading.set(true);
     this.showToast('');
     const email = this.requestForm.controls.email.value.trim().toLowerCase();
     const newPassword = this.passwordForm.controls.newPassword.value;
-    this.startOperationTimeout('Password reset timed out. Please try again.');
 
     try {
       const response = await firstValueFrom(this.auth.resetPassword({ email, newPassword }));
@@ -480,13 +572,15 @@ export class ForgotPasswordPageComponent implements OnDestroy {
       }
 
       this.showToast(response.message || 'Password reset successfully.');
-      window.setTimeout(() => void this.router.navigate(['/login'], { queryParams: { reset: '1' } }), 700);
+      window.setTimeout(
+        () => void this.router.navigate(['/login'], { queryParams: { reset: '1' } }),
+        700,
+      );
     } catch (error) {
       console.error(error);
       this.showToast(this.readErrorMessage(error, 'Reset failed. Please try again.'), 'error');
     } finally {
-      this.resetLoading = false;
-      this.clearOperationTimeout();
+      this.resetLoading.set(false);
     }
   }
 
@@ -496,41 +590,53 @@ export class ForgotPasswordPageComponent implements OnDestroy {
     if (input.value !== digits) {
       input.value = digits;
     }
-    this.verifyForm.controls.otp.setValue(digits, { emitEvent: false });
+    this.verifyErrorMessage.set('');
+    this.verifyForm.controls.otp.setValue(digits);
     this.verifyForm.controls.otp.markAsTouched();
+    this.verifyForm.controls.otp.updateValueAndValidity();
   }
 
   async resendOtp(): Promise<void> {
-    if (this.resendCountdown > 0 || this.resendLoading) {
+    if (this.resendCountdown() > 0 || this.resendLoading()) {
       return;
     }
 
+    this.verifyErrorMessage.set('');
     const email = this.requestForm.controls.email.value.trim().toLowerCase();
     if (!email) {
       this.showToast('Enter your email first, then resend the code.', 'error');
       return;
     }
 
-    this.resendLoading = true;
+    this.resendLoading.set(true);
     this.showToast('');
-    this.startOperationTimeout('Resend timed out. Please try again.');
 
     try {
       const response = await firstValueFrom(this.auth.forgotPassword({ email }));
-      if (!response.success) {
+      if (response.success === false) {
         this.showToast(response.message || 'Could not resend the code. Please try again.', 'error');
         return;
       }
 
-      console.log('OTP sent');
+      this.startCodeExpiryCountdown();
       this.startResendCountdown();
+      this.resetVerifyState();
       this.showToast(response.message || 'OTP sent successfully');
     } catch (error) {
       console.error(error);
-      this.showToast(this.readErrorMessage(error, 'Could not resend the code. Please try again.'), 'error');
+      if (this.shouldContinueAfterEmptyResetResponse(error)) {
+        this.startCodeExpiryCountdown();
+        this.startResendCountdown();
+        this.resetVerifyState();
+        this.showToast('OTP resent. Enter the new code within 5 minutes.');
+        return;
+      }
+      this.showToast(
+        this.readErrorMessage(error, 'Could not resend the code. Please try again.'),
+        'error',
+      );
     } finally {
-      this.resendLoading = false;
-      this.clearOperationTimeout();
+      this.resendLoading.set(false);
     }
   }
 
@@ -542,7 +648,10 @@ export class ForgotPasswordPageComponent implements OnDestroy {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
-  protected hasVerifyError(controlName: keyof typeof this.verifyForm.controls, errorName: string): boolean {
+  protected hasVerifyError(
+    controlName: keyof typeof this.verifyForm.controls,
+    errorName: string,
+  ): boolean {
     const control = this.verifyForm.controls[controlName];
     return control.touched && control.hasError(errorName);
   }
@@ -570,14 +679,22 @@ export class ForgotPasswordPageComponent implements OnDestroy {
   }
 
   protected canResetPassword(): boolean {
-    return this.arePasswordRulesMet() && this.passwordForm.valid && !this.passwordForm.hasError('passwordMismatch');
+    return (
+      this.arePasswordRulesMet() &&
+      this.passwordForm.valid &&
+      !this.passwordForm.hasError('passwordMismatch')
+    );
   }
 
   protected resendLabel(): string {
-    if (this.resendCountdown > 0) {
-      return `Resend code in ${this.formatTime(this.resendCountdown)}`;
+    if (this.resendCountdown() > 0) {
+      return `Resend in ${this.formatTime(this.resendCountdown())}`;
     }
-    return "Didn't receive code? Resend code";
+    return 'Resend code';
+  }
+
+  protected codeExpiryLabel(): string {
+    return this.formatTime(this.codeExpiryCountdown());
   }
 
   protected formatTime(seconds: number): string {
@@ -599,23 +716,16 @@ export class ForgotPasswordPageComponent implements OnDestroy {
     this.verifyForm.reset({ otp: '' });
   }
 
-  private startOperationTimeout(message: string, timeoutMs = 15000): void {
-    this.clearOperationTimeout();
-    this.operationTimeoutTimer = window.setTimeout(() => {
-      console.error(new Error(message));
-      this.requestLoading = false;
-      this.verifyLoading = false;
-      this.resetLoading = false;
-      this.resendLoading = false;
-      this.showToast(message, 'error');
-    }, timeoutMs);
+  private moveToCodeStep(): void {
+    console.log('OTP sent');
+    this.step.set(2);
+    this.resetVerifyState();
+    this.startCodeExpiryCountdown();
+    this.startResendCountdown();
   }
 
-  private clearOperationTimeout(): void {
-    if (this.operationTimeoutTimer) {
-      clearTimeout(this.operationTimeoutTimer);
-      this.operationTimeoutTimer = undefined;
-    }
+  private shouldContinueAfterEmptyResetResponse(error: unknown): boolean {
+    return false;
   }
 
   private startResendCountdown(seconds = 30): void {
@@ -623,22 +733,54 @@ export class ForgotPasswordPageComponent implements OnDestroy {
       clearInterval(this.resendTimer);
     }
 
-    this.resendCountdown = seconds;
+    this.resendCountdown.set(seconds);
     this.resendTimer = window.setInterval(() => {
-      if (this.resendCountdown <= 1) {
-        this.resendCountdown = 0;
+      if (this.resendCountdown() <= 1) {
+        this.resendCountdown.set(0);
         if (this.resendTimer) {
           clearInterval(this.resendTimer);
         }
         return;
       }
 
-      this.resendCountdown -= 1;
+      this.resendCountdown.update((value) => value - 1);
     }, 1000);
   }
 
+  private startCodeExpiryCountdown(seconds = RESET_CODE_TTL_SECONDS): void {
+    this.stopCodeExpiryTimer();
+    this.codeExpiryCountdown.set(seconds);
+    this.codeExpiryTimer = window.setInterval(() => {
+      if (this.codeExpiryCountdown() <= 1) {
+        this.codeExpiryCountdown.set(0);
+        this.stopCodeExpiryTimer();
+        if (this.step() === 2) {
+          this.verifyForm.reset({ otp: '' });
+          this.showToast('The reset code expired. Please resend a new code.', 'error');
+        }
+        return;
+      }
+
+      this.codeExpiryCountdown.update((value) => value - 1);
+    }, 1000);
+  }
+
+  private stopCodeExpiryTimer(): void {
+    if (this.codeExpiryTimer) {
+      clearInterval(this.codeExpiryTimer);
+      this.codeExpiryTimer = undefined;
+    }
+  }
+
   private readErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      return 'Request timed out. Please try again.';
+    }
+
     if (error instanceof HttpErrorResponse) {
+      if (error.status === 0) {
+        return 'Network error. Please confirm the auth service is running and try again.';
+      }
       const body = error.error;
       if (body && typeof body === 'object') {
         const message = (body as { message?: unknown }).message;
@@ -652,8 +794,8 @@ export class ForgotPasswordPageComponent implements OnDestroy {
   }
 
   private showToast(message: string, type: 'success' | 'error' = 'success'): void {
-    this.toastMessage = message;
-    this.toastType = type;
+    this.toastMessage.set(message);
+    this.toastType.set(type);
     if (this.toastTimer) {
       clearTimeout(this.toastTimer);
     }
@@ -661,7 +803,7 @@ export class ForgotPasswordPageComponent implements OnDestroy {
       return;
     }
     this.toastTimer = window.setTimeout(() => {
-      this.toastMessage = '';
+      this.toastMessage.set('');
     }, 2800);
   }
 }

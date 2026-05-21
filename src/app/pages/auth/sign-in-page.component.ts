@@ -54,6 +54,25 @@ import { SessionService } from '../../services/session.service';
         </div>
 
         <label>
+          Username
+          <input
+            formControlName="username"
+            [readOnly]="usernameLocked"
+            (focus)="usernameLocked = false"
+            autocomplete="off"
+            spellcheck="false"
+            autocapitalize="off"
+            placeholder="Choose a username"
+          />
+          <small *ngIf="hasError('username', 'required')" class="field-error">
+            Username is required.
+          </small>
+          <small *ngIf="hasError('username', 'minlength')" class="field-error">
+            Username must be at least 3 characters.
+          </small>
+        </label>
+
+        <label>
           Email
           <input
             formControlName="email"
@@ -64,7 +83,9 @@ import { SessionService } from '../../services/session.service';
             autocapitalize="off"
             placeholder="Enter your email address"
           />
-          <small *ngIf="hasError('email', 'required')" class="field-error">Email is required.</small>
+          <small *ngIf="hasError('email', 'required')" class="field-error"
+            >Email is required.</small
+          >
           <small *ngIf="hasError('email', 'email')" class="field-error">
             Enter a valid email address.
           </small>
@@ -164,6 +185,7 @@ export class SignInPageComponent {
   protected firstNameLocked = true;
   protected lastNameLocked = true;
   protected emailLocked = true;
+  protected usernameLocked = true;
   protected phoneLocked = true;
   protected passwordLocked = true;
   protected readonly roles: Array<{ label: string; value: AppRole; help: string }> = [
@@ -175,6 +197,7 @@ export class SignInPageComponent {
   protected readonly form = this.fb.nonNullable.group({
     firstName: ['', [Validators.required]],
     lastName: ['', [Validators.required]],
+    username: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
     phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)]],
     password: ['', [Validators.required, Validators.minLength(8)]],
@@ -221,6 +244,7 @@ export class SignInPageComponent {
     const request = {
       firstName: raw.firstName,
       lastName: raw.lastName,
+      username: raw.username,
       email: raw.email,
       phoneNumber: raw.phoneNumber,
       password: raw.password,

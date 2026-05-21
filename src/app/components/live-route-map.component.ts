@@ -26,10 +26,27 @@ declare const L: any;
           <h3>{{ title }}</h3>
           <p>{{ subtitle }}</p>
         </div>
-        <span *ngIf="status" class="live-route-map__status">{{ status }}</span>
+        <div class="live-route-map__chips">
+          <span class="traffic-chip">Low traffic</span>
+          <span class="traffic-chip blue">Optimized</span>
+          <span *ngIf="status" class="live-route-map__status">{{ status }}</span>
+        </div>
       </div>
 
-      <div #mapHost class="live-route-map__frame"></div>
+      <div class="live-route-map__canvas">
+        <div #mapHost class="live-route-map__frame"></div>
+        <div class="eta-card">
+          <span>ETA</span>
+          <strong>18 min</strong>
+          <small>3.2 km left</small>
+        </div>
+        <div class="moving-marker">D</div>
+        <div class="map-legend">
+          <span><i class="pickup"></i>Pickup</span>
+          <span><i class="drop"></i>Drop</span>
+          <span><i class="agent"></i>Rider</span>
+        </div>
+      </div>
     </section>
   `,
   styleUrl: './live-route-map.component.scss'

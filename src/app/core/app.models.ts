@@ -4,6 +4,7 @@ export interface AuthUser {
   id?: number;
   firstName: string;
   lastName: string;
+  username?: string;
   email: string;
   phoneNumber?: string;
   role: AppRole;
@@ -83,6 +84,7 @@ export interface PasswordResetResponse {
 export interface RegisterRequest {
   firstName: string;
   lastName: string;
+  username: string;
   email: string;
   phoneNumber: string;
   password: string;
