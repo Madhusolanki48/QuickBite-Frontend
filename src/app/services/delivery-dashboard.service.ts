@@ -6,6 +6,7 @@ import { GeoPoint, Order } from '../core/app.models';
 import { DeliveryAgentDirectoryService } from './delivery-agent-directory.service';
 import { OrderService } from './order.service';
 import { SessionService } from './session.service';
+import { RealtimeSyncService } from './realtime-sync.service';
 
 const HISTORY_PERIOD_KEY = 'quickbite.delivery.historyPeriod';
 const PROFILE_KEY = 'quickbite.delivery.profile';
@@ -53,10 +54,11 @@ export class DeliveryDashboardService {
   private readonly orderService = inject(OrderService);
   private readonly session = inject(SessionService);
   private readonly agents = inject(DeliveryAgentDirectoryService);
+  private readonly sync = inject(RealtimeSyncService);
   private readonly historyPeriodSignal = signal<'today' | 'week' | 'month'>(
     this.readHistoryPeriod(),
   );
-  private readonly onlineSignal = signal<boolean>(false);
+  private readonly onlineSignal = signal<boolean>(true);
   private readonly currentLocationSignal = signal<GeoPoint | null>(null);
   private readonly profileRevisionSignal = signal(0);
 
@@ -67,14 +69,27 @@ export class DeliveryDashboardService {
     this.profileRevisionSignal();
     return this.buildProfile();
   });
-  readonly activeDeliveries = computed(() => this.buildActiveDeliveries());
-  readonly history = computed(() => this.buildHistory());
-  readonly earnings = computed(() => this.buildEarnings());
+  readonly activeDeliveries = computed(() => {
+    this.profileRevisionSignal();
+    return this.buildActiveDeliveries();
+  });
+  readonly history = computed(() => {
+    this.profileRevisionSignal();
+    return this.buildHistory();
+  });
+  readonly earnings = computed(() => {
+    this.profileRevisionSignal();
+    return this.buildEarnings();
+  });
 
   constructor() {
     const currentAgent = this.agents.currentAgent();
-    this.onlineSignal.set(currentAgent?.available ?? false);
-    this.currentLocationSignal.set(currentAgent?.available ? currentAgent.location : null);
+    this.onlineSignal.set(currentAgent?.available ?? true);
+    this.currentLocationSignal.set(currentAgent?.location ?? { lat: 28.5355, lng: 77.241, accuracy: 15 });
+
+    this.sync.on('orders', () => {
+      this.profileRevisionSignal.update((v) => v + 1);
+    });
   }
 
   startTracking(): void {
@@ -101,7 +116,7 @@ export class DeliveryDashboardService {
 
   markPickedUp(orderId: string): void {
     const order = this.assignedOrder(orderId);
-    if (!order || order.status !== 'READY') {
+    if (!order || order.status === 'ON_THE_WAY' || order.status === 'DELIVERED') {
       return;
     }
 
@@ -173,7 +188,7 @@ export class DeliveryDashboardService {
     return this.orderService
       .orders()
       .filter((order) => this.isAssignedToCurrentAgent(order, agentEmail))
-      .filter((order) => order.status === 'DELIVERED' || order.status === 'ON_THE_WAY')
+      .filter((order) => order.status === 'DELIVERED' || order.status === 'CANCELLED')
       .filter((order) => this.matchesHistoryPeriod(order.createdAt))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .map((order) => ({
@@ -285,10 +300,10 @@ export class DeliveryDashboardService {
       documents: stored.documents?.length
         ? stored.documents
         : [
-            { label: 'Driving license', status: 'Verified' },
-            { label: 'Vehicle registration', status: 'Verified' },
-            { label: 'Bank account', status: 'Pending' },
-          ],
+          { label: 'Driving license', status: 'Verified' },
+          { label: 'Vehicle registration', status: 'Verified' },
+          { label: 'Bank account', status: 'Pending' },
+        ],
     };
   }
 
@@ -333,14 +348,20 @@ export class DeliveryDashboardService {
   }
 
   private isAssignedToCurrentAgent(order: Order, agentEmail: string): boolean {
-    const normalized = agentEmail.toLowerCase();
-    const assignedEmail = (order.deliveryAgentEmail ?? '').toLowerCase();
+    const normalized = agentEmail.toLowerCase().trim();
+    const assignedEmail = (order.deliveryAgentEmail ?? '').toLowerCase().trim();
     if (Boolean(normalized) && assignedEmail === normalized) {
       return true;
     }
-    const currentName = this.session.user()?.firstName?.toLowerCase() || '';
-    const assignedName = (order.deliveryAgentName ?? order.agent ?? '').toLowerCase();
-    if (currentName && assignedName.includes(currentName)) {
+    const user = this.session.user();
+    const firstName = user?.firstName?.toLowerCase()?.trim() || '';
+    const lastName = user?.lastName?.toLowerCase()?.trim() || '';
+    const fullName = [firstName, lastName].filter(Boolean).join(' ');
+    const assignedName = (order.deliveryAgentName ?? order.agent ?? '').toLowerCase().trim();
+    if (fullName && (assignedName.includes(fullName) || fullName.includes(assignedName))) {
+      return true;
+    }
+    if (firstName && assignedName.includes(firstName)) {
       return true;
     }
     return false;
@@ -351,7 +372,7 @@ export class DeliveryDashboardService {
   }
 
   private currentAgent() {
-    return this.agents.findAgent(this.currentAgentEmail());
+    return this.agents.currentAgent();
   }
 
   private matchesHistoryPeriod(createdAt: string): boolean {
@@ -364,7 +385,7 @@ export class DeliveryDashboardService {
     const diffDays = Math.floor(
       (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) -
         Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())) /
-        86400000,
+      86400000,
     );
 
     if (period === 'today') {

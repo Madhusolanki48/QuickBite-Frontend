@@ -22,6 +22,9 @@ export class CartService {
   private readonly promoCodeSignal = signal('FOOD10');
   private readonly noteSignal = signal('Please call on arrival.');
 
+  readonly restaurantId = computed(() => this.itemsSignal()[0]?.restaurantId || null);
+  readonly restaurantName = computed(() => this.itemsSignal()[0]?.restaurantName || null);
+
   readonly items = computed(() => this.itemsSignal());
   readonly addresses = computed(() => this.addressesSignal());
   readonly selectedAddress = computed(
@@ -35,9 +38,9 @@ export class CartService {
   readonly subtotal = computed(() =>
     this.itemsSignal().reduce((sum, item) => sum + item.price * item.quantity, 0),
   );
-  readonly deliveryFee = computed(() => 49);
+  readonly deliveryFee = computed(() => (this.itemsSignal().length > 0 ? 49 : 0));
   readonly gst = computed(() => Math.round(this.subtotal() * 0.05));
-  readonly discount = computed(() => (this.promoCodeSignal() ? 50 : 0));
+  readonly discount = computed(() => (this.promoCodeSignal() && this.itemsSignal().length > 0 ? 50 : 0));
   readonly total = computed(() =>
     Math.max(this.subtotal() + this.deliveryFee() + this.gst() - this.discount(), 0),
   );
@@ -49,23 +52,72 @@ export class CartService {
     this.refreshFromBackend();
   }
 
-  addItem(next: CartItem): void {
+  public readonly lastAddedItemSignal = signal<{ name: string; quantity: number; timestamp: number } | null>(null);
+  public readonly conflictPromptSignal = signal<{
+    pendingItem: CartItem;
+    currentRestaurantName: string;
+    newRestaurantName: string;
+  } | null>(null);
+
+  private toastTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  public triggerToast(name: string, quantity: number = 1): void {
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+    }
+    this.lastAddedItemSignal.set({ name, quantity, timestamp: Date.now() });
+    this.toastTimeout = setTimeout(() => {
+      this.lastAddedItemSignal.set(null);
+    }, 3500);
+  }
+
+  addItem(next: CartItem): boolean {
     const current = this.itemsSignal();
+
+    // Check restaurant ownership: Cart must belong to ONE restaurant at a time!
+    if (current.length > 0) {
+      const currentRestaurantId = current[0].restaurantId;
+      if (next.restaurantId && currentRestaurantId && next.restaurantId !== currentRestaurantId) {
+        // Trigger conflict modal
+        this.conflictPromptSignal.set({
+          pendingItem: next,
+          currentRestaurantName: current[0].restaurantName || 'Current Restaurant',
+          newRestaurantName: next.restaurantName || 'New Restaurant',
+        });
+        return false;
+      }
+    }
+
     const existing = current.find(
       (item) =>
         (item.backendMenuItemId &&
           item.backendMenuItemId === next.backendMenuItemId &&
           item.backendRestaurantId === next.backendRestaurantId) ||
-        item.id === next.id
+        item.id === next.id,
     );
+
+    this.triggerToast(next.name, next.quantity);
+
     if (existing) {
       this.updateQuantityLocal(existing.id, existing.quantity + next.quantity, existing.quantity);
-      return;
+      return true;
     }
 
     this.itemsSignal.set([...current, next]);
     this.persistLocalItems();
     this.addItemRemote(next);
+    return true;
+  }
+
+  resolveConflict(action: 'REPLACE' | 'CANCEL'): void {
+    const prompt = this.conflictPromptSignal();
+    this.conflictPromptSignal.set(null);
+
+    if (action === 'REPLACE' && prompt) {
+      this.clear();
+      // Add the pending item to the now-empty cart
+      this.addItem(prompt.pendingItem);
+    }
   }
 
   removeItem(id: string): void {
@@ -82,6 +134,7 @@ export class CartService {
     if (!item) {
       return;
     }
+    this.lastAddedItemSignal.set({ name: item.name, quantity: 1, timestamp: Date.now() });
     this.updateQuantityLocal(id, item.quantity + 1, item.quantity);
   }
 

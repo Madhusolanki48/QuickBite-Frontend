@@ -129,6 +129,33 @@ export class AuthApiService {
       .pipe(timeout(AUTH_REQUEST_TIMEOUT_MS));
   }
 
+  submitOnboarding(data: {
+    restaurantName?: string;
+    cuisineType?: string;
+    address?: string;
+    vehicleType?: string;
+    vehicleNumber?: string;
+    drivingLicenseNumber?: string;
+    notes?: string;
+  }): Observable<AuthUser> {
+    return this.http
+      .put<AuthUser>(`${this.authBaseUrl}/auth/me/onboarding`, data)
+      .pipe(timeout(AUTH_REQUEST_TIMEOUT_MS));
+  }
+
+  updateUserApproval(
+    id: number,
+    approvalStatus: 'APPROVED' | 'REJECTED',
+    rejectionReason?: string,
+  ): Observable<AdminUserResponse> {
+    return this.http
+      .patch<AdminUserResponse>(`${this.authBaseUrl}/auth/admin/users/${id}/approval`, {
+        approvalStatus,
+        rejectionReason: rejectionReason ?? '',
+      })
+      .pipe(timeout(AUTH_REQUEST_TIMEOUT_MS));
+  }
+
   authErrorMessage(error: unknown, fallback: string): string {
     if (error instanceof HttpErrorResponse) {
       const apiMessage = this.readApiMessage(error.error);

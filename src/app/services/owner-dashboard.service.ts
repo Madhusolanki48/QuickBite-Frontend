@@ -5,9 +5,11 @@ import { NotificationService } from './notification.service';
 import { OrderService } from './order.service';
 import { SessionService } from './session.service';
 import { DeliveryAgentDirectoryService } from './delivery-agent-directory.service';
+import { RealtimeSyncService } from './realtime-sync.service';
 import {
   AnalyticsPeriod,
   OperatingHour,
+  Order,
   OwnerAnalytics,
   OwnerMenuItem,
   RestaurantProfile,
@@ -18,12 +20,27 @@ const ANALYTICS_CUSTOM_RANGE_KEY = 'quickbite.owner.analyticsCustomRange';
 const PROFILE_KEY = 'quickbite.owner.restaurantProfile';
 const SCHEDULE_KEY = 'quickbite.owner.schedule';
 const OWNER_RESTAURANT_IDS: Record<string, string> = {
-  'burger-palace-owner@quickbite.dev': 'burger-palace',
-  'pizza-hut-owner@quickbite.dev': 'pizza-hut-express',
-  'sushi-zen-owner@quickbite.dev': 'sushi-zen',
-  'spice-garden-owner@quickbite.dev': 'spice-garden',
-  'taco-fiesta-owner@quickbite.dev': 'taco-fiesta',
-  'noodle-house-owner@quickbite.dev': 'noodle-house',
+  'owner.urbanbites@quickbite.com': 'urban-bites',
+  'owner.crustco@quickbite.com': 'crust-and-co',
+  'owner.royaltadka@quickbite.com': 'royal-tadka',
+  'owner.wokbowl@quickbite.com': 'wok-and-bowl',
+  'owner.greenspoon@quickbite.com': 'green-spoon',
+  'owner.foodyard@quickbite.com': 'the-food-yard',
+  'burger-palace-owner@quickbite.dev': 'urban-bites',
+  'pizza-hut-owner@quickbite.dev': 'crust-and-co',
+  'sushi-zen-owner@quickbite.dev': 'wok-and-bowl',
+  'spice-garden-owner@quickbite.dev': 'royal-tadka',
+  'taco-fiesta-owner@quickbite.dev': 'the-food-yard',
+  'noodle-house-owner@quickbite.dev': 'green-spoon',
+};
+
+const NUMERIC_TO_SLUG: Record<string, string> = {
+  '1': 'urban-bites',
+  '2': 'crust-and-co',
+  '3': 'royal-tadka',
+  '4': 'wok-and-bowl',
+  '5': 'green-spoon',
+  '6': 'the-food-yard',
 };
 
 @Injectable({ providedIn: 'root' })
@@ -33,6 +50,14 @@ export class OwnerDashboardService {
   private readonly notifications = inject(NotificationService);
   private readonly session = inject(SessionService);
   private readonly agents = inject(DeliveryAgentDirectoryService);
+  private readonly sync = inject(RealtimeSyncService);
+  private readonly liveOrdersRevisionSignal = signal(0);
+
+  constructor() {
+    this.sync.on('orders', () => {
+      this.liveOrdersRevisionSignal.update((v) => v + 1);
+    });
+  }
 
   private readonly scheduleSignal = signal<OperatingHour[]>(
     this.readSchedule(this.currentRestaurantId()),
@@ -52,6 +77,11 @@ export class OwnerDashboardService {
   });
 
   readonly liveOrders = computed(() => this.buildLiveOrders());
+  readonly orderHistory = computed(() =>
+    this.buildRestaurantOrders().filter(
+      (order) => order.status === 'DELIVERED' || order.status === 'CANCELLED',
+    ),
+  );
   readonly menuItems = computed(() =>
     this.catalog
       .menuForRestaurant(this.restaurantProfile().restaurantId)
@@ -129,6 +159,12 @@ export class OwnerDashboardService {
     const order = this.orderService.orders().find((item) => item.id === orderId);
     this.orderService.updateOrderStatus(orderId, 'READY');
     this.notifyOrderUpdate(order, 'READY');
+  }
+
+  confirmHandover(orderId: string): void {
+    const order = this.orderService.orders().find((item) => item.id === orderId);
+    this.orderService.updateOrderStatus(orderId, 'ON_THE_WAY');
+    this.notifyOrderUpdate(order, 'ON_THE_WAY');
   }
 
   assignDeliveryAgent(orderId: string, agentEmail: string): void {
@@ -233,7 +269,33 @@ export class OwnerDashboardService {
   }
 
   private buildAnalytics(period: AnalyticsPeriod): OwnerAnalytics {
-    const orders = this.orderService.orders();
+    const restaurantId = this.currentRestaurantId();
+    const currentRest = this.catalog.restaurantById(restaurantId);
+    const backendId = currentRest?.backendId;
+    const currentName = (currentRest?.name || this.restaurantProfile().name || this.restaurantNameFor(restaurantId) || '').toLowerCase().trim();
+
+    const orders = this.orderService.orders().filter((order) => {
+      if (!restaurantId) return true;
+      const oRestId = (order.restaurantId || '').toLowerCase().trim();
+      const targetRestId = restaurantId.toLowerCase().trim();
+      if (oRestId === targetRestId) return true;
+      if (NUMERIC_TO_SLUG[oRestId] === targetRestId) return true;
+      if (backendId && (order.backendRestaurantId === backendId || String(order.restaurantId) === String(backendId))) return true;
+
+      const oNameClean = (order.restaurantName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const targetNameClean = currentName.replace(/[^a-z0-9]/g, '');
+      if (oNameClean && targetNameClean && (oNameClean.includes(targetNameClean) || targetNameClean.includes(oNameClean))) return true;
+
+      if (targetRestId.includes('urban') && (oRestId.includes('urban') || oNameClean.includes('urban'))) return true;
+      if (targetRestId.includes('crust') && (oRestId.includes('crust') || oNameClean.includes('crust'))) return true;
+      if (targetRestId.includes('tadka') && (oRestId.includes('tadka') || oNameClean.includes('tadka'))) return true;
+      if (targetRestId.includes('wok') && (oRestId.includes('wok') || oNameClean.includes('wok'))) return true;
+      if (targetRestId.includes('green') && (oRestId.includes('green') || oNameClean.includes('green'))) return true;
+      if (targetRestId.includes('food-yard') && (oRestId.includes('foodyard') || oNameClean.includes('foodyard'))) return true;
+
+      return false;
+    });
+
     const filtered = orders.filter((order) => this.isWithinPeriod(order.createdAt, period));
     const validOrders = filtered.filter((order) => order.status !== 'CANCELLED');
     const totalRevenue = validOrders.reduce((sum, order) => sum + order.total, 0);
@@ -297,10 +359,8 @@ export class OwnerDashboardService {
   }
 
   private buildLiveOrders() {
-    const restaurantId = this.currentRestaurantId();
-    return this.orderService
-      .activeOrders()
-      .filter((order) => (restaurantId ? order.restaurantId === restaurantId : false))
+    return this.buildRestaurantOrders()
+      .filter((order) => order.status !== 'DELIVERED' && order.status !== 'CANCELLED')
       .map((order) => ({
         id: order.id,
         restaurantId: order.restaurantId,
@@ -326,6 +386,40 @@ export class OwnerDashboardService {
         pickupLocation: order.pickupLocation,
         deliveryLocation: order.deliveryLocation,
       }));
+  }
+
+  private buildRestaurantOrders(): Order[] {
+    this.liveOrdersRevisionSignal();
+    const restaurantId = this.currentRestaurantId();
+    const currentRest = this.catalog.restaurantById(restaurantId);
+    const backendId = currentRest?.backendId;
+    const currentName = (currentRest?.name || this.restaurantProfile().name || this.restaurantNameFor(restaurantId) || '').toLowerCase().trim();
+
+    return this.orderService
+      .orders()
+      .filter((order) => {
+        if (!restaurantId) return false;
+        const oRestId = (order.restaurantId || '').toLowerCase().trim();
+        const targetRestId = restaurantId.toLowerCase().trim();
+
+        if (oRestId === targetRestId) return true;
+        if (NUMERIC_TO_SLUG[oRestId] === targetRestId) return true;
+        if (backendId && (order.backendRestaurantId === backendId || String(order.restaurantId) === String(backendId))) return true;
+
+        const oNameClean = (order.restaurantName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const targetNameClean = currentName.replace(/[^a-z0-9]/g, '');
+        if (oNameClean && targetNameClean && (oNameClean.includes(targetNameClean) || targetNameClean.includes(oNameClean))) return true;
+
+        if (targetRestId.includes('urban') && (oRestId.includes('urban') || oNameClean.includes('urban'))) return true;
+        if (targetRestId.includes('crust') && (oRestId.includes('crust') || oNameClean.includes('crust'))) return true;
+        if (targetRestId.includes('tadka') && (oRestId.includes('tadka') || oNameClean.includes('tadka'))) return true;
+        if (targetRestId.includes('wok') && (oRestId.includes('wok') || oNameClean.includes('wok'))) return true;
+        if (targetRestId.includes('green') && (oRestId.includes('green') || oNameClean.includes('green'))) return true;
+        if (targetRestId.includes('food-yard') && (oRestId.includes('foodyard') || oNameClean.includes('foodyard'))) return true;
+
+        return false;
+      })
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
   private buildCustomAnalytics(): OwnerAnalytics {
@@ -677,8 +771,22 @@ export class OwnerDashboardService {
 
   private currentRestaurantId(): string {
     const user = this.session.user();
-    const email = user?.email?.toLowerCase() ?? '';
-    return user?.restaurantId ?? OWNER_RESTAURANT_IDS[email] ?? '';
+    const email = user?.email?.toLowerCase().trim() ?? '';
+    const mappedByEmail = OWNER_RESTAURANT_IDS[email];
+    if (mappedByEmail) {
+      return mappedByEmail;
+    }
+    const rawId = user?.restaurantId?.trim();
+    if (rawId && NUMERIC_TO_SLUG[rawId]) {
+      return NUMERIC_TO_SLUG[rawId];
+    }
+    if (rawId) {
+      return rawId;
+    }
+    if (user?.restaurantName) {
+      return this.slugify(user.restaurantName);
+    }
+    return 'urban-bites';
   }
 
   private profileKey(restaurantId: string): string {
@@ -690,7 +798,27 @@ export class OwnerDashboardService {
   }
 
   private restaurantNameFor(restaurantId: string): string {
+    const user = this.session.user();
+    if (user?.restaurantName) {
+      return user.restaurantName;
+    }
+    const found = this.catalog.restaurantById(restaurantId);
+    if (found?.name) {
+      return found.name;
+    }
     switch (restaurantId) {
+      case 'urban-bites':
+        return 'Urban Bites';
+      case 'crust-co':
+        return 'Crust & Co.';
+      case 'royal-tadka':
+        return 'Royal Tadka';
+      case 'wok-bowl':
+        return 'Wok & Bowl';
+      case 'green-spoon':
+        return 'Green Spoon';
+      case 'food-yard':
+        return 'The Food Yard';
       case 'pizza-hut-express':
         return 'Pizza Hut Express';
       case 'sushi-zen':

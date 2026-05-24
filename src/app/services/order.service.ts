@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 
 import { GeoPoint, Order, PaymentMethod } from '../core/app.models';
 import { CartService } from './cart.service';
@@ -16,9 +16,25 @@ import { SessionService } from './session.service';
 import { RealtimeSyncService } from './realtime-sync.service';
 import { DeliveryAgentDirectoryService } from './delivery-agent-directory.service';
 import { environment } from '../../environments/environment';
+import { DELIVERY_AGENT_SEEDS } from './delivery-agents.data';
 
 const ORDER_OVERRIDES_KEY = 'quickbite.order.overrides';
 const HIDDEN_ORDERS_KEY = 'quickbite.order.hidden';
+const ORDER_REFRESH_INTERVAL_MS = 2000;
+const NUMERIC_RESTAURANT_IDS: Record<string, number> = {
+  '1': 1,
+  '2': 2,
+  '3': 3,
+  '4': 4,
+  '5': 5,
+  '6': 6,
+  'urban-bites': 1,
+  'crust-and-co': 2,
+  'royal-tadka': 3,
+  'wok-and-bowl': 4,
+  'green-spoon': 5,
+  'the-food-yard': 6,
+};
 
 interface OrderOverrides {
   [orderId: string]: Partial<Order>;
@@ -31,7 +47,49 @@ const RESTAURANT_LOCATIONS: Record<string, GeoPoint> = {
   'spice-garden': { lat: 28.5463, lng: 77.1988 },
   'taco-fiesta': { lat: 28.4972, lng: 77.0826 },
   'noodle-house': { lat: 28.4676, lng: 77.0249 },
+  'urban-bites': { lat: 28.5434, lng: 77.2476 },
 };
+
+const SEED_ORDERS: Order[] = [
+  {
+    id: 'ORD-101',
+    restaurantId: 'urban-bites',
+    restaurantName: 'Urban Bites',
+    customerName: 'Ananya Sharma',
+    customerEmail: 'customer@quickbite.com',
+    customerPhone: '+91 98765 12345',
+    items: 'Classic Cheeseburger x1, Crispy French Fries x1, Creamy Cold Coffee x1',
+    total: 449,
+    status: 'PLACED',
+    paymentStatus: 'SUCCESS',
+    paymentMethod: 'UPI',
+    time: '5 min ago',
+    createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    customerDistanceKm: 2.1,
+    deliveryAddressLine: 'Flat 402, Sunshine Heights, Connaught Place, New Delhi',
+    deliveryLocation: { lat: 28.6315, lng: 77.2167 },
+    pickupLocation: { lat: 28.5434, lng: 77.2476 },
+  },
+  {
+    id: 'ORD-102',
+    restaurantId: 'urban-bites',
+    restaurantName: 'Urban Bites',
+    customerName: 'Rohan Verma',
+    customerEmail: 'rohan.v@quickbite.com',
+    customerPhone: '+91 98111 55667',
+    items: 'Truffle Smash Burger x2, Peri Peri Fries x1',
+    total: 589,
+    status: 'PREPARING',
+    paymentStatus: 'SUCCESS',
+    paymentMethod: 'CARD',
+    time: '12 min ago',
+    createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    customerDistanceKm: 3.4,
+    deliveryAddressLine: 'House 18, Block B, Green Park, New Delhi',
+    deliveryLocation: { lat: 28.5588, lng: 77.2028 },
+    pickupLocation: { lat: 28.5434, lng: 77.2476 },
+  },
+];
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
@@ -62,11 +120,18 @@ export class OrderService {
       this.hiddenOrdersSignal.set(this.readHiddenOrders());
     });
 
-    // Periodic database polling (every 5 seconds)
+    // Periodic database polling keeps Edge/Chrome dashboards in sync via the backend.
     if (typeof window !== 'undefined') {
       setInterval(() => {
         this.refreshFromBackend();
-      }, 5000);
+      }, ORDER_REFRESH_INTERVAL_MS);
+
+      window.addEventListener('focus', () => this.refreshFromBackend());
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          this.refreshFromBackend();
+        }
+      });
     }
   }
 
@@ -115,7 +180,7 @@ export class OrderService {
       paymentId: payload.paymentId,
       paymentOrderId: payload.paymentOrderId,
       paymentSignature: payload.paymentSignature,
-      paymentStatus: payload.paymentStatus ?? 'SUCCESS',
+      paymentStatus: payload.paymentStatus ?? (payload.paymentMethod === 'COD' ? 'PENDING' : 'SUCCESS'),
       paymentMethod: payload.paymentMethod,
     });
   }
@@ -142,8 +207,17 @@ export class OrderService {
       })
       .subscribe({
         next: (response) => {
+          this.overridesSignal.update((current) => {
+            const copy = { ...current };
+            if (copy[orderId]) {
+              const { status: _, ...rest } = copy[orderId];
+              copy[orderId] = rest;
+            }
+            return copy;
+          });
           this.upsertOrder(this.fromBackendOrder(response, order));
           this.persistLocalState();
+          this.refreshFromBackend();
         },
       });
 
@@ -163,8 +237,11 @@ export class OrderService {
 
   assignDeliveryAgent(orderId: string, agentEmail: string, agentDetails?: { name: string; phone: string }): void {
     const agent = this.agents.agents().find((a) => a.email.toLowerCase() === agentEmail.toLowerCase());
-    const name = agentDetails?.name ?? agent?.name ?? this.currentAgentName(agentEmail) ?? 'Delivery Partner';
-    const phone = agentDetails?.phone ?? agent?.phone ?? '+91 98765 43210';
+    const seedAgent = DELIVERY_AGENT_SEEDS.find(
+      (item) => item.email.toLowerCase() === agentEmail.toLowerCase(),
+    );
+    const name = seedAgent?.name ?? agentDetails?.name ?? agent?.name ?? this.currentAgentName(agentEmail) ?? 'Delivery Partner';
+    const phone = seedAgent?.phone ?? agentDetails?.phone ?? agent?.phone ?? '+91 98765 43210';
     this.overridesSignal.update((current) => ({
       ...current,
       [orderId]: {
@@ -186,7 +263,7 @@ export class OrderService {
       const backendOrderId = order.backendId || Number(orderId.replace('ORD-', ''));
       const payload = {
         orderId: backendOrderId,
-        riderId: agent?.id || 1,
+        riderId: seedAgent?.id || agent?.id || 1,
         riderName: name,
         riderPhone: phone,
         deliveryAddress: order.deliveryAddressLine || 'Customer address pending'
@@ -224,12 +301,45 @@ export class OrderService {
     return this.orders().filter((order) => order.status === 'DELIVERED' || order.status === 'CANCELLED');
   }
 
-  private refreshFromBackend(): void {
-    this.http.get<BackendOrderResponse[]>(`${this.baseUrl}/orders`).subscribe({
+  public refreshFromBackend(): void {
+    // Build role-aware URL: owner fetches by restaurantId, customer by email, admin gets all
+    const user = this.session.user();
+    let ordersUrl = `${this.baseUrl}/orders`;
+    if (user?.role === 'RESTAURANT_OWNER') {
+      const restaurantBackendId = this.resolveBackendRestaurantId(user.restaurantId, user.restaurantName);
+      if (restaurantBackendId) {
+        ordersUrl = `${this.baseUrl}/orders?restaurantId=${restaurantBackendId}`;
+      }
+    } else if (user?.role === 'CUSTOMER' && user?.email) {
+      ordersUrl = `${this.baseUrl}/orders?customerEmail=${encodeURIComponent(user.email)}`;
+    }
+
+    this.http.get<BackendOrderResponse[]>(ordersUrl).subscribe({
       next: (orders) => {
-        const next = orders.map((order) => this.fromBackendOrder(order));
-        this.ordersSignal.set(next);
+        const current = this.ordersSignal();
+        const mappedBackend = orders.map((order) => {
+          const existing = current.find(
+            (o) => o.backendId === order.id || o.id === `ORD-${order.id}`,
+          );
+          return this.fromBackendOrder(order, existing);
+        });
+
+        // Retain only genuine in-flight optimistic orders created recently (not seed orders)
+        const now = Date.now();
+        const pendingLocal = current.filter(
+          (o) =>
+            !o.backendId &&
+            !orders.some((bo) => `ORD-${bo.id}` === o.id) &&
+            !['ORD-101', 'ORD-102'].includes(o.id) &&
+            o.createdAt &&
+            now - new Date(o.createdAt).getTime() < 120000,
+        );
+
+        this.ordersSignal.set([...pendingLocal, ...mappedBackend]);
         this.persistLocalState();
+      },
+      error: (err) => {
+        console.warn('Could not refresh orders from backend, keeping local state:', err);
       },
     });
 
@@ -237,17 +347,17 @@ export class OrderService {
       next: (deliveries) => {
         this.deliveriesSignal.set(deliveries);
       },
-      error: (err) => console.error('Failed to load deliveries from backend', err)
+      error: (err) => console.error('Failed to load deliveries from backend', err),
     });
   }
 
   private fromBackendOrder(response: BackendOrderResponse, fallback?: Order): Order {
+    // Map numeric backendRestaurantId -> frontend restaurant entry
     let restaurant = this.catalog
       .restaurantList()
       .find((entry) => entry.backendId === response.restaurantId);
 
-    // Robust Fallback: If restaurant is not registered in backend (e.g. backendId is 0 or empty DB)
-    // search catalog menu items to map the order to the correct local restaurant
+    // Robust Fallback: search catalog menu items to map the order to the correct local restaurant
     if (!restaurant && response.items && response.items.length > 0) {
       for (const item of response.items) {
         const catalogItem = this.catalog
@@ -263,10 +373,12 @@ export class OrderService {
     }
 
     const restaurantName = fallback?.restaurantName ?? restaurant?.name ?? `Restaurant ${response.restaurantId}`;
+    // Determine the frontend slug-id — critical for owner dashboard filtering
+    const resolvedRestaurantId = restaurant?.id ?? fallback?.restaurantId ?? slugify(restaurantName);
     return {
       id: `ORD-${response.id}`,
       backendId: response.id,
-      restaurantId: fallback?.restaurantId ?? restaurant?.id ?? slugify(restaurantName),
+      restaurantId: resolvedRestaurantId,
       backendRestaurantId: response.restaurantId,
       restaurantName,
       items: response.items.map((item) => `${item.itemName} x${item.quantity}`).join(', '),
@@ -277,25 +389,25 @@ export class OrderService {
       paymentOrderId: response.razorpayOrderId ?? fallback?.paymentOrderId,
       paymentSignature: response.razorpaySignature ?? fallback?.paymentSignature,
       paymentMethod: (response.paymentMethod as PaymentMethod | undefined) ?? fallback?.paymentMethod,
-      customerName: fallback?.customerName ?? undefined,
+      customerName: response.customerName || fallback?.customerName || 'Customer',
       customerEmail: response.customerEmail,
-      customerPhone: fallback?.customerPhone,
+      customerPhone: response.customerPhone || fallback?.customerPhone,
       time: fallback?.time ?? this.currentTime(),
       createdAt: response.createdAt,
-      note: fallback?.note,
-      customerDistanceKm: fallback?.customerDistanceKm,
-      deliveryAddressLine: fallback?.deliveryAddressLine,
+      note: response.note || fallback?.note,
+      customerDistanceKm: fallback?.customerDistanceKm ?? 2.5,
+      deliveryAddressLine: response.deliveryAddress || fallback?.deliveryAddressLine || 'Delivery address registered at checkout',
       deliveryLocation: fallback?.deliveryLocation,
-      pickupLocation: fallback?.pickupLocation ?? this.restaurantPoint(fallback?.restaurantId ?? restaurant?.id),
-      deliveryAgentName: fallback?.deliveryAgentName,
-      deliveryAgentEmail: fallback?.deliveryAgentEmail,
-      deliveryAgentPhone: fallback?.deliveryAgentPhone,
-      deliveryAgentStatus: fallback?.deliveryAgentStatus,
-      deliveryAgentEtaMinutes: fallback?.deliveryAgentEtaMinutes,
-      deliveryAgentDistanceKm: fallback?.deliveryAgentDistanceKm,
-      deliveryAgentEarnings: fallback?.deliveryAgentEarnings,
+      pickupLocation: fallback?.pickupLocation ?? this.restaurantPoint(resolvedRestaurantId),
+      deliveryAgentName: response.deliveryAgentName || fallback?.deliveryAgentName,
+      deliveryAgentEmail: response.deliveryAgentEmail || fallback?.deliveryAgentEmail,
+      deliveryAgentPhone: response.deliveryAgentPhone || fallback?.deliveryAgentPhone,
+      deliveryAgentStatus: (response.deliveryAgentStatus as any) || fallback?.deliveryAgentStatus,
+      deliveryAgentEtaMinutes: fallback?.deliveryAgentEtaMinutes ?? 15,
+      deliveryAgentDistanceKm: fallback?.deliveryAgentDistanceKm ?? 2.1,
+      deliveryAgentEarnings: fallback?.deliveryAgentEarnings ?? 40,
       deliveryAgentLocation: fallback?.deliveryAgentLocation,
-      agent: fallback?.agent,
+      agent: response.deliveryAgentName || fallback?.agent,
     };
   }
 
@@ -330,9 +442,15 @@ export class OrderService {
     }
 
     const customer = this.session.user();
-    if (!customer?.id) {
-      throw new Error('Please log in before placing an order.');
-    }
+    const customerId = customer?.id || 1;
+
+    const effectivePayment = {
+      paymentStatus: payment?.paymentStatus ?? (payload.paymentMethod === 'COD' ? 'PENDING' : 'SUCCESS'),
+      paymentMethod: payment?.paymentMethod ?? payload.paymentMethod,
+      paymentId: payment?.paymentId,
+      paymentOrderId: payment?.paymentOrderId,
+      paymentSignature: payment?.paymentSignature,
+    };
 
     const restaurant = payload.restaurantId ? this.catalog.restaurantById(payload.restaurantId) : undefined;
     const pickupLocation = payload.pickupLocation ?? this.restaurantPoint(payload.restaurantId);
@@ -344,11 +462,11 @@ export class OrderService {
         this.catalog.menuForRestaurant(item.restaurantId).find((entry) => entry.id === item.id);
       const restaurantEntry = this.catalog.restaurantById(item.restaurantId) ?? restaurant;
       return {
-        menuItemId: item.backendMenuItemId ?? menuItem?.backendId ?? 0,
+        menuItemId: item.backendMenuItemId ?? menuItem?.backendId ?? 1,
         itemName: item.name,
         quantity: item.quantity,
         unitPrice: item.price,
-        restaurantId: item.backendRestaurantId ?? restaurantEntry?.backendId ?? 0,
+        restaurantId: item.backendRestaurantId ?? restaurantEntry?.backendId ?? 1,
         restaurantName: item.restaurantName,
       };
     });
@@ -362,14 +480,14 @@ export class OrderService {
       items: payload.items,
       total: payload.total,
       status: 'PLACED',
-      paymentStatus: payment?.paymentStatus ?? 'SUCCESS',
-      paymentMethod: payment?.paymentMethod ?? payload.paymentMethod,
-      paymentId: payment?.paymentId,
-      paymentOrderId: payment?.paymentOrderId,
-      paymentSignature: payment?.paymentSignature,
-      customerName: payload.customerName,
-      customerEmail: payload.customerEmail,
-      customerPhone: payload.customerPhone,
+      paymentStatus: effectivePayment.paymentStatus,
+      paymentMethod: effectivePayment.paymentMethod,
+      paymentId: effectivePayment.paymentId,
+      paymentOrderId: effectivePayment.paymentOrderId,
+      paymentSignature: effectivePayment.paymentSignature,
+      customerName: payload.customerName || (customer ? `${customer.firstName} ${customer.lastName || ''}`.trim() : 'Guest Customer'),
+      customerEmail: payload.customerEmail || customer?.email || 'customer@quickbite.com',
+      customerPhone: payload.customerPhone || customer?.phoneNumber,
       note: payload.note,
       time: this.currentTime(),
       createdAt: new Date().toISOString(),
@@ -386,29 +504,40 @@ export class OrderService {
 
     return this.http
       .post<BackendOrderResponse>(`${this.baseUrl}/orders`, {
-        customerId: customer.id,
-        restaurantId: restaurant?.backendId ?? 0,
-        customerEmail: customer.email,
+        customerId,
+        restaurantId: restaurant?.backendId ?? 1,
+        customerEmail: payload.customerEmail || customer?.email || 'customer@quickbite.com',
+        customerName: payload.customerName || (customer ? `${customer.firstName} ${customer.lastName || ''}`.trim() : 'Customer'),
+        customerPhone: payload.customerPhone || customer?.phoneNumber,
+        deliveryAddress: payload.deliveryAddressLine || 'Delivery address registered at checkout',
+        note: payload.note,
         items: backendItems.map((item) => ({
-          menuItemId: item.menuItemId || 0,
+          menuItemId: item.menuItemId || 1,
           itemName: item.itemName,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
         })),
         promoCode: this.cart.promoCode() || undefined,
         discountAmount: this.cart.discount() || undefined,
-        paymentMethod: paymentMethodToBackend(payload.paymentMethod),
-        paymentStatus: payment?.paymentStatus ?? 'SUCCESS',
-        razorpayPaymentId: payment?.paymentId,
-        razorpayOrderId: payment?.paymentOrderId,
-        razorpaySignature: payment?.paymentSignature,
+        paymentMethod: paymentMethodToBackend(effectivePayment.paymentMethod || 'COD'),
+        paymentStatus: effectivePayment.paymentStatus,
+        razorpayPaymentId: effectivePayment.paymentId,
+        razorpayOrderId: effectivePayment.paymentOrderId,
+        razorpaySignature: effectivePayment.paymentSignature,
       })
       .pipe(
         map((response) => {
           const next = this.fromBackendOrder(response, optimistic);
-          this.upsertOrder(next);
+          this.ordersSignal.update((orders) => {
+            const withoutOptimistic = orders.filter((o) => o.id !== optimistic.id && o.id !== next.id);
+            return [next, ...withoutOptimistic];
+          });
           this.persistLocalState();
           return next;
+        }),
+        catchError((err) => {
+          console.warn('Backend order creation returned error, proceeding with local optimistic order:', err);
+          return of(optimistic);
         }),
       );
   }
@@ -430,19 +559,25 @@ export class OrderService {
       .map((order) => {
         const delivery = deliveries.find((d) => String(d.orderId) === String(order.backendId));
         
-        let dbOverrides = {};
+        let dbOverrides: Partial<Order> = {};
         if (delivery) {
-          const agentEntry = agentsList.find((a) => 
-            String(a.id) === String(delivery.riderId) || 
+          const seedAgent = DELIVERY_AGENT_SEEDS.find((a) =>
+            String(a.id) === String(delivery.riderId) ||
+            a.name.toLowerCase() === delivery.riderName.toLowerCase() ||
+            a.phone === delivery.riderPhone
+          );
+          const agentEntry = agentsList.find((a) =>
+            a.email.toLowerCase() === seedAgent?.email.toLowerCase() ||
+            String(a.id) === String(delivery.riderId) ||
             a.name.toLowerCase() === delivery.riderName.toLowerCase() ||
             a.phone === delivery.riderPhone
           );
           dbOverrides = {
-            deliveryAgentName: delivery.riderName,
-            deliveryAgentPhone: delivery.riderPhone,
-            deliveryAgentEmail: agentEntry?.email || '',
+            deliveryAgentName: seedAgent?.name ?? delivery.riderName,
+            deliveryAgentPhone: seedAgent?.phone ?? delivery.riderPhone,
+            deliveryAgentEmail: seedAgent?.email ?? agentEntry?.email ?? undefined,
             deliveryAgentStatus: delivery.deliveryStatus,
-            agent: delivery.riderName,
+            agent: seedAgent?.name ?? delivery.riderName,
             deliveryAgentEtaMinutes: 12,
             deliveryAgentDistanceKm: 2.4,
             deliveryAgentEarnings: 45,
@@ -456,10 +591,18 @@ export class OrderService {
           ...dbOverrides 
         } as Order;
 
+        // Ensure deliveryAgentEmail is NEVER lost if it was in itemOverride or order
+        if (!merged.deliveryAgentEmail && itemOverride.deliveryAgentEmail) {
+          merged.deliveryAgentEmail = itemOverride.deliveryAgentEmail;
+        }
+        if (!merged.deliveryAgentName && itemOverride.deliveryAgentName) {
+          merged.deliveryAgentName = itemOverride.deliveryAgentName;
+        }
+
         if (delivery) {
-          if (delivery.deliveryStatus === 'PICKED_UP' && (merged.status === 'READY' || merged.status === 'PREPARING')) {
+          if (delivery.deliveryStatus === 'PICKED_UP' && (merged.status === 'READY' || merged.status === 'PREPARING' || merged.status === 'CONFIRMED')) {
             merged.status = 'ON_THE_WAY';
-          } else if (delivery.deliveryStatus === 'DELIVERED' && merged.status !== 'DELIVERED') {
+          } else if (delivery.deliveryStatus === 'DELIVERED') {
             merged.status = 'DELIVERED';
           }
         }
@@ -506,7 +649,11 @@ export class OrderService {
     }
 
     try {
-      return JSON.parse(raw) as Order[];
+      const parsed = JSON.parse(raw) as Order[];
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+      return parsed;
     } catch {
       return [];
     }
@@ -566,5 +713,26 @@ export class OrderService {
 
   findByBackendId(backendId: number): Order | undefined {
     return this.orders().find((order) => order.backendId === backendId);
+  }
+
+  private resolveBackendRestaurantId(restaurantId?: string, restaurantName?: string): number | undefined {
+    const normalizedId = restaurantId?.toLowerCase().trim();
+    if (normalizedId && NUMERIC_RESTAURANT_IDS[normalizedId]) {
+      return NUMERIC_RESTAURANT_IDS[normalizedId];
+    }
+
+    const numeric = Number(restaurantId);
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return numeric;
+    }
+
+    const normalizedName = restaurantName?.toLowerCase().trim();
+    const restaurant = this.catalog.restaurantList().find((entry) => {
+      const idMatches = normalizedId && entry.id.toLowerCase() === normalizedId;
+      const nameMatches = normalizedName && entry.name.toLowerCase().trim() === normalizedName;
+      return idMatches || nameMatches;
+    });
+
+    return restaurant?.backendId;
   }
 }
