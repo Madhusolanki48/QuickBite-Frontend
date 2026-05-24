@@ -2,7 +2,11 @@ import { inject } from '@angular/core';
 import { CanActivateChildFn, CanActivateFn, Router } from '@angular/router';
 
 import { AppRole } from './app.models';
-import { SessionService } from '../services/session.service';
+import {
+  SessionService,
+  isExistingDeliveryPartner,
+  isExistingRestaurantOwner,
+} from '../services/session.service';
 
 export const authGuard: CanActivateChildFn = () => {
   const session = inject(SessionService);
@@ -30,14 +34,34 @@ export const roleGuard = (allowedRoles: AppRole[]): CanActivateFn => {
       return router.createUrlTree(['/login']);
     }
 
-    if (user && user.approvalStatus === 'PENDING' && (user.role === 'RESTAURANT_OWNER' || user.role === 'DELIVERY_PARTNER')) {
-      return router.createUrlTree(['/approval-pending']);
+    if (!user || !allowedRoles.includes(user.role)) {
+      return router.createUrlTree([session.routeAfterAuth(user)]);
     }
 
-    if (user && allowedRoles.includes(user.role)) {
-      return true;
+    if (user && user.role === 'RESTAURANT_OWNER') {
+      if (isExistingRestaurantOwner(user)) {
+        return true;
+      }
+      if (user.onboardingStatus === 'NOT_STARTED' || user.onboardingStatus === 'IN_PROGRESS' || !user.onboardingStatus) {
+        return router.createUrlTree(['/owner/onboarding']);
+      }
+      if (user.approvalStatus === 'PENDING' || user.approvalStatus === 'REJECTED') {
+        return router.createUrlTree(['/approval-pending']);
+      }
     }
 
-    return router.createUrlTree([session.routeAfterAuth(user)]);
+    if (user && user.role === 'DELIVERY_PARTNER') {
+      if (isExistingDeliveryPartner(user)) {
+        return true;
+      }
+      if (user.onboardingStatus === 'NOT_STARTED' || user.onboardingStatus === 'IN_PROGRESS' || !user.onboardingStatus) {
+        return router.createUrlTree(['/delivery/onboarding']);
+      }
+      if (user.approvalStatus === 'PENDING' || user.approvalStatus === 'REJECTED') {
+        return router.createUrlTree(['/approval-pending']);
+      }
+    }
+
+    return true;
   };
 };

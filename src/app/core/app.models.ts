@@ -11,6 +11,8 @@ export interface AuthUser {
   restaurantId?: string;
   restaurantName?: string;
   approvalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+  onboardingStatus?: 'NOT_STARTED' | 'IN_PROGRESS' | 'SUBMITTED' | 'COMPLETED';
+  rejectionReason?: string;
 }
 
 export interface AuthResponse {
@@ -38,12 +40,15 @@ export interface AdminUserResponse {
   id: number;
   firstName: string;
   lastName: string;
+  username?: string | null;
   email: string;
   phoneNumber?: string | null;
   role: AppRole;
   restaurantId?: string | null;
   restaurantName?: string | null;
   approvalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | null;
+  onboardingStatus?: 'NOT_STARTED' | 'IN_PROGRESS' | 'SUBMITTED' | 'COMPLETED' | null;
+  rejectionReason?: string | null;
   enabled: boolean;
   createdAt: string;
 }
@@ -131,6 +136,7 @@ export interface MenuItem {
   rating: number;
   icon: string;
   category: string;
+  isVeg?: boolean;
   available?: boolean;
   imageUrl?: string;
   discountPercent?: number;
