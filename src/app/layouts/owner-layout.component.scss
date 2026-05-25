@@ -3,10 +3,11 @@
 }
 
 .owner-shell {
-  width: min(1480px, 100%);
+  width: min(1600px, 96vw);
   min-height: 100vh;
   margin: 0 auto;
   padding: 0.85rem;
+  box-sizing: border-box;
 }
 
 .topbar {

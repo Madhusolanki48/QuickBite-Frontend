@@ -1,19 +1,25 @@
+import { NgIf } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { NotificationBellComponent } from '../components/notification-bell.component';
 import { RoleTopbarMenuComponent } from '../components/role-topbar-menu.component';
+import { CartConflictModalComponent } from '../components/cart-conflict-modal.component';
+import { CartService } from '../services/cart.service';
+import { CatalogService } from '../services/catalog.service';
 import { SessionService } from '../services/session.service';
 import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-customer-layout',
   imports: [
+    NgIf,
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
     NotificationBellComponent,
     RoleTopbarMenuComponent,
+    CartConflictModalComponent,
   ],
   template: `
     <div class="customer-shell">
@@ -40,6 +46,35 @@ import { ThemeService } from '../services/theme.service';
             <a routerLink="/favorites" routerLinkActive="active">Favorites</a>
             <a routerLink="/orders" routerLinkActive="active">Orders</a>
           </nav>
+
+          <div class="topbar-diet-toggle" aria-label="Diet preference">
+            <button
+              type="button"
+              class="topbar-diet-btn topbar-diet-btn--veg"
+              [class.active]="catalog.vegFilter() === 'VEG'"
+              (click)="catalog.setVegFilter('VEG')"
+            >
+              <span class="diet-indicator-square veg"><span class="circle"></span></span>
+              Veg Only
+            </button>
+            <button
+              type="button"
+              class="topbar-diet-btn topbar-diet-btn--nonveg"
+              [class.active]="catalog.vegFilter() === 'NON_VEG'"
+              (click)="catalog.setVegFilter('NON_VEG')"
+            >
+              <span class="diet-indicator-square nonveg"><span class="circle"></span></span>
+              Non-Veg
+            </button>
+            <button
+              type="button"
+              class="topbar-diet-btn topbar-diet-btn--all"
+              [class.active]="catalog.vegFilter() === 'ALL'"
+              (click)="catalog.setVegFilter('ALL')"
+            >
+              All
+            </button>
+          </div>
 
           <div class="topbar-actions">
             <app-notification-bell />
@@ -75,6 +110,27 @@ import { ThemeService } from '../services/theme.service';
         <router-outlet />
       </main>
 
+      <!-- Global Add to Cart Toast Notification -->
+      <aside
+        *ngIf="cart.lastAddedItemSignal() as added"
+        class="cart-toast-popup"
+        role="status"
+        aria-live="polite"
+      >
+        <div class="cart-toast-popup__badge">✓</div>
+        <div class="cart-toast-popup__info">
+          <span class="cart-toast-popup__title">Item added to cart!</span>
+          <strong class="cart-toast-popup__name">{{ added.name }} (x{{ added.quantity }})</strong>
+          <small class="cart-toast-popup__rest" *ngIf="cart.restaurantName()">from {{ cart.restaurantName() }}</small>
+        </div>
+        <a routerLink="/cart" class="cart-toast-popup__action">
+          View Cart ({{ cart.itemCount() }}) &rarr;
+        </a>
+      </aside>
+
+      <!-- Cart Conflict Dialog (Swiggy / Zomato style) -->
+      <app-cart-conflict-modal />
+
       <nav class="mobile-bottom-nav" aria-label="Customer quick actions">
         <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           <span aria-hidden="true">⌂</span>
@@ -104,6 +160,8 @@ import { ThemeService } from '../services/theme.service';
 export class CustomerLayoutComponent {
   private readonly session = inject(SessionService);
   protected readonly theme = inject(ThemeService);
+  public readonly catalog = inject(CatalogService);
+  public readonly cart = inject(CartService);
 
   protected readonly displayName = computed(() => {
     const user = this.session.user();

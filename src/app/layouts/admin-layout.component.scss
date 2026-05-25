@@ -72,9 +72,10 @@
   padding-right: 0.2rem;
 }
 
-.nav-group {
+.nav-group,
+.nav-single-list {
   display: grid;
-  gap: 0.3rem;
+  gap: 0.35rem;
   margin-bottom: 1rem;
 }
 

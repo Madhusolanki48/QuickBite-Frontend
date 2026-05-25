@@ -1,4 +1,4 @@
-import { NgFor, NgIf } from '@angular/common';
+import { CommonModule, NgFor, NgIf } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
@@ -10,7 +10,9 @@ import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-admin-layout',
+  standalone: true,
   imports: [
+    CommonModule,
     NgFor,
     NgIf,
     RouterLink,
@@ -28,46 +30,41 @@ import { ThemeService } from '../services/theme.service';
           </span>
           <span>
             <strong>QuickBite</strong>
-            <small>Ops Command</small>
+            <small>Admin Command</small>
           </span>
         </a>
 
         <nav class="admin-nav" aria-label="Admin navigation">
-          <div class="nav-group" *ngFor="let group of navigation()">
-            <span class="nav-group__title">{{ group.title }}</span>
+          <div class="nav-single-list">
             <a
-              *ngFor="let item of group.items"
+              *ngFor="let item of navigation()"
               [routerLink]="item.route"
               routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: item.exact || false }"
               class="nav-link"
             >
               <span class="nav-link__icon">{{ item.icon }}</span>
-              <span>{{ item.label }}</span>
-              <span class="nav-link__count" *ngIf="item.count">{{ item.count }}</span>
+              <span class="nav-link__label">{{ item.label }}</span>
+              <span class="nav-link__count" *ngIf="item.count && item.count > 0">{{ item.count }}</span>
             </a>
           </div>
         </nav>
 
         <div class="sidebar-brief">
           <span class="live-dot"></span>
-          <strong>{{ admin.dashboard().pendingOrders }} active orders</strong>
+          <strong>{{ admin.activeOrdersCount() }} active orders</strong>
           <small>{{ admin.pendingApprovalCount() }} approvals waiting</small>
         </div>
       </aside>
 
       <div class="admin-workspace">
         <header class="admin-topbar">
-          <label class="search-shell">
-            <span>Search</span>
-            <input type="search" placeholder="Orders, restaurants, agents, customers" />
-          </label>
-
           <div class="topbar-status">
             <span class="status-chip green">Live</span>
-            <span>{{ admin.dashboard().activeRestaurants }} restaurants online</span>
+            <span>{{ admin.dashboard().activeRestaurants }} / {{ admin.dashboard().totalRestaurants }} restaurants online</span>
           </div>
 
-          <div class="topbar-actions">
+          <div class="topbar-actions" style="margin-left: auto;">
             <button
               class="theme-toggle theme-toggle-control"
               type="button"
@@ -106,57 +103,27 @@ export class AdminLayoutComponent {
   protected readonly theme = inject(ThemeService);
 
   protected readonly navigation = computed(() => [
+    { label: 'Overview', route: '/admin/dashboard', icon: '📊', exact: true },
+    { label: 'Analytics', route: '/admin/analytics', icon: '📈' },
+    { label: 'Orders', route: '/admin/orders', icon: '🛍️', count: this.admin.activeOrdersCount() },
     {
-      title: 'Dashboard',
-      items: [
-        { label: 'Overview', route: '/admin/dashboard', icon: 'OV' },
-        { label: 'Analytics', route: '/admin/dashboard', icon: 'AN' },
-        { label: 'Live Activity', route: '/admin/orders', icon: 'LA', count: this.admin.dashboard().pendingOrders },
-      ],
+      label: 'Restaurants',
+      route: '/admin/restaurants',
+      icon: '🍽️',
+      count: this.admin.pendingOwnerApprovals().length,
     },
     {
-      title: 'Orders',
-      items: [
-        { label: 'Live Orders', route: '/admin/orders', icon: 'LO', count: this.admin.dashboard().totalOrdersCount },
-        { label: 'Order History', route: '/admin/orders', icon: 'OH' },
-        { label: 'Refund Requests', route: '/admin/orders', icon: 'RR' },
-      ],
+      label: 'Delivery Agents',
+      route: '/admin/delivery-agents',
+      icon: '🛵',
+      count: this.admin.pendingDeliveryApprovals().length,
     },
-    {
-      title: 'Restaurants',
-      items: [
-        { label: 'All Restaurants', route: '/admin/restaurants', icon: 'AR' },
-        { label: 'Approval Requests', route: '/admin/customers', icon: 'AP', count: this.admin.pendingApprovalCount() },
-        { label: 'Performance', route: '/admin/restaurants', icon: 'PF' },
-        { label: 'Reviews', route: '/admin/dashboard', icon: 'RV' },
-      ],
-    },
-    {
-      title: 'Delivery Agents',
-      items: [
-        { label: 'Active Agents', route: '/admin/delivery-agents', icon: 'AA' },
-        { label: 'Tracking', route: '/admin/delivery-agents', icon: 'TR' },
-        { label: 'Performance', route: '/admin/delivery-agents', icon: 'DP' },
-        { label: 'Payouts', route: '/admin/delivery-agents', icon: 'PO' },
-      ],
-    },
-    {
-      title: 'Customers',
-      items: [
-        { label: 'Active Users', route: '/admin/customers', icon: 'CU' },
-        { label: 'Complaints', route: '/admin/customers', icon: 'CP' },
-        { label: 'Reports', route: '/admin/customers', icon: 'RP' },
-      ],
-    },
-    {
-      title: 'Finance & Growth',
-      items: [
-        { label: 'Revenue', route: '/admin/dashboard', icon: 'RE' },
-        { label: 'Transactions', route: '/admin/orders', icon: 'TX' },
-        { label: 'Coupons', route: '/admin/settings', icon: 'CO' },
-        { label: 'Settings', route: '/admin/settings', icon: 'ST' },
-      ],
-    },
+    { label: 'Customers', route: '/admin/customers', icon: '👥' },
+    { label: 'Payments & Revenue', route: '/admin/payments', icon: '💳' },
+    { label: 'Refunds', route: '/admin/refunds', icon: '🔄', count: this.admin.pendingRefundsCount() },
+    { label: 'Support', route: '/admin/support', icon: '💬', count: this.admin.openTicketsCount() },
+    { label: 'Reviews', route: '/admin/reviews', icon: '⭐' },
+    { label: 'Settings', route: '/admin/settings', icon: '⚙️' },
   ]);
 
   protected readonly displayName = computed(() => {

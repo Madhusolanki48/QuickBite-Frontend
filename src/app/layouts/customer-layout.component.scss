@@ -21,7 +21,8 @@
 }
 
 .topbar-inner {
-  max-width: 1440px;
+  max-width: min(1600px, 96vw);
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-wrap: wrap;
@@ -108,8 +109,87 @@
 
 .topbar-nav a.active {
   color: var(--brand);
-  background: var(--brand-soft);
-  border-color: rgba(255, 122, 0, 0.18);
+  background: rgba(255, 122, 0, 0.12);
+  border-color: rgba(255, 122, 0, 0.25);
+  font-weight: 700;
+}
+
+.topbar-diet-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+}
+
+.topbar-diet-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    color: #0f172a;
+  }
+
+  &.active {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  &.topbar-diet-btn--veg.active {
+    color: #16a34a;
+    font-weight: 800;
+  }
+
+  &.topbar-diet-btn--nonveg.active {
+    color: #dc2626;
+    font-weight: 800;
+  }
+
+  &.topbar-diet-btn--all.active {
+    color: #0f172a;
+    font-weight: 800;
+  }
+}
+
+.diet-indicator-square {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  border: 1.5px solid;
+  display: grid;
+  place-items: center;
+  background: #fff;
+
+  &.veg {
+    border-color: #16a34a;
+    .circle {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #16a34a;
+    }
+  }
+
+  &.nonveg {
+    border-color: #dc2626;
+    .circle {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #dc2626;
+    }
+  }
 }
 
 .topbar-actions {
@@ -131,9 +211,10 @@
 }
 
 .customer-main {
-  width: min(1440px, 100%);
+  width: min(1600px, 96vw);
   margin: 0 auto;
   padding: 1.25rem 1rem 5rem;
+  box-sizing: border-box;
 }
 
 .mobile-bottom-nav {
@@ -224,3 +305,107 @@
     color: var(--muted);
   }
 }
+
+.cart-toast-popup {
+  position: fixed;
+  top: 5.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999999;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 0.95rem 1.6rem;
+  border-radius: 9999px;
+  box-shadow: 0 24px 55px rgba(0, 0, 0, 0.45), 0 0 0 2px #ff6b00;
+  backdrop-filter: blur(20px);
+  animation: popupSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 330px;
+  max-width: calc(100vw - 2rem);
+  pointer-events: auto;
+
+  @media (max-width: 760px) {
+    top: 4.5rem;
+    width: calc(100vw - 2rem);
+    min-width: unset;
+    justify-content: space-between;
+    padding: 0.8rem 1.2rem;
+  }
+}
+
+@keyframes popupSlideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -24px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.cart-toast-popup__badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 900;
+  flex-shrink: 0;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.6);
+}
+
+.cart-toast-popup__info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  overflow: hidden;
+}
+
+.cart-toast-popup__title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #86efac;
+}
+
+.cart-toast-popup__name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+.cart-toast-popup__rest {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.cart-toast-popup__action {
+  background: #ff6b00;
+  color: #ffffff !important;
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 0.55rem 1.15rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.18s ease, background 0.18s ease;
+  box-shadow: 0 4px 16px rgba(255, 107, 0, 0.45);
+  flex-shrink: 0;
+
+  &:hover {
+    background: #ea580c;
+    transform: scale(1.05);
+  }
+}
+
