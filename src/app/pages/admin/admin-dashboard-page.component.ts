@@ -1,377 +1,312 @@
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { LiveRouteMapComponent } from '../../components/live-route-map.component';
-import { Order } from '../../core/app.models';
 import { AdminDashboardService } from '../../services/admin-dashboard.service';
-import { LocationService } from '../../services/location.service';
 import { OrderService } from '../../services/order.service';
-import { ReviewService } from '../../services/review.service';
 
 @Component({
   selector: 'app-admin-dashboard-page',
-  imports: [NgClass, NgFor, NgIf, RouterLink, LiveRouteMapComponent],
+  standalone: true,
+  imports: [CommonModule, RouterLink, LiveRouteMapComponent],
   template: `
-    <section class="ops-hero">
+    <!-- Top Action-Oriented Header -->
+    <section class="page-head" style="align-items: center;">
       <div>
-        <span class="eyebrow">QuickBite admin control tower</span>
-        <h1>Live platform operations</h1>
-        <p>
-          Monitor orders, restaurants, delivery capacity, payments, approvals, and support alerts
-          from one operational cockpit.
-        </p>
+        <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem;">
+          <span class="status-chip green" style="font-size: 0.75rem;">● System Live</span>
+          <span style="color: var(--muted); font-size: 0.85rem;">QuickBite Ops Center</span>
+        </div>
+        <h1>Platform Overview</h1>
+        <p>Real-time telemetry, active orders, live capacity, approvals, and revenue stream.</p>
       </div>
-      <div class="hero-actions">
-        <button class="action-btn primary">Broadcast notification</button>
-        <button class="action-btn">Export report</button>
-      </div>
-    </section>
 
-    <section class="ops-strip">
-      <article *ngFor="let item of liveSummary()" class="ops-pill">
-        <span [class]="item.dot"></span>
-        <div>
-          <strong>{{ item.value }}</strong>
-          <small>{{ item.label }}</small>
-        </div>
-      </article>
-    </section>
-
-    <section class="stats-grid admin-kpis">
-      <article class="stat-card premium-card" *ngFor="let metric of kpis()">
-        <div class="stat-card__top">
-          <span class="stat-card__icon" [ngClass]="metric.tone">{{ metric.code }}</span>
-          <span class="trend" [ngClass]="metric.trendTone">{{ metric.delta }}</span>
-        </div>
-        <strong>{{ metric.value }}</strong>
-        <span>{{ metric.label }}</span>
-        <div class="sparkline" aria-hidden="true">
-          <i *ngFor="let point of metric.spark" [style.height.%]="point"></i>
-        </div>
-      </article>
-    </section>
-
-    <section class="ops-grid">
-      <article class="premium-card chart-card revenue-card">
-        <div class="section-head">
-          <div>
-            <h2>Revenue analytics</h2>
-            <p>Weekly gross sales and platform commission movement.</p>
-          </div>
-          <span class="status-chip green">+18.4%</span>
-        </div>
-        <div class="revenue-chart">
-          <div class="chart-axis">
-            <span>Rs 80K</span>
-            <span>Rs 40K</span>
-            <span>Rs 0</span>
-          </div>
-          <div class="chart-bars">
-            <div class="chart-bar" *ngFor="let bar of revenueBars()">
-              <span [style.height.%]="bar.value"></span>
-              <small>{{ bar.label }}</small>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="premium-card status-card">
-        <div class="section-head compact">
-          <div>
-            <h2>Order status mix</h2>
-            <p>Current delivery pipeline.</p>
-          </div>
-        </div>
-        <div class="donut-wrap">
-          <div class="donut"></div>
-          <div class="donut-center">
-            <strong>{{ admin.dashboard().totalOrders }}</strong>
-            <span>Total orders</span>
-          </div>
-        </div>
-        <div class="status-list">
-          <span *ngFor="let row of statusMix()">
-            <i [class]="row.tone"></i>{{ row.label }} <strong>{{ row.value }}</strong>
-          </span>
-        </div>
-      </article>
-    </section>
-
-    <section class="ops-grid ops-grid--wide">
-      <article class="premium-card live-panel">
-        <div class="section-head">
-          <div>
-            <h2>Live operations feed</h2>
-            <p>High-signal events from orders, restaurants, payments, and delivery teams.</p>
-          </div>
-          <a routerLink="/admin/orders" class="text-action">Open orders</a>
-        </div>
-
-        <div class="event-feed">
-          <div class="event-row" *ngFor="let event of liveEvents()">
-            <span [class]="event.tone"></span>
-            <div>
-              <strong>{{ event.title }}</strong>
-              <p>{{ event.detail }}</p>
-            </div>
-            <small>{{ event.time }}</small>
-          </div>
-        </div>
-      </article>
-
-      <article class="premium-card quick-actions">
-        <div class="section-head compact">
-          <div>
-            <h2>Quick actions</h2>
-            <p>Common admin interventions.</p>
-          </div>
-        </div>
-        <button *ngFor="let action of quickActions()" class="quick-action" type="button" (click)="action.action && action.action()">
-          <span>{{ action.code }}</span>
-          <strong>{{ action.label }}</strong>
-          <small>{{ action.hint }}</small>
+      <div class="admin-toolbar">
+        <a routerLink="/admin/orders" class="action-btn primary" style="text-decoration: none;">
+          🛍️ Live Orders ({{ admin.activeOrdersCount() }})
+        </a>
+        <button class="action-btn" type="button" (click)="refresh()">
+          🔄 Refresh
         </button>
+      </div>
+    </section>
+
+    <!-- Urgent Action Alert Banners (Clickable) -->
+    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+      <!-- Pending Approvals Banner -->
+      <div
+        *ngIf="admin.pendingApprovalCount() > 0"
+        (click)="goToApprovals()"
+        class="card"
+        style="padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px; cursor: pointer; transition: transform 0.2s;"
+      >
+        <div style="display: flex; align-items: center; gap: 0.85rem;">
+          <span style="font-size: 1.4rem;">⚠️</span>
+          <div>
+            <strong style="color: #d97706; font-size: 0.95rem;">
+              {{ admin.pendingApprovalCount() }} Account Applications Pending Approval
+            </strong>
+            <p style="margin: 0.15rem 0 0; font-size: 0.82rem; color: var(--muted);">
+              {{ admin.pendingOwnerApprovals().length }} Restaurant Owners and {{ admin.pendingDeliveryApprovals().length }} Delivery Partners waiting for verification.
+            </p>
+          </div>
+        </div>
+        <span class="action-btn primary" style="padding: 0.4rem 0.85rem; font-size: 0.82rem; background: #d97706; border-color: #d97706;">
+          Review Now →
+        </span>
+      </div>
+
+      <!-- Pending Refunds Banner -->
+      <div
+        *ngIf="admin.pendingRefundsCount() > 0"
+        routerLink="/admin/refunds"
+        class="card"
+        style="padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; cursor: pointer; transition: transform 0.2s;"
+      >
+        <div style="display: flex; align-items: center; gap: 0.85rem;">
+          <span style="font-size: 1.4rem;">🔄</span>
+          <div>
+            <strong style="color: #dc2626; font-size: 0.95rem;">
+              {{ admin.pendingRefundsCount() }} Customer Refund Claims Awaiting Resolution
+            </strong>
+            <p style="margin: 0.15rem 0 0; font-size: 0.82rem; color: var(--muted);">
+              Review order dispute details and approve or reject refunds directly.
+            </p>
+          </div>
+        </div>
+        <span class="action-btn" style="padding: 0.4rem 0.85rem; font-size: 0.82rem; color: #dc2626; border-color: rgba(220, 38, 38, 0.4);">
+          Manage Refunds →
+        </span>
+      </div>
+
+      <!-- Delayed Orders Warning -->
+      <div
+        *ngIf="admin.delayedOrders().length > 0"
+        routerLink="/admin/orders"
+        class="card"
+        style="padding: 0.85rem 1.25rem; display: flex; justify-content: space-between; align-items: center; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; cursor: pointer;"
+      >
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.2rem;">⏱️</span>
+          <div>
+            <strong style="color: #2563eb; font-size: 0.9rem;">
+              {{ admin.delayedOrders().length }} Orders Exceeding Standard Prep/Delivery Time (>30 mins)
+            </strong>
+          </div>
+        </div>
+        <span style="font-size: 0.82rem; font-weight: 700; color: #2563eb;">View Delayed Orders →</span>
+      </div>
+    </div>
+
+    <!-- 6 Primary Actionable KPI Cards -->
+    <section class="stats-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+      <!-- Total Orders Card -->
+      <article class="card stat-card" routerLink="/admin/orders" style="cursor: pointer;">
+        <div class="stat-card__icon gold">🛍️</div>
+        <div class="stat-meta">
+          <strong>{{ dashboard().totalOrders }}</strong>
+          <span>Total Orders</span>
+          <small class="delta">View All Orders →</small>
+        </div>
+      </article>
+
+      <!-- Today's Revenue Card -->
+      <article class="card stat-card" routerLink="/admin/payments" style="cursor: pointer;">
+        <div class="stat-card__icon green">💰</div>
+        <div class="stat-meta">
+          <strong>{{ dashboard().todayRevenue }}</strong>
+          <span>Today's Revenue</span>
+          <small class="delta">Total: {{ dashboard().totalRevenue }} →</small>
+        </div>
+      </article>
+
+      <!-- Active Orders Card -->
+      <article class="card stat-card" routerLink="/admin/orders" style="cursor: pointer;">
+        <div class="stat-card__icon pink">🔥</div>
+        <div class="stat-meta">
+          <strong>{{ admin.activeOrdersCount() }}</strong>
+          <span>Active Live Orders</span>
+          <small class="delta" style="color: #ff5a00;">Kitchen & Transit →</small>
+        </div>
+      </article>
+
+      <!-- Online Restaurants Card -->
+      <article class="card stat-card" routerLink="/admin/restaurants" style="cursor: pointer;">
+        <div class="stat-card__icon blue">🍽️</div>
+        <div class="stat-meta">
+          <strong>{{ dashboard().activeRestaurants }} / {{ dashboard().totalRestaurants }}</strong>
+          <span>Online Restaurants</span>
+          <small class="delta">Manage Kitchens →</small>
+        </div>
+      </article>
+
+      <!-- Active Agents Card -->
+      <article class="card stat-card" routerLink="/admin/delivery-agents" style="cursor: pointer;">
+        <div class="stat-card__icon green">🛵</div>
+        <div class="stat-meta">
+          <strong>{{ dashboard().activeDeliveryAgents }} / {{ dashboard().deliveryAgentsCount }}</strong>
+          <span>Active Delivery Agents</span>
+          <small class="delta">Fleet Dispatch →</small>
+        </div>
+      </article>
+
+      <!-- Total Customers Card -->
+      <article class="card stat-card" routerLink="/admin/customers" style="cursor: pointer;">
+        <div class="stat-card__icon pink">👥</div>
+        <div class="stat-meta">
+          <strong>{{ dashboard().totalCustomers }}</strong>
+          <span>Registered Customers</span>
+          <small class="delta">Customer Directory →</small>
+        </div>
       </article>
     </section>
 
-    <app-live-route-map
-      *ngIf="activeOrder() as order"
-      title="Live delivery tracking"
-      [subtitle]="order.restaurantName + ' to ' + (order.deliveryAddressLine ?? 'customer address')"
-      [status]="order.status.replaceAll('_', ' ')"
-      [pickup]="pickupPoint(order)"
-      [drop]="dropPoint(order)"
-      [routeStart]="pickupPoint(order)"
-      [routeEnd]="dropPoint(order)"
-    />
+    <!-- Split Grid: Chart + Live Route Tracking -->
+    <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;">
+      <!-- Order & Revenue Velocity Chart -->
+      <article class="card section-card" style="padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.2rem;">Revenue & Order Trends</h3>
+            <p style="margin: 0.2rem 0 0; color: var(--muted); font-size: 0.85rem;">Platform volume across recent business cycles</p>
+          </div>
+          <a routerLink="/admin/analytics" class="ghost-btn" style="text-decoration: none; font-size: 0.82rem; padding: 0.4rem 0.8rem;">
+            Full Analytics →
+          </a>
+        </div>
 
-    <section class="premium-card table-panel">
-      <div class="section-head">
+        <div style="display: flex; align-items: flex-end; gap: 1.25rem; height: 180px; padding: 1rem 0; border-bottom: 1px solid var(--line);">
+          <div *ngFor="let col of chartColumns()" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; height: 100%; justify-content: flex-end;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text);">₹{{ col.amount }}</span>
+            <div
+              style="width: 100%; max-width: 42px; border-radius: 8px 8px 0 0; background: linear-gradient(180deg, #ff5a00, #ff8c42); transition: height 0.4s ease;"
+              [style.height.%]="col.pct"
+            ></div>
+            <span style="font-size: 0.78rem; color: var(--muted); font-weight: 600;">{{ col.day }}</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Live Dispatch Map Preview -->
+      <article class="card section-card" style="padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.1rem;">Live Fleet Dispatch</h3>
+            <p style="margin: 0.2rem 0 0; color: var(--muted); font-size: 0.82rem;">GPS tracking of active delivery riders</p>
+          </div>
+          <span class="status-chip green" style="font-size: 0.75rem;">GPS Sync</span>
+        </div>
+
+        <app-live-route-map
+          [title]="'Fleet Radar'"
+          [subtitle]="'Active routes across zones'"
+          [status]="'Online'"
+          [pickup]="activeRoute().pickup"
+          [drop]="activeRoute().drop"
+          [agent]="activeRoute().agent"
+        />
+      </article>
+    </div>
+
+    <!-- Recent Orders Live Table -->
+    <article class="card section-card" style="padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
         <div>
-          <h2>Real-time orders</h2>
-          <p>Filtered queue for active operations and escalation handling.</p>
+          <h3 style="margin: 0; font-size: 1.25rem;">Recent Order Activity</h3>
+          <p style="margin: 0.25rem 0 0; color: var(--muted); font-size: 0.88rem;">Real-time feed of newly placed and active orders</p>
         </div>
-        <div class="table-tools">
-          <input class="search-input" placeholder="Search order, customer, restaurant" />
-          <button class="ghost-btn">Filter</button>
-        </div>
+        <a routerLink="/admin/orders" class="action-btn" style="text-decoration: none; font-size: 0.85rem; padding: 0.5rem 1rem;">
+          View All Orders ({{ dashboard().totalOrdersCount }}) →
+        </a>
       </div>
-      <div class="table-scroll">
-        <table class="card-table ops-table">
+
+      <div class="table-responsive">
+        <table class="admin-table" style="width: 100%; border-collapse: collapse;">
           <thead>
-            <tr>
-              <th>Order</th>
-              <th>Customer</th>
-              <th>Restaurant</th>
-              <th>Agent</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>SLA</th>
-              <th>Action</th>
+            <tr style="text-align: left; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 0.85rem;">
+              <th style="padding: 0.85rem 1rem;">Order ID</th>
+              <th style="padding: 0.85rem 1rem;">Customer</th>
+              <th style="padding: 0.85rem 1rem;">Restaurant</th>
+              <th style="padding: 0.85rem 1rem;">Items</th>
+              <th style="padding: 0.85rem 1rem;">Total</th>
+              <th style="padding: 0.85rem 1rem;">Payment</th>
+              <th style="padding: 0.85rem 1rem;">Status</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let row of admin.dashboard().recentOrders">
-              <td><strong>{{ row.id }}</strong><small>{{ row.time }}</small></td>
-              <td>{{ row.customer }}</td>
-              <td>{{ row.restaurant }}</td>
-              <td>{{ row.agent }}</td>
-              <td><strong>{{ row.total }}</strong></td>
-              <td><span class="pill" [ngClass]="statusTone(row.status)">{{ row.status }}</span></td>
-              <td><span class="sla">On track</span></td>
-              <td><button class="ghost-btn small">Manage</button></td>
+            <tr *ngFor="let order of dashboard().recentOrders" style="border-bottom: 1px solid var(--line);">
+              <td style="padding: 1rem; font-weight: 700;">
+                <a routerLink="/admin/orders" style="color: #ff5a00; text-decoration: none;">
+                  {{ order.id }}
+                </a>
+              </td>
+              <td style="padding: 1rem; font-weight: 600;">{{ order.customer }}</td>
+              <td style="padding: 1rem;">{{ order.restaurant }}</td>
+              <td style="padding: 1rem; max-width: 220px; font-size: 0.88rem; color: var(--muted);">
+                {{ order.items }}
+              </td>
+              <td style="padding: 1rem; font-weight: 700;">{{ order.total }}</td>
+              <td style="padding: 1rem;">
+                <span class="status-chip" [class.green]="order.paymentStatus === 'SUCCESS'" [class.gold]="order.paymentStatus === 'PENDING'">
+                  {{ order.paymentMethod }} · {{ order.paymentStatus }}
+                </span>
+              </td>
+              <td style="padding: 1rem;">
+                <span
+                  class="status-chip"
+                  [class.green]="order.rawStatus === 'DELIVERED'"
+                  [class.gold]="order.rawStatus === 'PLACED' || order.rawStatus === 'CONFIRMED'"
+                  [class.blue]="order.rawStatus === 'PREPARING' || order.rawStatus === 'READY' || order.rawStatus === 'ON_THE_WAY'"
+                  [class.pink]="order.rawStatus === 'CANCELLED'"
+                >
+                  {{ order.status }}
+                </span>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </section>
-
-    <section class="ops-grid">
-      <article class="premium-card issue-panel">
-        <div class="section-head compact">
-          <div>
-            <h2>Alerts and issues</h2>
-            <p>Needs admin attention today.</p>
-          </div>
-        </div>
-        <div class="issue-row" *ngFor="let issue of issues()">
-          <span [class]="issue.tone">{{ issue.code }}</span>
-          <div>
-            <strong>{{ issue.title }}</strong>
-            <p>{{ issue.detail }}</p>
-          </div>
-        </div>
-      </article>
-
-      <article class="premium-card performance-panel">
-        <div class="section-head compact">
-          <div>
-            <h2>Restaurant performance</h2>
-            <p>Rating, demand, and review health.</p>
-          </div>
-        </div>
-        <div class="rank-row" *ngFor="let item of restaurantRatingRows().slice(0, 5); let i = index">
-          <span>#{{ i + 1 }}</span>
-          <div>
-            <strong>{{ item.name }}</strong>
-            <small>{{ item.rating }}/5 average rating</small>
-          </div>
-          <i [style.width.%]="item.rating * 20"></i>
-        </div>
-      </article>
-    </section>
+    </article>
   `,
   styleUrl: './admin-pages.scss',
 })
 export class AdminDashboardPageComponent {
   protected readonly admin = inject(AdminDashboardService);
-  private readonly orders = inject(OrderService);
-  private readonly locations = inject(LocationService);
-  protected readonly reviewService = inject(ReviewService);
+  private readonly router = inject(Router);
 
-  protected readonly activeOrder = computed(
-    () => this.orders.activeOrders()[0] ?? this.orders.orders()[0] ?? null,
-  );
+  readonly dashboard = computed(() => this.admin.dashboard());
 
-  protected kpis() {
-    const dashboard = this.admin.dashboard();
-    const cancelled = this.orders.orders().filter((order) => order.status === 'CANCELLED').length;
-    return [
-      { label: 'Total Orders', value: dashboard.totalOrders, delta: '+12.5%', trendTone: 'up', tone: 'blue', code: 'OR', spark: [28, 44, 34, 58, 72, 64, 82] },
-      { label: 'Revenue', value: dashboard.totalRevenue, delta: '+18.4%', trendTone: 'up', tone: 'green', code: 'RV', spark: [36, 42, 48, 54, 68, 74, 90] },
-      { label: 'Active Restaurants', value: String(dashboard.activeRestaurants), delta: 'Live', trendTone: 'info', tone: 'orange', code: 'RS', spark: [46, 48, 48, 52, 54, 57, 60] },
-      { label: 'Online Agents', value: String(dashboard.deliveryAgentsCount), delta: '+6 online', trendTone: 'up', tone: 'purple', code: 'AG', spark: [18, 22, 35, 44, 38, 52, 56] },
-      { label: 'Pending Orders', value: String(dashboard.pendingOrders), delta: 'Watch', trendTone: 'warn', tone: 'yellow', code: 'PN', spark: [58, 46, 52, 41, 35, 44, 38] },
-      { label: 'Cancelled Orders', value: String(cancelled), delta: '-2.1%', trendTone: 'down', tone: 'red', code: 'CN', spark: [44, 38, 36, 30, 24, 26, 18] },
-      { label: 'Refund Requests', value: String(Math.max(1, Math.round(cancelled * 0.4))), delta: '2 urgent', trendTone: 'warn', tone: 'red', code: 'RF', spark: [12, 22, 18, 30, 26, 34, 28] },
-      { label: 'Customer Satisfaction', value: `${this.averageRating()}/5`, delta: '+0.3', trendTone: 'up', tone: 'green', code: 'CS', spark: [62, 66, 64, 70, 74, 78, 82] },
-    ];
+  readonly chartColumns = computed(() => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'];
+    const gross = this.admin.grossRevenueValue() || 5000;
+    return days.map((day, i) => {
+      const mult = (i + 4) / 10;
+      const amount = Math.round((gross * mult) / 3);
+      return {
+        day,
+        amount,
+        pct: Math.min(100, Math.max(20, Math.round(mult * 85))),
+      };
+    });
+  });
+
+  readonly activeRoute = computed(() => ({
+    pickup: { lat: 28.5543, lng: 77.2177 },
+    drop: { lat: 28.5672, lng: 77.2365 },
+    agent: { lat: 28.559, lng: 77.225 },
+  }));
+
+  refresh(): void {
+    this.admin.refreshApprovalUsers();
+    this.admin.refreshAllUsers();
   }
 
-  protected liveSummary() {
-    const dashboard = this.admin.dashboard();
-    return [
-      { label: 'Live orders', value: dashboard.pendingOrders, dot: 'dot blue' },
-      { label: 'Agents online', value: dashboard.deliveryAgentsCount, dot: 'dot green' },
-      { label: 'Failed payments', value: Math.max(0, this.orders.orders().filter((order) => order.paymentStatus === 'FAILED').length), dot: 'dot red' },
-      { label: 'Peak hour', value: '8-10 PM', dot: 'dot orange' },
-    ];
-  }
-
-  protected revenueBars() {
-    return [
-      { label: 'Mon', value: 38 },
-      { label: 'Tue', value: 52 },
-      { label: 'Wed', value: 44 },
-      { label: 'Thu', value: 68 },
-      { label: 'Fri', value: 82 },
-      { label: 'Sat', value: 74 },
-      { label: 'Sun', value: 92 },
-    ];
-  }
-
-  protected statusMix() {
-    const orders = this.orders.orders();
-    const count = (status: Order['status']) => orders.filter((order) => order.status === status).length;
-    return [
-      { label: 'Delivered', value: count('DELIVERED'), tone: 'legend green' },
-      { label: 'Preparing', value: count('PREPARING') + count('READY'), tone: 'legend orange' },
-      { label: 'Out for delivery', value: count('ON_THE_WAY'), tone: 'legend blue' },
-      { label: 'Cancelled', value: count('CANCELLED'), tone: 'legend red' },
-    ];
-  }
-
-  protected liveEvents() {
-    const recent = this.admin.dashboard().recentOrders.slice(0, 4);
-    const events = recent.map((order) => ({
-      title: `${order.id} ${order.status}`,
-      detail: `${order.restaurant} for ${order.customer} · ${order.total}`,
-      time: order.time || 'Now',
-      tone: `event-dot ${this.statusTone(order.status)}`,
-    }));
-    return events.length
-      ? events
-      : [
-          { title: 'No live orders yet', detail: 'New paid orders will appear here immediately.', time: 'Now', tone: 'event-dot blue' },
-          { title: 'Restaurant network online', detail: `${this.admin.dashboard().activeRestaurants} restaurants are accepting orders.`, time: 'Now', tone: 'event-dot green' },
-        ];
-  }
-
-  protected quickActions() {
-    return [
-      { code: 'AP', label: 'Approve Restaurant', hint: `${this.admin.pendingOwnerApprovals().length} pending owners`, action: null },
-      { code: 'SA', label: 'Suspend Restaurant', hint: 'Pause risky outlets', action: null },
-      { code: 'WIPE', label: 'Reset System', hint: 'Clear test orders & reviews', action: () => this.wipeSystem() },
-      { code: 'RF', label: 'Process Refund', hint: 'Resolve payment issues', action: null },
-      { code: 'BN', label: 'Broadcast', hint: 'Send platform alert', action: null },
-    ];
-  }
-
-  wipeSystem(): void {
-    if (confirm('Are you sure you want to clear all orders and reviews across all dashboards?')) {
-      localStorage.removeItem('quickbite.reviews');
-      localStorage.removeItem('quickbite.order.overrides');
-      localStorage.removeItem('quickbite.hiddenOrders');
-      localStorage.removeItem('quickbite.sync.orders');
-      localStorage.removeItem('quickbite.sync.reviews');
-      window.location.reload();
+  goToApprovals(): void {
+    if (this.admin.pendingOwnerApprovals().length > 0) {
+      void this.router.navigate(['/admin/restaurants'], { queryParams: { tab: 'PENDING' } });
+    } else {
+      void this.router.navigate(['/admin/delivery-agents'], { queryParams: { tab: 'PENDING' } });
     }
-  }
-
-  protected issues() {
-    return [
-      { code: 'PAY', title: 'Payment failure watchlist', detail: 'Monitor Razorpay verification and refunds queue.', tone: 'issue-code red' },
-      { code: 'SLA', title: 'Delayed delivery risk', detail: `${this.admin.dashboard().pendingOrders} active orders need SLA tracking.`, tone: 'issue-code orange' },
-      { code: 'RST', title: 'Restaurant approval queue', detail: `${this.admin.pendingOwnerApprovals().length} restaurant requests awaiting review.`, tone: 'issue-code blue' },
-      { code: 'AGT', title: 'Agent capacity', detail: `${this.admin.dashboard().deliveryAgentsCount} agents synced for current demand.`, tone: 'issue-code green' },
-    ];
-  }
-
-  statusTone(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return 'green';
-      case 'on the way':
-        return 'blue';
-      case 'preparing':
-      case 'ready':
-        return 'orange';
-      case 'confirmed':
-      case 'pending':
-        return 'yellow';
-      case 'cancelled':
-        return 'red';
-      default:
-        return 'blue';
-    }
-  }
-
-  pickupPoint(order: Order) {
-    return (
-      order.pickupLocation ??
-      this.locations.restaurantLocation(order.restaurantId ?? order.restaurantName)
-    );
-  }
-
-  dropPoint(order: Order) {
-    return (
-      order.deliveryLocation ?? this.locations.addressLocation(order.deliveryAddressLine ?? order.customerName ?? order.id)
-    );
-  }
-
-  restaurantRatingRows(): Array<{ name: string; rating: number }> {
-    return this.admin.dashboard().restaurants.map((restaurant) => ({
-      name: restaurant.name,
-      rating: this.reviewService.averageRestaurantRating(restaurant.name),
-    }));
-  }
-
-  private averageRating(): number {
-    const ratings = this.restaurantRatingRows().map((row) => row.rating).filter((rating) => rating > 0);
-    if (!ratings.length) {
-      return 4.7;
-    }
-    return Number((ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length).toFixed(1));
   }
 }

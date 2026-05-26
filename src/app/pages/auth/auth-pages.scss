@@ -325,15 +325,18 @@
   pointer-events: none;
 }
 
-.form input {
+.form input,
+.form select {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.94);
   border-radius: 16px;
   padding: 0.95rem 1rem;
   outline: none;
-  color: var(--text) !important;
-  caret-color: var(--text) !important;
-  -webkit-text-fill-color: var(--text) !important;
+  color: #0f172a !important;
+  caret-color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  font-size: 0.95rem;
+  font-weight: 500;
   opacity: 1;
   transition:
     border-color 160ms ease,
@@ -341,16 +344,33 @@
     background-color 160ms ease;
 }
 
+.form select {
+  cursor: pointer;
+}
+
+.form select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-weight: 600;
+  padding: 0.5rem;
+}
+
 .form input::placeholder {
   color: #94a3b8;
 }
 
-:host-context(html[data-theme='dark']) .form input {
+:host-context(html[data-theme='dark']) .form input,
+:host-context(html[data-theme='dark']) .form select {
   background: var(--surface-2);
   border-color: var(--line);
   color: var(--text) !important;
   -webkit-text-fill-color: var(--text) !important;
   caret-color: var(--text) !important;
+}
+
+:host-context(html[data-theme='dark']) .form select option {
+  background: #1e293b !important;
+  color: #f8fafc !important;
 }
 
 :host-context(html[data-theme='dark']) .form input:-webkit-autofill,

@@ -10,11 +10,24 @@ import { CartService } from '../../services/cart.service';
   template: `
     <section class="page-head">
       <div>
-        <h1>Your Cart <span aria-hidden="true">&#x1F6D2;</span></h1>
-        <p>{{ cart.itemCount() }} item(s)</p>
+        <h1 *ngIf="cart.restaurantName()">Your cart • {{ cart.restaurantName() }}</h1>
+        <h1 *ngIf="!cart.restaurantName()">Your Cart <span aria-hidden="true">&#x1F6D2;</span></h1>
+        <p>{{ cart.itemCount() }} item(s) from {{ cart.restaurantName() || 'QuickBite' }}</p>
       </div>
-      <a routerLink="/home" class="ghost">+ Add More</a>
-
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <button
+          *ngIf="cart.items().length > 0"
+          type="button"
+          class="ghost"
+          style="color: #ef4444; border-color: rgba(239, 68, 68, 0.35); font-weight: 700; cursor: pointer;"
+          (click)="emptyCart()"
+        >
+          🗑️ Empty Cart
+        </button>
+        <a [routerLink]="cart.restaurantId() ? ['/restaurants', cart.restaurantId()] : ['/home']" class="ghost">
+          + Add more from {{ cart.restaurantName() || 'Restaurant' }}
+        </a>
+      </div>
     </section>
 
     <section class="checkout-grid">
@@ -151,5 +164,11 @@ export class CartPageComponent {
 
   protected itemImageError(id: string): boolean {
     return this.itemImageErrors()[id] ?? false;
+  }
+
+  emptyCart(): void {
+    if (confirm('Are you sure you want to empty your entire cart?')) {
+      this.cart.clear();
+    }
   }
 }

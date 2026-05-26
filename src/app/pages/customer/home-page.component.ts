@@ -67,13 +67,22 @@ interface HeroSlide {
       <section class="search-filter-bar glass-card" @fadeRise>
         <div class="search-group">
           <div class="search-bar">
-            <span aria-hidden="true">🔍</span>
+            <span aria-hidden="true" class="search-icon">🔍</span>
             <input
               [value]="query()"
               (input)="onSearchChange($any($event.target).value)"
-              placeholder="Search food, restaurants or cuisines"
+              placeholder="Search food, restaurants or cuisines..."
               aria-label="Search food, restaurants or cuisines"
             />
+            <button
+              *ngIf="query()"
+              type="button"
+              class="clear-search-btn"
+              (click)="clearSearch()"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
           </div>
         </div>
       </section>
@@ -84,39 +93,47 @@ interface HeroSlide {
             <h2>Food categories</h2>
             <p>Quick access to your favorite dishes and cuisines.</p>
           </div>
-          <button type="button" class="view-all">View all</button>
+          <a routerLink="/categories/all" class="view-all link">View all</a>
         </div>
 
         <div class="category-strip">
-          <button
+          <a
             *ngFor="let category of topCategories; trackBy: trackCategory"
-            type="button"
+            [routerLink]="['/categories', category.id]"
             class="category-pill"
-            [ngClass]="{ active: activeCategory() === category.id }"
-            (click)="setCategory(category.id)"
           >
             <div class="image-wrapper">
               <img [src]="category.imageUrl" [alt]="category.label" />
             </div>
             <span>{{ category.label }}</span>
-          </button>
+          </a>
         </div>
       </section>
 
       <section class="food-menu-section" @fadeRise>
         <div class="section-heading section-heading--compact">
           <div>
-            <h2>Popular dishes</h2>
-            <p>Top picks from nearby restaurants to satisfy your cravings.</p>
+            <h2>{{ query().trim() ? 'Search Results' : 'Popular dishes' }}</h2>
+            <p>{{ query().trim() ? (foodMenu().length + ' dishes matching your search') : 'Top picks from nearby restaurants to satisfy your cravings.' }}</p>
           </div>
-          <a routerLink="/cart" class="view-all link">View cart</a>
+          <div class="heading-actions">
+            <a routerLink="/categories/all" class="view-all link">View all</a>
+            <a routerLink="/cart" class="view-all link">View cart</a>
+          </div>
         </div>
 
         <div class="food-menu-grid">
-          <article *ngFor="let dish of foodMenu(); trackBy: trackDish" class="food-card">
+          <article
+            *ngFor="let dish of foodMenu(); trackBy: trackDish"
+            class="food-card"
+            [routerLink]="['/restaurants', dish.item.restaurantId]"
+            [queryParams]="{ dish: dish.item.id }"
+            role="button"
+            tabindex="0"
+          >
             <div class="food-card__media">
               <img [src]="dish.item.imageUrl" [alt]="dish.item.name" />
-              <div class="diet-indicator veg">
+              <div class="diet-indicator" [ngClass]="dish.item.isVeg ? 'veg' : 'non-veg'">
                 <div class="circle"></div>
               </div>
               <button
@@ -131,7 +148,9 @@ interface HeroSlide {
             </div>
             <div class="food-card__content">
               <div class="food-card__meta">
-                <span class="rating">⭐ 4.5</span>
+                <span class="rating">⭐ {{ dish.item.rating.toFixed(1) }}</span>
+                <span>•</span>
+                <span class="restaurant-name-tag">{{ dish.restaurant?.name || 'QuickBite' }}</span>
                 <span>•</span>
                 <span>{{ dish.deliveryTime }}</span>
               </div>
@@ -139,10 +158,15 @@ interface HeroSlide {
               <p>{{ dish.item.description }}</p>
               <div class="food-card__footer">
                 <strong>₹{{ dish.item.price }}</strong>
-                <button type="button" class="btn-add" (click)="addToCart(dish.item)">ADD</button>
+                <span class="btn-view-menu">View in Menu →</span>
               </div>
             </div>
           </article>
+        </div>
+
+        <div *ngIf="foodMenu().length === 0" class="empty-state-box">
+          <p>No dishes match your search criteria.</p>
+          <button type="button" class="btn-reset-filters" (click)="clearSearch()">Clear Search</button>
         </div>
       </section>
 
@@ -152,7 +176,7 @@ interface HeroSlide {
             <h2>Restaurants near you</h2>
             <p>Premium restaurant picks with live delivery info.</p>
           </div>
-          <a routerLink="/categories/burgers" class="view-all link">See more</a>
+          <span class="restaurant-count-pill">{{ restaurantCards().length }} restaurants</span>
         </div>
 
         <div class="restaurant-feed">
@@ -177,7 +201,6 @@ interface HeroSlide {
               >
                 {{ isRestaurantFavorite(restaurant.id) ? '♥' : '♡' }}
               </button>
-              <div class="delivery-badge">Free Delivery</div>
             </div>
             <div class="restaurant-card__body">
               <div class="restaurant-card__top">
@@ -206,13 +229,12 @@ interface HeroSlide {
   styleUrl: './home-page.component.scss',
 })
 export class HomePageComponent implements OnDestroy {
-  protected readonly catalog = inject(CatalogService);
+  public readonly catalog = inject(CatalogService);
   public readonly cart = inject(CartService);
   protected readonly favorites = inject(FavoritesService);
   private readonly router = inject(Router);
   private readonly session = inject(SessionService);
 
-  public readonly activeCategory = signal('all');
   public readonly activeFilter = signal('Popular');
   public readonly query = signal('');
   public readonly activeSlide = signal(0);
@@ -276,17 +298,26 @@ export class HomePageComponent implements OnDestroy {
   public readonly activeHero = computed(() => this.heroSlides[this.activeSlide()]);
 
   public readonly restaurantCards = computed(() => {
-    const selected = this.activeCategory();
     const queryTerms = this.searchTerms(this.query());
     const filter = this.activeFilter();
 
     let list = this.catalog.restaurantList().filter((restaurant) => {
-      const matchesCategory = selected === 'all' || restaurant.category === selected;
-      const matchesQuery = queryTerms.every((term) =>
-        this.normalize(this.restaurantIndex(restaurant)).includes(term),
+      return (
+        queryTerms.length === 0 ||
+        queryTerms.every((term) =>
+          this.normalize(this.restaurantIndex(restaurant)).includes(term),
+        )
       );
-      return matchesCategory && matchesQuery;
     });
+
+    const designatedOrder = [
+      'urban-bites',
+      'crust-and-co',
+      'wok-and-bowl',
+      'green-spoon',
+      'royal-tadka',
+      'the-food-yard',
+    ];
 
     if (filter === 'Top Rated') {
       list = list.sort((left, right) => right.rating - left.rating);
@@ -297,88 +328,140 @@ export class HomePageComponent implements OnDestroy {
         (left, right) => parseInt(left.deliveryMinutes) - parseInt(right.deliveryMinutes),
       );
     } else {
-      list = list.sort((left, right) => right.rating - left.rating);
+      list = list.sort((left, right) => {
+        const idxA = designatedOrder.indexOf(left.id);
+        const idxB = designatedOrder.indexOf(right.id);
+        return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
+      });
     }
 
-    return list.slice(0, 5);
+    // Always display all 6 restaurants
+    return list.slice(0, 6);
   });
 
+  // Exactly 6 diverse signature dishes for the home dashboard
   public readonly popularDishes = computed<DishCard[]>(() => {
-    const selected = this.activeCategory();
-    const queryTerms = this.searchTerms(this.query());
+    const vegPref = this.catalog.vegFilter();
+    const allItems = this.catalog.menuItemsSignal();
 
-    return this.catalog
-      .menuItemsSignal()
-      .filter((item) => {
-        const matchesCategory = this.catalog.matchesDishCategory(item, selected);
-        const matchesQuery = queryTerms.every((term) =>
-          this.normalize(this.itemIndex(item)).includes(term),
-        );
-        return matchesCategory && matchesQuery;
-      })
-      .sort((left, right) => right.rating - left.rating)
-      .slice(0, 6)
-      .map((item, index) => ({
-        item,
-        restaurant: this.catalog.restaurantById(item.restaurantId),
-        deliveryTime:
-          this.catalog.restaurantById(item.restaurantId)?.deliveryMinutes ??
-          `${22 + index * 2} min`,
-        badge: index % 3 === 0 ? 'Top Rated' : index % 3 === 1 ? '30 Min' : 'Chef Pick',
-        tone:
-          index % 6 === 0
-            ? 'green'
-            : index % 6 === 1
-              ? 'orange'
-              : index % 6 === 2
-                ? 'slate'
-                : index % 6 === 3
-                  ? 'rose'
-                  : index % 6 === 4
-                    ? 'sky'
-                    : 'amber',
-      }));
+    let targetIds: string[];
+
+    if (vegPref === 'VEG') {
+      // 6 signature veg items representing distinct categories
+      targetIds = [
+        'veggie-burger',          // Quick Bites
+        'margherita-pizza',       // Pizza & Pasta
+        'daal-makhani',           // Indian
+        'tonki-hakka-noodles',    // Asian
+        'buddha-bowl',            // Healthy
+        'choco-lava-cake',        // Desserts
+      ];
+    } else if (vegPref === 'NON_VEG') {
+      // 6 signature non-veg items representing distinct categories
+      targetIds = [
+        'classic-cheeseburger',   // Quick Bites
+        'chicken-tikka-pizza',    // Pizza & Pasta
+        'chicken-biryani',        // Indian
+        'chicken-chow-mein',      // Asian
+        'chicken-protein-bowl',   // Healthy
+        'pepperoni-feast',        // Pizza & Pasta
+      ];
+    } else {
+      // 6 diverse signature items across categories
+      targetIds = [
+        'classic-cheeseburger',   // Quick Bites
+        'margherita-pizza',       // Pizza & Pasta
+        'chicken-biryani',        // Indian
+        'tonki-hakka-noodles',    // Asian
+        'buddha-bowl',            // Healthy
+        'choco-lava-cake',        // Desserts
+      ];
+    }
+
+    const items: MenuItem[] = [];
+    for (const id of targetIds) {
+      const found = allItems.find((it) => it.id === id);
+      if (found) {
+        items.push(found);
+      }
+    }
+
+    // Fallback if needed to ensure exactly 6 items
+    if (items.length < 6) {
+      for (const it of allItems) {
+        if (items.length >= 6) break;
+        if (!items.some((existing) => existing.id === it.id)) {
+          if (vegPref === 'VEG' && !it.isVeg) continue;
+          if (vegPref === 'NON_VEG' && it.isVeg) continue;
+          items.push(it);
+        }
+      }
+    }
+
+    return items.slice(0, 6).map((item, index) => this.toDishCard(item, index));
   });
 
-  public readonly foodMenu = computed(() => this.popularDishes().slice(0, 6));
+  // Search results or top 6 popular dishes
+  public readonly foodMenu = computed<DishCard[]>(() => {
+    const q = this.query().trim();
+    if (!q) {
+      return this.popularDishes();
+    }
+
+    const queryTerms = this.searchTerms(q);
+    const vegPref = this.catalog.vegFilter();
+    let list = this.catalog.menuItemsSignal();
+
+    // Check if query is looking for non-veg specifically
+    const isExplicitNonVegSearch = /\b(chicken|mutton|meat|fish|prawn|bacon|pepperoni|non-veg|nonveg)\b/i.test(q);
+
+    if (vegPref === 'VEG' && !isExplicitNonVegSearch) {
+      list = list.filter((item) => item.isVeg === true);
+    } else if (vegPref === 'NON_VEG') {
+      list = list.filter((item) => item.isVeg === false);
+    }
+
+    list = list.filter((item) => this.matchesSearch(item, q, queryTerms));
+
+    const normQ = this.normalize(q);
+    list = list.slice().sort((a, b) => {
+      const aInName = this.normalize(a.name).includes(normQ) ? 1 : 0;
+      const bInName = this.normalize(b.name).includes(normQ) ? 1 : 0;
+      if (aInName !== bInName) return bInName - aInName;
+      return b.rating - a.rating;
+    });
+
+    return list.map((item, index) => this.toDishCard(item, index));
+  });
+
+  private toDishCard(item: MenuItem, index: number): DishCard {
+    const tones: TileTone[] = ['green', 'orange', 'slate', 'rose', 'sky', 'amber'];
+    return {
+      item,
+      restaurant: this.catalog.restaurantById(item.restaurantId),
+      deliveryTime:
+        this.catalog.restaurantById(item.restaurantId)?.deliveryMinutes ??
+        `${20 + (index % 5) * 3} min`,
+      badge:
+        index % 3 === 0
+          ? 'Top Rated'
+          : index % 3 === 1
+            ? 'Popular'
+            : 'Chef Pick',
+      tone: tones[index % tones.length],
+    };
+  }
 
   public onSearchChange(value: string): void {
     this.query.set(value);
-    const category = this.categoryFromQuery(value);
-    if (category) {
-      this.activeCategory.set(category);
-    }
   }
 
-  public setCategory(categoryId: string): void {
-    this.activeCategory.set(categoryId);
-  }
-
-  public addToCart(item: MenuItem): void {
-    const restaurant = this.catalog.restaurantById(item.restaurantId);
-    if (!restaurant) {
-      return;
-    }
-
-    this.cart.addItem({
-      id: `${restaurant.id}-${item.id}`,
-      restaurantId: restaurant.id,
-      backendRestaurantId: restaurant.backendId,
-      backendMenuItemId: item.backendId,
-      restaurantName: restaurant.name,
-      name: item.name,
-      description: item.description,
-      price: item.price,
-      quantity: 1,
-      imageUrl: item.imageUrl,
-    } satisfies CartItem);
-
-    this.toast.set(`${item.name} added to cart`);
-    window.setTimeout(() => this.toast.set(null), 1600);
+  public clearSearch(): void {
+    this.query.set('');
   }
 
   public navigateToMenu(): void {
-    this.router.navigate(['/categories/pizza']);
+    this.router.navigate(['/categories/quick-bites']);
   }
 
   public exploreMenu(): void {
@@ -410,6 +493,50 @@ export class HomePageComponent implements OnDestroy {
     window.clearInterval(this.heroTimer);
   }
 
+  private matchesSearch(item: MenuItem, query: string, queryTerms: string[]): boolean {
+    const normName = this.normalize(item.name);
+    const normDesc = this.normalize(item.description || '');
+    const nameAndDesc = `${normName} ${normDesc}`;
+    const restaurant = this.catalog.restaurantById(item.restaurantId);
+    const normRest = restaurant ? this.normalize(restaurant.name) : '';
+
+    // If query contains 'pasta' and does NOT contain 'pizza', strictly exclude pizza items
+    if (queryTerms.includes('pasta') && !queryTerms.includes('pizza')) {
+      if (!nameAndDesc.includes('pasta')) return false;
+    }
+
+    // If query contains 'pizza' and does NOT contain 'pasta', strictly exclude pasta items
+    if (queryTerms.includes('pizza') && !queryTerms.includes('pasta')) {
+      if (!nameAndDesc.includes('pizza')) return false;
+    }
+
+    // If query contains 'burger', do not show sandwich or wraps unless burger is in name/desc
+    if (queryTerms.includes('burger')) {
+      if (!nameAndDesc.includes('burger')) return false;
+    }
+
+    // Direct match against item name and description
+    if (queryTerms.every((term) => nameAndDesc.includes(term))) {
+      return true;
+    }
+
+    // Match against restaurant name (e.g. searching 'urban bites')
+    if (normRest && queryTerms.every((term) => normRest.includes(term))) {
+      return true;
+    }
+
+    // Match against pure category names (e.g. searching 'Indian', 'Healthy', 'Asian', 'Dessert', 'Drinks')
+    const catLabel = this.catalog.categoryLabel(item.category).toLowerCase();
+    if (catLabel !== 'pizza & pasta') {
+      const normCat = this.normalize(catLabel);
+      if (queryTerms.every((term) => normCat.includes(term))) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private normalize(value: string): string {
     return value
       .toLowerCase()
@@ -431,8 +558,15 @@ export class HomePageComponent implements OnDestroy {
 
   private itemIndex(item: MenuItem): string {
     const restaurant = this.catalog.restaurantById(item.restaurantId);
-    const categoryLabel = this.catalog.categoryLabel(restaurant?.category ?? item.category);
-    return [item.name, item.description, item.category, restaurant?.name, categoryLabel].join(' ');
+    const categoryLabel = this.catalog.categoryLabel(item.category);
+    return [
+      item.name,
+      item.description,
+      item.category,
+      restaurant?.name ?? '',
+      categoryLabel,
+      item.isVeg ? 'veg vegetarian' : 'non-veg nonveg chicken mutton meat',
+    ].join(' ');
   }
 
   private categoryFromQuery(value: string): string | null {

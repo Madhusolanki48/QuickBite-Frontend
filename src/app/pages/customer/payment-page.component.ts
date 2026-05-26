@@ -141,9 +141,7 @@ export class PaymentPageComponent {
 
   setMethod(method: 'UPI' | 'CARD' | 'NETBANKING' | 'WALLET' | 'COD'): void {
     this.selectedMethod.set(method);
-    if (method !== 'COD') {
-      this.cart.setPaymentMethod(method);
-    }
+    this.cart.setPaymentMethod(method);
   }
 
   async startPayment(): Promise<void> {
@@ -335,28 +333,32 @@ export class PaymentPageComponent {
 
     try {
       const orderTotal = this.cart.total();
+      const codId = 'cod-pay-' + Date.now();
+      const codOrderId = 'cod-order-' + Date.now();
       const order = await firstValueFrom(
-        this.orders.placeOrderAfterPayment({
-          restaurantId: restaurant.restaurantId,
-          restaurantName: restaurant.restaurantName,
-          items: orderSummary,
-          total: orderTotal,
-          customerName,
-          customerEmail: customer?.email,
-          customerPhone: customer?.phoneNumber,
-          deliveryAddressLine: formattedAddress,
-          deliveryLocation: selectedAddress
-            ? this.locations.addressLocation(selectedAddress)
-            : undefined,
-          pickupLocation: restaurant.restaurantId
-            ? this.locations.restaurantLocation(restaurant.restaurantId)
-            : undefined,
-          paymentMethod: 'COD',
-          paymentId: 'cod-pay-' + Date.now(),
-          paymentOrderId: 'cod-order-' + Date.now(),
-          paymentSignature: 'cod-sig-mock',
-          paymentStatus: 'PENDING',
-        }),
+        this.orders.placeOrderAfterPayment(
+          {
+            restaurantId: restaurant.restaurantId,
+            restaurantName: restaurant.restaurantName,
+            items: orderSummary,
+            total: orderTotal,
+            customerName,
+            customerEmail: customer?.email,
+            customerPhone: customer?.phoneNumber,
+            deliveryAddressLine: formattedAddress,
+            deliveryLocation: selectedAddress
+              ? this.locations.addressLocation(selectedAddress)
+              : undefined,
+            pickupLocation: restaurant.restaurantId
+              ? this.locations.restaurantLocation(restaurant.restaurantId)
+              : undefined,
+            paymentMethod: 'COD',
+            paymentId: codId,
+            paymentOrderId: codOrderId,
+            paymentSignature: 'cod-sig-mock',
+            paymentStatus: 'PENDING',
+          },
+        ),
       );
 
       if (customer?.email) {
@@ -374,14 +376,15 @@ export class PaymentPageComponent {
       await this.router.navigate(['/order-success'], {
         queryParams: {
           orderId: order.backendId ?? order.id,
-          paymentId: 'cod-pay-mock',
-          paymentOrderId: 'cod-order-mock',
+          paymentId: order.paymentId ?? codId,
+          paymentOrderId: order.paymentOrderId ?? codOrderId,
           total: orderTotal,
           restaurant: order.restaurantName,
         },
       });
-    } catch (error) {
-      this.errorMessage.set('Could not place Cash on Delivery order. Please try again.');
+    } catch (error: any) {
+      console.error('Failed to place COD order:', error);
+      this.errorMessage.set(error?.message || 'Could not place Cash on Delivery order. Please try again.');
     } finally {
       this.processing.set(false);
     }

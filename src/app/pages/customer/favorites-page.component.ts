@@ -2,8 +2,7 @@ import { NgFor, NgIf } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { CartItem, MenuItem } from '../../core/app.models';
-import { CartService } from '../../services/cart.service';
+import { MenuItem } from '../../core/app.models';
 import { CatalogService } from '../../services/catalog.service';
 import { FavoritesService } from '../../services/favorites.service';
 
@@ -64,13 +63,13 @@ import { FavoritesService } from '../../services/favorites.service';
                 <span>{{ deliveryTime(item) }}</span>
                 <span>₹{{ item.price }}</span>
               </div>
-              <button
-                type="button"
+              <a
+                [routerLink]="['/restaurants', item.restaurantId]"
+                [queryParams]="{ dish: item.id }"
                 class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-brand to-orange-500 px-4 py-2.5 text-sm font-extrabold text-white shadow-soft transition hover:-translate-y-0.5"
-                (click)="addToCart(item)"
               >
-                Add to cart
-              </button>
+                View in Menu &rarr;
+              </a>
             </div>
           </article>
         </div>
@@ -87,7 +86,6 @@ import { FavoritesService } from '../../services/favorites.service';
 })
 export class FavoritesPageComponent {
   protected readonly catalog = inject(CatalogService);
-  protected readonly cart = inject(CartService);
   protected readonly favorites = inject(FavoritesService);
 
   protected readonly items = computed(() => this.favorites.favorites());
@@ -108,25 +106,5 @@ export class FavoritesPageComponent {
     event.preventDefault();
     event.stopPropagation();
     this.favorites.remove(item.id);
-  }
-
-  protected addToCart(item: MenuItem): void {
-    const restaurant = this.catalog.restaurantById(item.restaurantId);
-    if (!restaurant) {
-      return;
-    }
-
-    this.cart.addItem({
-      id: `${restaurant.id}-${item.id}`,
-      restaurantId: restaurant.id,
-      backendRestaurantId: restaurant.backendId,
-      backendMenuItemId: item.backendId,
-      restaurantName: restaurant.name,
-      name: item.name,
-      description: item.description,
-      price: item.price,
-      quantity: 1,
-      imageUrl: item.imageUrl,
-    } satisfies CartItem);
   }
 }

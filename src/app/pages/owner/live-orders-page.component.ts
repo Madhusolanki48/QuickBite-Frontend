@@ -1,9 +1,10 @@
 import { NgClass, NgFor, NgIf } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 
 import { Order } from '../../core/app.models';
 import { DeliveryAgentDirectoryService } from '../../services/delivery-agent-directory.service';
 import { OwnerDashboardService } from '../../services/owner-dashboard.service';
+import { OrderService } from '../../services/order.service';
 
 @Component({
   selector: 'app-live-orders-page',
@@ -40,11 +41,48 @@ import { OwnerDashboardService } from '../../services/owner-dashboard.service';
     </section>
 
     <section class="order-tabs card">
-      <button type="button" class="active">New</button>
-      <button type="button">Preparing</button>
-      <button type="button">Ready</button>
-      <button type="button">Out for delivery</button>
-      <button type="button">Completed</button>
+      <button
+        type="button"
+        [class.active]="selectedTab() === 'ALL'"
+        (click)="selectedTab.set('ALL')"
+      >
+        All ({{ allOrdersCount() }})
+      </button>
+      <button
+        type="button"
+        [class.active]="selectedTab() === 'PLACED'"
+        (click)="selectedTab.set('PLACED')"
+      >
+        New ({{ countByStatus('PLACED') }})
+      </button>
+      <button
+        type="button"
+        [class.active]="selectedTab() === 'PREPARING'"
+        (click)="selectedTab.set('PREPARING')"
+      >
+        Preparing ({{ countByStatus('PREPARING') }})
+      </button>
+      <button
+        type="button"
+        [class.active]="selectedTab() === 'READY'"
+        (click)="selectedTab.set('READY')"
+      >
+        Ready ({{ countByStatus('READY') }})
+      </button>
+      <button
+        type="button"
+        [class.active]="selectedTab() === 'ON_THE_WAY'"
+        (click)="selectedTab.set('ON_THE_WAY')"
+      >
+        Out for delivery ({{ countByStatus('ON_THE_WAY') }})
+      </button>
+      <button
+        type="button"
+        [class.active]="selectedTab() === 'HISTORY'"
+        (click)="selectedTab.set('HISTORY')"
+      >
+        History ({{ historyCount() }})
+      </button>
     </section>
 
     <section class="status-note card section-card">
@@ -108,8 +146,8 @@ import { OwnerDashboardService } from '../../services/owner-dashboard.service';
         <div class="empty-state__visual">
           <img src="/assets/images/hero-banners/free-delivery.jpg" alt="No active orders" />
         </div>
-        <h2>No active orders</h2>
-        <p>New customer orders will appear here automatically.</p>
+        <h2>{{ selectedTab() === 'HISTORY' ? 'No completed orders' : 'No active orders' }}</h2>
+        <p>{{ selectedTab() === 'HISTORY' ? 'Delivered and cancelled orders will stay here.' : 'New customer orders will appear here automatically.' }}</p>
         <button class="action-btn primary" type="button">Promote today's specials</button>
       </section>
 
@@ -188,9 +226,17 @@ import { OwnerDashboardService } from '../../services/owner-dashboard.service';
             >
               Mark Ready
             </button>
-            <button *ngIf="order.status === 'READY'" class="ghost-btn" type="button">
-              Waiting for pickup
+            <button
+              *ngIf="order.status === 'READY'"
+              class="action-btn primary"
+              type="button"
+              (click)="dashboard.confirmHandover(order.id)"
+            >
+              Handover to Rider
             </button>
+            <span *ngIf="order.status === 'ON_THE_WAY'" class="status-chip blue">
+              🛵 In Transit with {{ order.deliveryAgentName || 'Rider' }}
+            </span>
             <button
               class="ghost-btn"
               type="button"
@@ -359,19 +405,33 @@ import { OwnerDashboardService } from '../../services/owner-dashboard.service';
   `,
   styleUrl: './owner-pages.scss',
 })
-export class LiveOrdersPageComponent {
+export class LiveOrdersPageComponent implements OnInit {
   protected readonly dashboard = inject(OwnerDashboardService);
   protected readonly agents = inject(DeliveryAgentDirectoryService);
+  private readonly orderService = inject(OrderService);
   protected readonly loading = signal(true);
   protected readonly expanded = signal<Record<string, boolean>>({});
   protected readonly skeletons = [1, 2, 3];
 
-  readonly orders = computed(() =>
-    this.dashboard
-      .liveOrders()
-      .slice()
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-  );
+  readonly selectedTab = signal<'ALL' | 'PLACED' | 'PREPARING' | 'READY' | 'ON_THE_WAY' | 'HISTORY'>('ALL');
+  readonly allOrdersCount = computed(() => this.dashboard.liveOrders().length);
+  readonly historyCount = computed(() => this.dashboard.orderHistory().length);
+
+  readonly orders = computed(() => {
+    const tab = this.selectedTab();
+    if (tab === 'HISTORY') {
+      return this.dashboard.orderHistory().slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    }
+    const all = this.dashboard.liveOrders().slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    if (tab === 'ALL') {
+      return all;
+    }
+    return all.filter((order) => order.status === tab);
+  });
+
+  ngOnInit(): void {
+    this.orderService.refreshFromBackend();
+  }
 
   constructor() {
     window.setTimeout(() => this.loading.set(false), 250);
@@ -409,7 +469,7 @@ export class LiveOrdersPageComponent {
   }
 
   countByStatus(status: Order['status']): number {
-    return this.orders().filter((order) => order.status === status).length;
+    return this.dashboard.liveOrders().filter((order) => order.status === status).length;
   }
 
   countWithAgent(): number {

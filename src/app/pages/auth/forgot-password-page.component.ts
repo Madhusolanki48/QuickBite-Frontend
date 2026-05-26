@@ -487,7 +487,6 @@ export class ForgotPasswordPageComponent implements OnDestroy {
     }
 
     this.verifyErrorMessage.set('');
-    console.log('Forgot password request received');
     this.requestLoading.set(true);
     this.showToast('');
     const email = this.requestForm.controls.email.value.trim().toLowerCase();
@@ -501,6 +500,10 @@ export class ForgotPasswordPageComponent implements OnDestroy {
 
       this.moveToCodeStep();
       this.showToast(response.message || 'OTP sent successfully');
+      const otpMatch = response.message?.match(/\b\d{6}\b/);
+      if (otpMatch) {
+        this.verifyForm.patchValue({ otp: otpMatch[0] });
+      }
     } catch (error) {
       console.error(error);
       if (this.shouldContinueAfterEmptyResetResponse(error)) {
@@ -622,6 +625,10 @@ export class ForgotPasswordPageComponent implements OnDestroy {
       this.startResendCountdown();
       this.resetVerifyState();
       this.showToast(response.message || 'OTP sent successfully');
+      const otpMatch = response.message?.match(/\b\d{6}\b/);
+      if (otpMatch) {
+        this.verifyForm.patchValue({ otp: otpMatch[0] });
+      }
     } catch (error) {
       console.error(error);
       if (this.shouldContinueAfterEmptyResetResponse(error)) {
@@ -717,7 +724,6 @@ export class ForgotPasswordPageComponent implements OnDestroy {
   }
 
   private moveToCodeStep(): void {
-    console.log('OTP sent');
     this.step.set(2);
     this.resetVerifyState();
     this.startCodeExpiryCountdown();

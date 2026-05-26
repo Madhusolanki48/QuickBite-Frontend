@@ -50,7 +50,7 @@ interface QuickOrder {
         </header>
 
         <section class="stats-row ops-stats">
-          <article class="card stat-card metric-card" *ngFor="let metric of keyMetrics" [ngClass]="metric.tone">
+          <article class="card stat-card metric-card" *ngFor="let metric of liveMetrics" [ngClass]="metric.tone">
             <div class="stat-card__icon">{{ metric.icon }}</div>
             <div class="stat-card__meta">
               <span>{{ metric.label }}</span>
@@ -111,7 +111,7 @@ interface QuickOrder {
                   <button
                     class="primary-action swipe-action"
                     type="button"
-                    [disabled]="displayDelivery().status !== 'READY'"
+                    [disabled]="displayDelivery().status !== 'READY' && displayDelivery().status !== 'PREPARING'"
                     (click)="pickup(displayDelivery().id)"
                   >
                     <span>Swipe</span> Mark Picked Up
@@ -262,12 +262,47 @@ export class DeliveryDashboardPageComponent {
   protected readonly session = inject(SessionService);
   protected readonly rupeeSymbol = '\u20B9';
   protected readonly completedSteps = ['Order Assigned', 'Reached Restaurant', 'Picked Up'];
-  protected readonly keyMetrics: DashboardMetric[] = [
-    { label: 'Active', value: '3', delta: '+1 request', tone: 'orange', icon: 'A', spark: [] },
-    { label: 'Completed', value: '12', delta: '92% on time', tone: 'green', icon: 'C', spark: [] },
-    { label: 'Earnings', value: 'Rs 1.8K', delta: '+18%', tone: 'amber', icon: 'Rs', spark: [] },
-    { label: 'Rating', value: '4.86', delta: 'Top zone', tone: 'blue', icon: '*', spark: [] },
-  ];
+
+  get liveMetrics(): DashboardMetric[] {
+    const active = this.dashboard.activeDeliveries().length;
+    const completed = this.dashboard.history().filter((h) => h.status === 'DELIVERED').length;
+    const earnings = this.dashboard.earnings().today;
+    const rating = this.dashboard.profile().rating.split(' ')[0] || '4.9';
+    return [
+      {
+        label: 'Active',
+        value: String(active),
+        delta: active > 0 ? `${active} in progress` : 'Ready for orders',
+        tone: 'orange',
+        icon: '⚡',
+        spark: [],
+      },
+      {
+        label: 'Completed',
+        value: String(completed),
+        delta: 'Orders fulfilled',
+        tone: 'green',
+        icon: '✓',
+        spark: [],
+      },
+      {
+        label: 'Earnings Today',
+        value: earnings,
+        delta: 'Calculated live',
+        tone: 'amber',
+        icon: '₹',
+        spark: [],
+      },
+      {
+        label: 'Rating',
+        value: rating,
+        delta: 'Top zone quality',
+        tone: 'blue',
+        icon: '★',
+        spark: [],
+      },
+    ];
+  }
   protected readonly metrics: DashboardMetric[] = [
     { label: 'Active Deliveries', value: '3', delta: '+1 new request', tone: 'orange', icon: 'A', spark: [30, 55, 42, 70, 88] },
     { label: 'Completed Today', value: '12', delta: '92% on time', tone: 'green', icon: 'C', spark: [42, 46, 60, 76, 90] },

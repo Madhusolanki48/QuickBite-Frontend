@@ -1,21 +1,60 @@
-import { NgFor, NgIf } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { CartService } from '../../services/cart.service';
 import { CatalogService } from '../../services/catalog.service';
+import { MenuItem } from '../../core/app.models';
 
 @Component({
   selector: 'app-menu-page',
-  imports: [NgFor, NgIf, RouterLink],
+  imports: [NgClass, NgFor, NgIf, RouterLink],
   template: `
     <section class="product-hero">
-      <a routerLink="/home" class="back-link">&#8592; Back to QuickBite</a>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+        <a routerLink="/home" class="back-link">&#8592; Back to Discovery</a>
+        <a routerLink="/cart" class="back-link" style="color: var(--brand);">
+          🛒 View Cart ({{ cart.itemCount() }})
+        </a>
+      </div>
 
-      <div class="product-stage">
+      <!-- Restaurant Context Header (Rule 8: Restaurant Context Must Always Be Visible) -->
+      <div class="restaurant-hero card" *ngIf="featuredRestaurant() as rest">
+        <div class="restaurant-hero__info">
+          <span class="restaurant-hero__badge">Ordering From Restaurant</span>
+          <h1>{{ rest.name }}</h1>
+          <p class="restaurant-hero__cuisine">{{ rest.cuisine }}</p>
+          <div class="restaurant-hero__stats">
+            <span class="rating">★ {{ rest.rating.toFixed(1) }}</span>
+            <span class="dot">•</span>
+            <span>⏱ {{ rest.deliveryMinutes }} mins delivery</span>
+            <span class="dot">•</span>
+            <span>🛵 ₹40 delivery fee</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Filter Banner (Active when arrived from a category click) -->
+      <div class="category-filter-banner card" *ngIf="activeCategoryFilter() as cat">
+        <div class="category-filter-banner__text">
+          <span class="category-filter-banner__pill">Category Filter</span>
+          <p>
+            Showing only <strong>{{ catalog.categoryLabel(cat) }}</strong> from
+            <strong>{{ featuredRestaurant()?.name }}</strong>
+          </p>
+        </div>
+        <button type="button" class="btn-clear-category" (click)="clearCategoryFilter()">
+          Show Full Restaurant Menu (All Items) &rarr;
+        </button>
+      </div>
+
+      <!-- Featured / Selected Dish Stage -->
+      <div class="product-stage" *ngIf="featuredItem()">
         <div class="product-stage__visual card">
           <img [src]="featuredImageUrl()" [alt]="featuredTitle()" />
-          <div class="product-stage__badge product-stage__badge--left">Chef pick</div>
+          <div class="product-stage__badge product-stage__badge--left">
+            {{ targetDishId() === featuredItem()?.id ? '★ Selected Dish' : 'Chef Pick' }}
+          </div>
           <div class="product-stage__badge product-stage__badge--right">
             {{ featuredRestaurant()?.deliveryMinutes ?? '30' }} min
           </div>
@@ -24,9 +63,14 @@ import { CatalogService } from '../../services/catalog.service';
         <div class="product-card card">
           <div class="product-card__header">
             <div>
-              <span class="product-card__eyebrow">Premium details</span>
+              <span class="product-card__eyebrow" *ngIf="targetDishId() === featuredItem()?.id">
+                Selected Dish from Discovery
+              </span>
+              <span class="product-card__eyebrow" *ngIf="targetDishId() !== featuredItem()?.id">
+                Featured Specialty
+              </span>
               <h1>{{ featuredTitle() }}</h1>
-              <p>{{ featuredRestaurant()?.cuisine }}</p>
+              <p>{{ featuredRestaurant()?.name }} • {{ featuredRestaurant()?.cuisine }}</p>
             </div>
 
             <div class="product-card__rating">
@@ -53,7 +97,7 @@ import { CatalogService } from '../../services/catalog.service';
           <div class="quantity-row">
             <div>
               <span class="quantity-row__label">Quantity</span>
-              <p>Build a premium order with the perfect serving size.</p>
+              <p>Build your order from {{ featuredRestaurant()?.name }}.</p>
             </div>
             <div class="quantity-picker" aria-label="Quantity selector">
               <button type="button" (click)="decreaseQuantity()">-</button>
@@ -83,16 +127,32 @@ import { CatalogService } from '../../services/catalog.service';
               <span>Price</span>
               <strong>₹{{ totalPrice() }}</strong>
             </div>
-            <button type="button" class="order-now" (click)="orderNow()">Order Now</button>
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+              <button
+                type="button"
+                class="order-now"
+                [class.btn-added-state]="justAddedId() === featuredItem()?.id"
+                (click)="addItem(featuredItem()!, quantity())"
+              >
+                {{ justAddedId() === featuredItem()?.id ? '✓ Added to Cart!' : 'Add to Cart • ₹' + totalPrice() }}
+              </button>
+              <button type="button" class="back-link" style="cursor: pointer;" (click)="orderNow()">
+                Checkout &rarr;
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- Full Menu from this Restaurant -->
       <section class="related-section">
         <div class="section-head">
           <div>
-            <span>More from this restaurant</span>
-            <h2>Other premium picks</h2>
+            <span>{{ activeCategoryFilter() ? (catalog.categoryLabel(activeCategoryFilter()!) + ' Specials') : 'Full Restaurant Menu' }}</span>
+            <h2>
+              {{ activeCategoryFilter() ? (catalog.categoryLabel(activeCategoryFilter()!) + ' Dishes') : 'All Dishes' }}
+              from {{ featuredRestaurant()?.name }} ({{ restaurantItems().length + (featuredItem() ? 1 : 0) }} items)
+            </h2>
           </div>
           <a routerLink="/cart" class="section-head__cart">
             View Cart ({{ cart.itemCount() }})
@@ -100,19 +160,43 @@ import { CatalogService } from '../../services/catalog.service';
         </div>
 
         <div class="related-grid">
-          <article *ngFor="let item of relatedItems()" class="related-card card">
-            <img [src]="item.imageUrl" [alt]="item.name" />
+          <article
+            *ngFor="let item of restaurantItems()"
+            class="related-card card"
+            [id]="'dish-' + item.id"
+            [class.highlighted-dish]="item.id === targetDishId()"
+          >
+            <div class="related-card__media">
+              <img [src]="item.imageUrl" [alt]="item.name" />
+              <div class="diet-indicator" [ngClass]="item.isVeg ? 'veg' : 'non-veg'">
+                <div class="circle"></div>
+              </div>
+              <span *ngIf="item.id === targetDishId()" class="highlighted-badge">Selected</span>
+            </div>
             <div class="related-card__body">
               <div>
-                <h3>{{ item.name }}</h3>
+                <div class="flex items-center justify-between gap-2">
+                  <h3>{{ item.name }}</h3>
+                </div>
                 <p>{{ item.description }}</p>
               </div>
               <div class="related-card__footer">
                 <strong>₹{{ item.price }}</strong>
-                <button type="button" (click)="addItem(item)">Add</button>
+                <button
+                  type="button"
+                  class="btn-add-item"
+                  [class.btn-added-state]="justAddedId() === item.id"
+                  (click)="addItem(item)"
+                >
+                  {{ justAddedId() === item.id ? '✓ Added!' : 'Add to Cart' }}
+                </button>
               </div>
             </div>
           </article>
+        </div>
+
+        <div *ngIf="restaurantItems().length === 0" class="empty-state-notice">
+          <p>No items found matching the current diet preference.</p>
         </div>
       </section>
     </section>
@@ -120,47 +204,120 @@ import { CatalogService } from '../../services/catalog.service';
     <a routerLink="/cart" class="floating-cart floating-cart--details" aria-label="View cart">
       <span class="floating-cart__icon">&#128722;</span>
       <span class="floating-cart__details">
-        <strong>{{ cart.itemCount() }} items</strong>
-        <small>₹{{ cart.total() }} • Checkout</small>
+        <strong>{{ cart.itemCount() }} items • {{ cart.restaurantName() || featuredRestaurant()?.name }}</strong>
+        <small>₹{{ cart.total() }} • View Cart</small>
       </span>
       <span class="floating-cart__arrow">&#8594;</span>
     </a>
-
-    <div *ngIf="toast()" class="toast">{{ toast() }}</div>
   `,
   styleUrl: './menu-page.component.scss',
 })
 export class MenuPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  protected readonly catalog = inject(CatalogService);
-  protected readonly cart = inject(CartService);
+  public readonly catalog = inject(CatalogService);
+  public readonly cart = inject(CartService);
 
   protected readonly quantity = signal(1);
-  protected readonly toast = signal<string | null>(null);
+  protected readonly justAddedId = signal<string | null>(null);
 
-  protected readonly restaurantId = this.route.snapshot.paramMap.get('id') ?? '';
-  protected readonly featuredRestaurant = computed(() => this.catalog.restaurantById(this.restaurantId));
-  protected readonly items = computed(() => this.catalog.menuForRestaurant(this.restaurantId));
-  protected readonly featuredItem = computed(() => this.items()[0] ?? null);
+  public readonly restaurantId = signal(this.route.snapshot.paramMap.get('id') ?? '');
+  public readonly targetDishId = signal(this.route.snapshot.queryParamMap.get('dish') ?? '');
+  public readonly activeCategoryFilter = signal<string | null>(
+    this.route.snapshot.queryParamMap.get('category'),
+  );
+
+  constructor() {
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      if (id) {
+        this.restaurantId.set(id);
+      }
+    });
+
+    this.route.queryParamMap.subscribe((params) => {
+      const dish = params.get('dish');
+      if (dish) {
+        this.targetDishId.set(dish);
+        setTimeout(() => {
+          const el = document.getElementById(`dish-${dish}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 300);
+      }
+      this.activeCategoryFilter.set(params.get('category'));
+    });
+  }
+
+  protected readonly featuredRestaurant = computed(() =>
+    this.catalog.restaurantById(this.restaurantId()),
+  );
+
+  protected readonly allItems = computed(() => {
+    const list = this.catalog.menuForRestaurant(this.restaurantId());
+    const cat = this.activeCategoryFilter();
+    if (!cat || cat === 'all') {
+      return list;
+    }
+    return list.filter((item) => this.catalog.matchesDishCategory(item, cat));
+  });
+
+  protected clearCategoryFilter(): void {
+    this.activeCategoryFilter.set(null);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { category: null },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  // Selected or featured dish at top
+  protected readonly featuredItem = computed<MenuItem | null>(() => {
+    const list = this.allItems();
+    if (!list.length) return null;
+
+    const target = this.targetDishId();
+    if (target) {
+      const found = list.find((it) => it.id === target);
+      if (found) return found;
+    }
+
+    const vegPref = this.catalog.vegFilter();
+    let eligible = list;
+    if (vegPref === 'VEG') {
+      const vegOnly = list.filter((it) => it.isVeg);
+      if (vegOnly.length) eligible = vegOnly;
+    } else if (vegPref === 'NON_VEG') {
+      const nonVegOnly = list.filter((it) => !it.isVeg);
+      if (nonVegOnly.length) eligible = nonVegOnly;
+    }
+
+    return eligible[0] ?? list[0];
+  });
+
   protected readonly featuredTitle = computed(
     () => this.featuredItem()?.name ?? this.featuredRestaurant()?.name ?? 'Chef Special',
   );
+
   protected readonly featuredImageUrl = computed(
     () =>
       this.featuredItem()?.imageUrl ??
       this.featuredRestaurant()?.imageUrl ??
       '/assets/images/hero-banners/healthy-food.png?v=20260429',
   );
+
   protected readonly featuredDescription = computed(
     () =>
       this.featuredItem()?.description ??
       this.featuredRestaurant()?.description ??
       'Handcrafted with a premium delivery finish.',
   );
+
   protected readonly featuredRating = computed(
     () => this.featuredItem()?.rating ?? this.featuredRestaurant()?.rating ?? 4.8,
   );
+
   protected readonly nutritionCards = [
     { label: 'Protein', value: '28g' },
     { label: 'Carbs', value: '42g' },
@@ -173,14 +330,12 @@ export class MenuPageComponent {
     if (item?.prepTimeMinutes) {
       return `${item.prepTimeMinutes} min`;
     }
-
     return '18 min';
   });
 
   protected readonly calories = computed(() => {
     const item = this.featuredItem();
-    const base = item ? 380 + (item.price % 120) : 430;
-    return base;
+    return item ? 380 + (item.price % 120) : 430;
   });
 
   protected readonly totalPrice = computed(() => {
@@ -190,11 +345,21 @@ export class MenuPageComponent {
 
   protected readonly ingredients = computed(() => this.featuredItem()?.ingredients ?? []);
 
-  protected readonly relatedItems = computed(() =>
-    this.items()
-      .slice(1, 5)
-      .map((item) => item),
-  );
+  // Show ALL items from the restaurant!
+  protected readonly restaurantItems = computed<MenuItem[]>(() => {
+    const feat = this.featuredItem();
+    const list = this.allItems();
+    const vegPref = this.catalog.vegFilter();
+
+    let items = list.filter((it) => it.id !== feat?.id);
+    if (vegPref === 'VEG') {
+      items = items.filter((it) => it.isVeg === true);
+    } else if (vegPref === 'NON_VEG') {
+      items = items.filter((it) => it.isVeg === false);
+    }
+
+    return items;
+  });
 
   protected increaseQuantity(): void {
     this.quantity.update((value) => Math.min(12, value + 1));
@@ -221,7 +386,7 @@ export class MenuPageComponent {
       return;
     }
 
-    this.cart.addItem({
+    const added = this.cart.addItem({
       id: `${restaurant.id}-${item.id}`,
       backendMenuItemId: item.backendId,
       backendRestaurantId: restaurant.backendId,
@@ -234,8 +399,14 @@ export class MenuPageComponent {
       imageUrl: item.imageUrl,
     });
 
-    this.toast.set(`${item.name} added to cart`);
-    window.setTimeout(() => this.toast.set(null), 1600);
+    if (added) {
+      this.justAddedId.set(item.id);
+      setTimeout(() => {
+        if (this.justAddedId() === item.id) {
+          this.justAddedId.set(null);
+        }
+      }, 2200);
+    }
   }
 
   protected orderNow(): void {
