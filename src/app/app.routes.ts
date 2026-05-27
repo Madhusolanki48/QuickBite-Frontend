@@ -8,6 +8,8 @@ import { OwnerLayoutComponent } from './layouts/owner-layout.component';
 import { LoginPageComponent } from './pages/auth/login-page.component';
 import { ForgotPasswordPageComponent } from './pages/auth/forgot-password-page.component';
 import { ApprovalPendingPageComponent } from './pages/auth/approval-pending-page.component';
+import { RestaurantOnboardingPageComponent } from './pages/owner/restaurant-onboarding-page.component';
+import { DeliveryOnboardingPageComponent } from './pages/delivery/delivery-onboarding-page.component';
 import { SignInPageComponent } from './pages/auth/sign-in-page.component';
 import { VerifyEmailPageComponent } from './pages/auth/verify-email-page.component';
 import { AddressesPageComponent } from './pages/customer/addresses-page.component';
@@ -32,10 +34,15 @@ import { DeliveryHistoryPageComponent } from './pages/delivery/delivery-history-
 import { DeliveryEarningsPageComponent } from './pages/delivery/delivery-earnings-page.component';
 import { DeliveryProfilePageComponent } from './pages/delivery/delivery-profile-page.component';
 import { AdminDashboardPageComponent } from './pages/admin/admin-dashboard-page.component';
+import { AdminAnalyticsPageComponent } from './pages/admin/admin-analytics-page.component';
 import { AdminOrdersPageComponent } from './pages/admin/admin-orders-page.component';
 import { AdminRestaurantsPageComponent } from './pages/admin/admin-restaurants-page.component';
 import { AdminDeliveryAgentsPageComponent } from './pages/admin/admin-delivery-agents-page.component';
 import { AdminCustomersPageComponent } from './pages/admin/admin-customers-page.component';
+import { AdminPaymentsPageComponent } from './pages/admin/admin-payments-page.component';
+import { AdminRefundsPageComponent } from './pages/admin/admin-refunds-page.component';
+import { AdminSupportPageComponent } from './pages/admin/admin-support-page.component';
+import { AdminReviewsPageComponent } from './pages/admin/admin-reviews-page.component';
 import { AdminSettingsPageComponent } from './pages/admin/admin-settings-page.component';
 
 export const routes: Routes = [
@@ -54,6 +61,17 @@ export const routes: Routes = [
   {
     path: 'approval-pending',
     component: ApprovalPendingPageComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'owner/onboarding',
+    component: RestaurantOnboardingPageComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'delivery/onboarding',
+    component: DeliveryOnboardingPageComponent,
+    canActivate: [authGuard],
   },
   {
     path: '',
@@ -104,10 +122,15 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: 'dashboard', component: AdminDashboardPageComponent },
+      { path: 'analytics', component: AdminAnalyticsPageComponent },
       { path: 'orders', component: AdminOrdersPageComponent },
       { path: 'restaurants', component: AdminRestaurantsPageComponent },
       { path: 'delivery-agents', component: AdminDeliveryAgentsPageComponent },
       { path: 'customers', component: AdminCustomersPageComponent },
+      { path: 'payments', component: AdminPaymentsPageComponent },
+      { path: 'refunds', component: AdminRefundsPageComponent },
+      { path: 'support', component: AdminSupportPageComponent },
+      { path: 'reviews', component: AdminReviewsPageComponent },
       { path: 'settings', component: AdminSettingsPageComponent },
     ],
   },
