@@ -90,6 +90,31 @@ export interface AdminAuditLog {
   details: string;
 }
 
+// Known seed restaurant owner accounts that are already approved and active.
+// These must never appear in the pending approvals list.
+const SEED_APPROVED_OWNER_EMAILS = new Set([
+  'owner.urbanbites@quickbite.com',
+  'owner.crustco@quickbite.com',
+  'owner.royaltadka@quickbite.com',
+  'owner.wokbowl@quickbite.com',
+  'owner.greenspoon@quickbite.com',
+  'owner.foodyard@quickbite.com',
+  'burger-palace-owner@quickbite.dev',
+  'pizza-hut-owner@quickbite.dev',
+  'sushi-zen-owner@quickbite.dev',
+  'spice-garden-owner@quickbite.dev',
+  'taco-fiesta-owner@quickbite.dev',
+  'noodle-house-owner@quickbite.dev',
+]);
+
+// Known seed delivery agent accounts that are already approved and active.
+const SEED_APPROVED_AGENT_EMAILS = new Set([
+  'agent1@quickbite.com',
+  'agent2@quickbite.com',
+  'agent3@quickbite.com',
+  'agent4@quickbite.com',
+]);
+
 @Injectable({ providedIn: 'root' })
 export class AdminDashboardService {
   private readonly auth = inject(AuthApiService);
@@ -307,11 +332,17 @@ export class AdminDashboardService {
       next: (users) => {
         this.allUsersSignal.set(users);
         this.approvalUsersSignal.set(
-          users.filter(
-            (user) =>
+          users.filter((user) => {
+            // Never show known seed/demo accounts as pending — they are already active
+            const email = user.email.toLowerCase().trim();
+            if (SEED_APPROVED_OWNER_EMAILS.has(email)) return false;
+            if (SEED_APPROVED_AGENT_EMAILS.has(email)) return false;
+
+            return (
               (user.role === 'RESTAURANT_OWNER' || user.role === 'DELIVERY_PARTNER') &&
-              (user.approvalStatus === 'PENDING' || user.enabled === false),
-          ),
+              (user.approvalStatus === 'PENDING' || user.enabled === false)
+            );
+          }),
         );
       },
       error: () => {},
@@ -751,50 +782,12 @@ export class AdminDashboardService {
   }
 
   private readRefunds(): AdminRefund[] {
-    const fallback: AdminRefund[] = [
-      {
-        id: 'REF-801',
-        orderId: 'ORD-1042',
-        customerName: 'Aarav Mehta',
-        customerEmail: 'aarav.mehta@gmail.com',
-        restaurantName: 'Urban Bites',
-        amount: 420,
-        reason: 'Item missing from package and kitchen delay',
-        status: 'PENDING',
-        requestedAt: 'Today, 07:15 PM',
-      },
-      {
-        id: 'REF-802',
-        orderId: 'ORD-1035',
-        customerName: 'Priya Sharma',
-        customerEmail: 'priya.s@gmail.com',
-        restaurantName: 'Royal Tadka',
-        amount: 680,
-        reason: 'Wrong curry delivered by mistake',
-        status: 'PENDING',
-        requestedAt: 'Today, 06:40 PM',
-      },
-      {
-        id: 'REF-799',
-        orderId: 'ORD-0988',
-        customerName: 'Kunal Sen',
-        customerEmail: 'kunal.sen@gmail.com',
-        restaurantName: 'Crust & Co',
-        amount: 540,
-        reason: 'Order cancelled due to rain delay',
-        status: 'APPROVED',
-        requestedAt: 'Yesterday',
-        reviewedAt: 'Yesterday, 09:20 PM',
-        notes: 'Credited back via UPI payment gateway',
-      },
-    ];
-
     const raw = localStorage.getItem(ADMIN_REFUNDS_KEY);
-    if (!raw) return fallback;
+    if (!raw) return [];
     try {
       return JSON.parse(raw) as AdminRefund[];
     } catch {
-      return fallback;
+      return [];
     }
   }
 
@@ -803,90 +796,12 @@ export class AdminDashboardService {
   }
 
   private readSupport(): AdminSupportTicket[] {
-    const fallback: AdminSupportTicket[] = [
-      {
-        id: 'TCK-201',
-        ticketNumber: 'QB-SUP-201',
-        userType: 'CUSTOMER',
-        userName: 'Rohan Gupta',
-        userEmail: 'rohan.gupta@yahoo.com',
-        subject: 'Order delayed by over 40 minutes',
-        category: 'Delivery Delay',
-        priority: 'HIGH',
-        status: 'OPEN',
-        messages: [
-          {
-            sender: 'Rohan Gupta',
-            text: 'My order #ORD-1049 is still showing Preparing for 45 minutes. Can you please check with the restaurant?',
-            timestamp: '19:10',
-            isStaff: false,
-          },
-        ],
-        createdAt: 'Today, 07:10 PM',
-        updatedAt: 'Today, 07:10 PM',
-      },
-      {
-        id: 'TCK-202',
-        ticketNumber: 'QB-SUP-202',
-        userType: 'RESTAURANT',
-        userName: 'Green Spoon Manager',
-        userEmail: 'greenspoon.manager@quickbite.com',
-        subject: 'Menu item price sync inquiry',
-        category: 'Menu & Catalog',
-        priority: 'MEDIUM',
-        status: 'IN_PROGRESS',
-        messages: [
-          {
-            sender: 'Green Spoon Manager',
-            text: 'We updated the price of Green Detox Juice in our portal but it took 10 minutes to reflect.',
-            timestamp: '16:30',
-            isStaff: false,
-          },
-          {
-            sender: 'QuickBite Support',
-            text: 'We have flushed the Redis catalog cache and it is now syncing in real-time.',
-            timestamp: '16:45',
-            isStaff: true,
-          },
-        ],
-        createdAt: 'Today, 04:30 PM',
-        updatedAt: 'Today, 04:45 PM',
-      },
-      {
-        id: 'TCK-203',
-        ticketNumber: 'QB-SUP-203',
-        userType: 'DELIVERY',
-        userName: 'Rahul Sharma',
-        userEmail: 'rahul.rider@quickbite.com',
-        subject: 'Customer location pin mismatch',
-        category: 'Route Navigation',
-        priority: 'LOW',
-        status: 'RESOLVED',
-        messages: [
-          {
-            sender: 'Rahul Sharma',
-            text: 'The map pin was 200m away from the actual apartment gate.',
-            timestamp: 'Yesterday',
-            isStaff: false,
-          },
-          {
-            sender: 'QuickBite Support',
-            text: 'Address coordinates updated and verified with customer.',
-            timestamp: 'Yesterday',
-            isStaff: true,
-          },
-        ],
-        createdAt: 'Yesterday',
-        updatedAt: 'Yesterday',
-      },
-    ];
-
     const raw = localStorage.getItem(ADMIN_SUPPORT_KEY);
-    if (!raw) return fallback;
+    if (!raw) return [];
     try {
       return JSON.parse(raw) as AdminSupportTicket[];
     } catch {
-      return fallback;
+      return [];
     }
   }
 
