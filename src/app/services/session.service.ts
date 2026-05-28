@@ -13,8 +13,14 @@ const AUTH_STORAGE_KEYS = [
   'quickbite.userRestaurantId',
   'quickbite.userRestaurantName',
   'quickbite.pendingRole',
+  // Cart
   'quickbite.cart.items',
   'quickbite.selectedAddressId',
+  'quickbite.addresses',
+  // Orders
+  'quickbite.orders.local',
+  'quickbite.order.overrides',
+  'quickbite.order.hidden',
 ];
 
 const PENDING_ROLE_KEY = 'quickbite.pendingRole';
@@ -77,6 +83,10 @@ export class SessionService {
   readonly isAuthenticated = computed(() => Boolean(this.tokenSignal() || this.userSignal()));
 
   startSession(response: AuthResponse): void {
+    // Always wipe previous user's data before writing new session.
+    // This prevents data leakage when switching accounts (e.g. Google login).
+    this.clearAuthStorage();
+
     if (response.token) {
       this.tokenSignal.set(response.token);
       localStorage.setItem('quickbite.token', response.token);
