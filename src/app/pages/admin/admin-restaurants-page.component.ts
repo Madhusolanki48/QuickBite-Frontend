@@ -33,12 +33,12 @@ const NUMERIC_TO_SLUG: Record<string, string> = {
 };
 
 const RESTAURANT_OWNER_CONTACTS: Record<string, { name: string; email: string }> = {
-  'urban-bites': { name: 'Urban Bites Owner', email: 'owner.urbanbites@quickbite.com' },
-  'crust-and-co': { name: 'Crust & Co. Owner', email: 'owner.crustco@quickbite.com' },
-  'royal-tadka': { name: 'Royal Tadka Owner', email: 'owner.royaltadka@quickbite.com' },
-  'wok-and-bowl': { name: 'Wok & Bowl Owner', email: 'owner.wokbowl@quickbite.com' },
-  'green-spoon': { name: 'Green Spoon Owner', email: 'owner.greenspoon@quickbite.com' },
-  'the-food-yard': { name: 'The Food Yard Owner', email: 'owner.foodyard@quickbite.com' },
+  'urban-bites': { name: 'Aarav Mehta', email: 'owner.urbanbites@quickbite.com' },
+  'crust-and-co': { name: 'Ishita Sharma', email: 'owner.crustco@quickbite.com' },
+  'royal-tadka': { name: 'Meera Iyer', email: 'owner.royaltadka@quickbite.com' },
+  'wok-and-bowl': { name: 'Ken Tanaka', email: 'owner.wokbowl@quickbite.com' },
+  'green-spoon': { name: 'Lily Chen', email: 'owner.greenspoon@quickbite.com' },
+  'the-food-yard': { name: 'Diego Lopez', email: 'owner.foodyard@quickbite.com' },
 };
 
 @Component({
