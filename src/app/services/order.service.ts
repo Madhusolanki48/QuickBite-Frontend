@@ -213,9 +213,18 @@ export class OrderService {
       }).subscribe({
         next: () => {
           this.refreshFromBackend();
+          this.sync.publish('orders');
         },
-        error: (err) => console.error('Failed to update delivery assignment status in DB', err)
+        error: (err) => {
+          console.error('Failed to update delivery assignment status in DB', err);
+          // Even if backend update fails, sync local state cross-tabs
+          this.sync.publish('orders');
+        }
       });
+    } else {
+      // No delivery record in DB yet — still publish cross-tab sync
+      // so that customer/owner in same browser see the status update
+      this.sync.publish('orders');
     }
   }
 
@@ -351,10 +360,41 @@ export class OrderService {
     this.http.get<any[]>(`${this.baseUrl}/deliveries`).subscribe({
       next: (deliveries) => {
         this.deliveriesSignal.set(deliveries);
+        // Sync delivery assignment status → order status for all local orders
+        // This ensures customer/owner/admin dashboards see the correct status
+        // even when the backend order row update failed (e.g. DB inconsistency)
+        let changed = false;
+        this.ordersSignal.update((orders) =>
+          orders.map((order) => {
+            const backendNumericId = order.backendId ?? Number(String(order.id).replace('ORD-', ''));
+            const delivery = deliveries.find(
+              (d) =>
+                String(d.orderId) === String(backendNumericId) ||
+                String(d.orderId) === String(order.backendId) ||
+                String(d.orderId) === String(order.id).replace('ORD-', '')
+            );
+            if (!delivery) return order;
+            const deliveryStatus: string = delivery.deliveryStatus ?? '';
+            if (deliveryStatus === 'DELIVERED' && order.status !== 'DELIVERED') {
+              changed = true;
+              return { ...order, status: 'DELIVERED' as Order['status'] };
+            }
+            if (deliveryStatus === 'PICKED_UP' && order.status !== 'ON_THE_WAY' && order.status !== 'DELIVERED') {
+              changed = true;
+              return { ...order, status: 'ON_THE_WAY' as Order['status'] };
+            }
+            return order;
+          })
+        );
+        if (changed) {
+          this.persistLocalState();
+          this.sync.publish('orders');
+        }
       },
       error: (err) => console.error('Failed to load deliveries from backend', err),
     });
   }
+
 
   private fromBackendOrder(response: BackendOrderResponse, fallback?: Order): Order {
     // Map numeric backendRestaurantId -> frontend restaurant entry

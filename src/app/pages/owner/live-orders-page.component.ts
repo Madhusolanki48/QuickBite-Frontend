@@ -237,6 +237,12 @@ import { OrderService } from '../../services/order.service';
             <span *ngIf="order.status === 'ON_THE_WAY'" class="status-chip blue">
               🛵 In Transit with {{ order.deliveryAgentName || 'Rider' }}
             </span>
+            <span *ngIf="order.status === 'DELIVERED'" class="status-chip status-success" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">
+              ✅ Delivered · {{ order.deliveryAgentName ? 'by ' + order.deliveryAgentName : '' }}
+            </span>
+            <span *ngIf="order.status === 'CANCELLED'" class="status-chip status-danger" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">
+              ✕ Cancelled
+            </span>
             <button
               class="ghost-btn"
               type="button"
@@ -245,7 +251,7 @@ import { OrderService } from '../../services/order.service';
               {{ isExpanded(order.id) ? 'Collapse' : 'Expand' }}
             </button>
             <button
-              *ngIf="order.status !== 'DELIVERED' && order.status !== 'CANCELLED'"
+              *ngIf="order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && order.status !== 'ON_THE_WAY'"
               class="ghost-btn danger-text"
               type="button"
               (click)="cancelOrder(order.id); $event.stopPropagation()"
