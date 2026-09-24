@@ -26,12 +26,6 @@ const OWNER_RESTAURANT_IDS: Record<string, string> = {
   'owner.wokbowl@quickbite.com': 'wok-and-bowl',
   'owner.greenspoon@quickbite.com': 'green-spoon',
   'owner.foodyard@quickbite.com': 'the-food-yard',
-  'burger-palace-owner@quickbite.dev': 'urban-bites',
-  'pizza-hut-owner@quickbite.dev': 'crust-and-co',
-  'sushi-zen-owner@quickbite.dev': 'wok-and-bowl',
-  'spice-garden-owner@quickbite.dev': 'royal-tadka',
-  'taco-fiesta-owner@quickbite.dev': 'the-food-yard',
-  'noodle-house-owner@quickbite.dev': 'green-spoon',
 };
 
 const NUMERIC_TO_SLUG: Record<string, string> = {

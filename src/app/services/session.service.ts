@@ -32,12 +32,6 @@ const SEED_OWNER_RESTAURANTS: Record<string, { id: string; name: string }> = {
   'owner.wokbowl@quickbite.com': { id: 'wok-and-bowl', name: 'Wok & Bowl' },
   'owner.greenspoon@quickbite.com': { id: 'green-spoon', name: 'Green Spoon' },
   'owner.foodyard@quickbite.com': { id: 'the-food-yard', name: 'The Food Yard' },
-  'burger-palace-owner@quickbite.dev': { id: 'urban-bites', name: 'Urban Bites' },
-  'pizza-hut-owner@quickbite.dev': { id: 'crust-and-co', name: 'Crust & Co.' },
-  'sushi-zen-owner@quickbite.dev': { id: 'wok-and-bowl', name: 'Wok & Bowl' },
-  'spice-garden-owner@quickbite.dev': { id: 'royal-tadka', name: 'Royal Tadka' },
-  'taco-fiesta-owner@quickbite.dev': { id: 'the-food-yard', name: 'The Food Yard' },
-  'noodle-house-owner@quickbite.dev': { id: 'green-spoon', name: 'Green Spoon' },
 };
 
 const SEED_DELIVERY_AGENT_EMAILS = new Set([

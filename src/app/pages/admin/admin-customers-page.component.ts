@@ -239,33 +239,10 @@ export class AdminCustomersPageComponent {
   selectedCustomer: AdminUserResponse | null = null;
 
   readonly customers = computed(() => {
-    const list = this.admin.allCustomers();
-    if (list.length > 0) return list;
-    // Fallback if DB only has current session
-    return [
-      {
-        id: 1,
-        firstName: 'Aarav',
-        lastName: 'Mehta',
-        username: 'aarav',
-        email: 'aarav.mehta@gmail.com',
-        phoneNumber: '+91 98765 43210',
-        role: 'CUSTOMER' as const,
-        enabled: true,
-        createdAt: '2026-01-15T10:00:00Z',
-      },
-      {
-        id: 2,
-        firstName: 'Priya',
-        lastName: 'Sharma',
-        username: 'priya',
-        email: 'priya.s@gmail.com',
-        phoneNumber: '+91 98111 22334',
-        role: 'CUSTOMER' as const,
-        enabled: true,
-        createdAt: '2026-02-10T10:00:00Z',
-      },
-    ];
+    return this.admin.allCustomers().filter((c) => {
+      const email = (c.email || '').toLowerCase().trim();
+      return !email.includes('@deleted.quickbite.local') && c.firstName !== 'Deleted';
+    });
   });
 
   readonly activeCustomersCount = computed(() =>

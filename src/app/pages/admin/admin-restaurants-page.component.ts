@@ -15,12 +15,6 @@ const OWNER_RESTAURANT_IDS: Record<string, string> = {
   'owner.wokbowl@quickbite.com': 'wok-and-bowl',
   'owner.greenspoon@quickbite.com': 'green-spoon',
   'owner.foodyard@quickbite.com': 'the-food-yard',
-  'burger-palace-owner@quickbite.dev': 'urban-bites',
-  'pizza-hut-owner@quickbite.dev': 'crust-and-co',
-  'sushi-zen-owner@quickbite.dev': 'wok-and-bowl',
-  'spice-garden-owner@quickbite.dev': 'royal-tadka',
-  'taco-fiesta-owner@quickbite.dev': 'the-food-yard',
-  'noodle-house-owner@quickbite.dev': 'green-spoon',
 };
 
 const NUMERIC_TO_SLUG: Record<string, string> = {
@@ -454,8 +448,10 @@ export class AdminRestaurantsPageComponent {
   }
 
   getOwnerEmail(restaurantId: string): string {
+    const targetSlug = this.normalizeRestaurantId(restaurantId);
+    const expectedContact = RESTAURANT_OWNER_CONTACTS[targetSlug]?.email;
     const owner = this.findOwnerForRestaurant(restaurantId);
-    return owner ? owner.email : RESTAURANT_OWNER_CONTACTS[restaurantId]?.email ?? 'kitchen@quickbite.com';
+    return owner?.email || expectedContact || 'kitchen@quickbite.com';
   }
 
   getRestaurantMenu(restaurantId: string): MenuItem[] {
@@ -509,6 +505,14 @@ export class AdminRestaurantsPageComponent {
     const targetSlug = this.normalizeRestaurantId(restaurantId);
     const targetBackendId = restaurant?.backendId ? String(restaurant.backendId) : undefined;
     const targetName = restaurant?.name.toLowerCase().trim();
+    const expectedEmail = RESTAURANT_OWNER_CONTACTS[targetSlug]?.email?.toLowerCase();
+
+    if (expectedEmail) {
+      const matchByEmail = this.admin.allRestaurantOwners().find(
+        (o) => o.email.toLowerCase().trim() === expectedEmail,
+      );
+      if (matchByEmail) return matchByEmail;
+    }
 
     return this.admin.allRestaurantOwners().find((owner) => {
       const ownerRestaurantSlug = this.normalizeRestaurantId(owner.restaurantId ?? undefined);

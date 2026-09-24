@@ -190,8 +190,8 @@ import { OrderService } from '../../services/order.service';
                 <span style="color: #f59e0b; font-weight: 700;">★ {{ agent.rating }}</span>
               </td>
               <td style="padding: 1rem;">
-                <strong>{{ agent.deliveries }} trips</strong>
-                <small style="display: block; color: var(--muted);">Earned {{ agent.earnings }}</small>
+                <strong>{{ getAgentDeliveries(agent.name) }} trips</strong>
+                <small style="display: block; color: var(--muted);">Earned {{ getAgentEarnings(agent.name) }}</small>
               </td>
               <td style="padding: 1rem;">
                 <span
@@ -256,11 +256,11 @@ import { OrderService } from '../../services/order.service';
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
           <div class="card" style="padding: 1rem; border: 1px solid var(--line);">
             <span style="color: var(--muted); font-size: 0.8rem; font-weight: 700;">Completed Orders</span>
-            <h3 style="margin: 0.25rem 0 0; font-size: 1.3rem;">{{ agt.deliveries }} trips</h3>
+            <h3 style="margin: 0.25rem 0 0; font-size: 1.3rem;">{{ getAgentDeliveries(agt.name) }} trips</h3>
           </div>
           <div class="card" style="padding: 1rem; border: 1px solid var(--line);">
             <span style="color: var(--muted); font-size: 0.8rem; font-weight: 700;">Total Payouts</span>
-            <h3 style="margin: 0.25rem 0 0; font-size: 1.3rem; color: #10b981;">{{ agt.earnings }}</h3>
+            <h3 style="margin: 0.25rem 0 0; font-size: 1.3rem; color: #10b981;">{{ getAgentEarnings(agt.name) }}</h3>
           </div>
         </div>
 
@@ -402,6 +402,21 @@ export class AdminDeliveryAgentsPageComponent {
       case 'suspended': return '🔴 Suspended';
       default: return status;
     }
+  }
+
+  getAgentDeliveries(agentName: string): number {
+    return this.orderService.orders().filter(
+      (o) =>
+        (o.deliveryAgentName?.toLowerCase() === agentName.toLowerCase() ||
+         o.agent?.toLowerCase() === agentName.toLowerCase()) &&
+        o.status === 'DELIVERED',
+    ).length;
+  }
+
+  getAgentEarnings(agentName: string): string {
+    const fee = this.admin.settings()?.deliveryFee ?? 49;
+    const count = this.getAgentDeliveries(agentName);
+    return `₹${(count * fee).toLocaleString('en-IN')}`;
   }
 
   getActiveOrderForAgent(agentName: string): string {

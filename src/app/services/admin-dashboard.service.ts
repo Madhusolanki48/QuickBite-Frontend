@@ -98,12 +98,6 @@ const SEED_APPROVED_OWNER_EMAILS = new Set([
   'owner.wokbowl@quickbite.com',
   'owner.greenspoon@quickbite.com',
   'owner.foodyard@quickbite.com',
-  'burger-palace-owner@quickbite.dev',
-  'pizza-hut-owner@quickbite.dev',
-  'sushi-zen-owner@quickbite.dev',
-  'spice-garden-owner@quickbite.dev',
-  'taco-fiesta-owner@quickbite.dev',
-  'noodle-house-owner@quickbite.dev',
 ]);
 
 // Known seed delivery agent accounts that are already approved and active.
@@ -194,7 +188,11 @@ export class AdminDashboardService {
   });
 
   readonly allCustomers = computed(() => {
-    return this.allUsersSignal().filter((u) => u.role === 'CUSTOMER');
+    return this.allUsersSignal().filter((u) => {
+      if (u.role !== 'CUSTOMER') return false;
+      const email = (u.email || '').toLowerCase().trim();
+      return !email.includes('@deleted.quickbite.local') && u.firstName !== 'Deleted';
+    });
   });
 
   readonly allRestaurantOwners = computed(() => {
@@ -324,6 +322,7 @@ export class AdminDashboardService {
   readonly reviews = computed(() => this.reviewsSignal());
   readonly auditLogs = computed(() => this.auditLogsSignal());
   readonly deliveryAgents = computed(() => this.agentsSignal());
+  readonly settings = computed(() => this.settingsSignal());
 
   // --- Refresh Methods ---
   refreshApprovalUsers(): void {
@@ -337,9 +336,12 @@ export class AdminDashboardService {
             if (SEED_APPROVED_OWNER_EMAILS.has(email)) return false;
             if (SEED_APPROVED_AGENT_EMAILS.has(email)) return false;
 
+            // Only show applicants who actually submitted their kitchen/fleet onboarding!
+            // Users who merely registered (onboardingStatus === 'NOT_STARTED') must NOT show up.
             return (
               (user.role === 'RESTAURANT_OWNER' || user.role === 'DELIVERY_PARTNER') &&
-              (user.approvalStatus === 'PENDING' || user.enabled === false)
+              user.onboardingStatus === 'SUBMITTED' &&
+              user.approvalStatus === 'PENDING'
             );
           }),
         );
@@ -706,8 +708,8 @@ export class AdminDashboardService {
         phone: '+91 98765 00001',
         zone: 'West Delhi / Rajouri Garden',
         rating: '4.9',
-        deliveries: '1150',
-        earnings: '₹69,000',
+        deliveries: '0',
+        earnings: '₹0',
         status: 'available',
         initial: 'J',
         vehicleType: 'Bike',
@@ -719,8 +721,8 @@ export class AdminDashboardService {
         phone: '+91 98765 00002',
         zone: 'North Delhi / Pitampura',
         rating: '4.8',
-        deliveries: '620',
-        earnings: '₹37,200',
+        deliveries: '0',
+        earnings: '₹0',
         status: 'available',
         initial: 'P',
         vehicleType: 'Scooter',
@@ -732,8 +734,8 @@ export class AdminDashboardService {
         phone: '+91 98765 00003',
         zone: 'East Delhi / Mayur Vihar',
         rating: '5.0',
-        deliveries: '490',
-        earnings: '₹29,400',
+        deliveries: '0',
+        earnings: '₹0',
         status: 'available',
         initial: 'O',
         vehicleType: 'Electric Bike',
@@ -745,8 +747,8 @@ export class AdminDashboardService {
         phone: '+91 98765 00004',
         zone: 'South Delhi / Connaught Place',
         rating: '4.9',
-        deliveries: '840',
-        earnings: '₹50,400',
+        deliveries: '0',
+        earnings: '₹0',
         status: 'available',
         initial: 'E',
         vehicleType: 'Bike',
@@ -761,9 +763,16 @@ export class AdminDashboardService {
       if (!Array.isArray(saved) || saved.length === 0) {
         return fallback;
       }
-      const existingIds = new Set(saved.map((a) => a.id).filter(Boolean));
+      const legacyFakeDeliveries = new Set(['1150', '620', '490', '840']);
+      const sanitized = saved.map((a) => {
+        if (legacyFakeDeliveries.has(String(a.deliveries).trim())) {
+          return { ...a, deliveries: '0', earnings: '₹0' };
+        }
+        return a;
+      });
+      const existingIds = new Set(sanitized.map((a) => a.id).filter(Boolean));
       const missingSeeds = fallback.filter((f) => !existingIds.has(f.id));
-      return [...saved, ...missingSeeds];
+      return [...sanitized, ...missingSeeds];
     } catch {
       return fallback;
     }
