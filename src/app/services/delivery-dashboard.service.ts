@@ -115,7 +115,10 @@ export class DeliveryDashboardService {
   }
 
   markPickedUp(orderId: string): void {
-    const order = this.assignedOrder(orderId);
+    if (!orderId) {
+      return;
+    }
+    const order = this.orderService.orders().find((o) => o.id === orderId) ?? this.assignedOrder(orderId);
     if (!order || order.status === 'ON_THE_WAY' || order.status === 'DELIVERED') {
       return;
     }
@@ -124,8 +127,11 @@ export class DeliveryDashboardService {
   }
 
   markDelivered(orderId: string): void {
-    const order = this.assignedOrder(orderId);
-    if (!order || order.status !== 'ON_THE_WAY') {
+    if (!orderId) {
+      return;
+    }
+    const order = this.orderService.orders().find((o) => o.id === orderId) ?? this.assignedOrder(orderId);
+    if (!order || order.status === 'DELIVERED') {
       return;
     }
 

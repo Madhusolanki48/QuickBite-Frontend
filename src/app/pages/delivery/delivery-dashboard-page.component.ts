@@ -111,7 +111,7 @@ interface QuickOrder {
                   <button
                     class="primary-action swipe-action"
                     type="button"
-                    [disabled]="displayDelivery().status !== 'READY' && displayDelivery().status !== 'PREPARING'"
+                    [disabled]="!displayDelivery().id"
                     (click)="pickup(displayDelivery().id)"
                   >
                     <span>Swipe</span> Mark Picked Up

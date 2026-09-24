@@ -380,10 +380,11 @@ export class OrdersPageComponent implements OnInit {
       .filter((order) => {
         const orderEmail = order.customerEmail?.toLowerCase()?.trim();
         const orderName = order.customerName?.toLowerCase()?.trim();
+        if (!email) return true;
         if (!orderEmail) return true;
         if (orderEmail === email) return true;
         if (userName && orderName && (userName.includes(orderName) || orderName.includes(userName))) return true;
-        if (email === 'customer@quickbite.com') return true;
+        if (email === 'customer@quickbite.com' || orderEmail === 'customer@quickbite.com') return true;
         return false;
       });
   });

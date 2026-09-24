@@ -50,46 +50,23 @@ const RESTAURANT_LOCATIONS: Record<string, GeoPoint> = {
   'urban-bites': { lat: 28.5434, lng: 77.2476 },
 };
 
-const SEED_ORDERS: Order[] = [
-  {
-    id: 'ORD-101',
-    restaurantId: 'urban-bites',
-    restaurantName: 'Urban Bites',
-    customerName: 'Ananya Sharma',
-    customerEmail: 'customer@quickbite.com',
-    customerPhone: '+91 98765 12345',
-    items: 'Classic Cheeseburger x1, Crispy French Fries x1, Creamy Cold Coffee x1',
-    total: 449,
-    status: 'PLACED',
-    paymentStatus: 'SUCCESS',
-    paymentMethod: 'UPI',
-    time: '5 min ago',
-    createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-    customerDistanceKm: 2.1,
-    deliveryAddressLine: 'Flat 402, Sunshine Heights, Connaught Place, New Delhi',
-    deliveryLocation: { lat: 28.6315, lng: 77.2167 },
-    pickupLocation: { lat: 28.5434, lng: 77.2476 },
-  },
-  {
-    id: 'ORD-102',
-    restaurantId: 'urban-bites',
-    restaurantName: 'Urban Bites',
-    customerName: 'Rohan Verma',
-    customerEmail: 'rohan.v@quickbite.com',
-    customerPhone: '+91 98111 55667',
-    items: 'Truffle Smash Burger x2, Peri Peri Fries x1',
-    total: 589,
-    status: 'PREPARING',
-    paymentStatus: 'SUCCESS',
-    paymentMethod: 'CARD',
-    time: '12 min ago',
-    createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    customerDistanceKm: 3.4,
-    deliveryAddressLine: 'House 18, Block B, Green Park, New Delhi',
-    deliveryLocation: { lat: 28.5588, lng: 77.2028 },
-    pickupLocation: { lat: 28.5434, lng: 77.2476 },
-  },
-];
+const ORDER_DATA_VERSION_KEY = 'quickbite.order.version';
+const CURRENT_ORDER_DATA_VERSION = '2026-09-24-clean-v2';
+
+function purgeLegacyOrderStorage(): void {
+  if (typeof localStorage === 'undefined') return;
+  if (localStorage.getItem(ORDER_DATA_VERSION_KEY) !== CURRENT_ORDER_DATA_VERSION) {
+    localStorage.removeItem('quickbite.orders.local');
+    localStorage.removeItem(ORDER_OVERRIDES_KEY);
+    localStorage.removeItem(HIDDEN_ORDERS_KEY);
+    localStorage.removeItem('quickbite.admin.refunds');
+    localStorage.setItem(ORDER_DATA_VERSION_KEY, CURRENT_ORDER_DATA_VERSION);
+  }
+}
+
+purgeLegacyOrderStorage();
+
+const SEED_ORDERS: Order[] = [];
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
@@ -337,7 +314,6 @@ export class OrderService {
   }
 
   public refreshFromBackend(): void {
-    // Build role-aware URL: owner fetches by restaurantId, customer by email, admin gets all
     const user = this.session.user();
     let ordersUrl = `${this.baseUrl}/orders`;
     if (user?.role === 'RESTAURANT_OWNER') {
@@ -345,8 +321,6 @@ export class OrderService {
       if (restaurantBackendId) {
         ordersUrl = `${this.baseUrl}/orders?restaurantId=${restaurantBackendId}`;
       }
-    } else if (user?.role === 'CUSTOMER' && user?.email) {
-      ordersUrl = `${this.baseUrl}/orders?customerEmail=${encodeURIComponent(user.email)}`;
     }
 
     this.http.get<BackendOrderResponse[]>(ordersUrl).subscribe({
@@ -695,10 +669,20 @@ export class OrderService {
       if (!Array.isArray(parsed)) {
         return [];
       }
-      return parsed;
+      return parsed.filter((o) => o && !['ORD-101', 'ORD-102'].includes(o.id));
     } catch {
       return [];
     }
+  }
+
+  public clearAllOrderData(): void {
+    localStorage.removeItem('quickbite.orders.local');
+    localStorage.removeItem(ORDER_OVERRIDES_KEY);
+    localStorage.removeItem(HIDDEN_ORDERS_KEY);
+    this.ordersSignal.set([]);
+    this.overridesSignal.set({});
+    this.hiddenOrdersSignal.set([]);
+    this.sync.publish('orders');
   }
 
   private readOverrides(): OrderOverrides {
