@@ -19,6 +19,14 @@ interface BannerPreset {
   imports: [CommonModule, NgFor, NgIf, ReactiveFormsModule],
   template: `
     <div class="onboard-container">
+      <div class="onboard-top-nav">
+        <button type="button" class="back-link-btn" (click)="backToLogin()" title="Return to Sign In">
+          <span class="back-arrow">←</span>
+          <span>Back to Sign In</span>
+        </button>
+        <span class="top-nav-hint">Don't want to finish right now? You can sign back in anytime to continue.</span>
+      </div>
+
       <div class="onboard-wrapper">
         <!-- Sidebar: Benefits & Steps -->
         <aside class="onboard-sidebar">
@@ -244,12 +252,55 @@ interface BannerPreset {
       min-height: 100vh;
       width: 100%;
       background: radial-gradient(circle at 10% 20%, rgba(255, 90, 0, 0.12), transparent 45%), #0c0d12;
-      padding: clamp(1.5rem, 3vw, 3rem) clamp(1rem, 2.5vw, 2.5rem);
+      padding: clamp(1.25rem, 2.5vw, 2.5rem) clamp(1rem, 2vw, 2rem);
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      flex-direction: column;
+      align-items: center;
       color: #f3f4f6;
       box-sizing: border-box;
+    }
+    .onboard-top-nav {
+      width: 100%;
+      max-width: 1360px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .back-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f3f4f6;
+      padding: 0.55rem 1.15rem;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+    }
+    .back-link-btn:hover {
+      background: rgba(255, 90, 0, 0.15);
+      border-color: rgba(255, 90, 0, 0.4);
+      color: #ff5a00;
+      transform: translateX(-3px);
+    }
+    .back-link-btn .back-arrow {
+      font-size: 1.2rem;
+      line-height: 1;
+      transition: transform 0.2s ease;
+    }
+    .back-link-btn:hover .back-arrow {
+      transform: translateX(-2px);
+    }
+    .top-nav-hint {
+      color: #9ca3af;
+      font-size: 0.85rem;
     }
     .onboard-wrapper {
       width: 100%;
@@ -663,6 +714,11 @@ export class RestaurantOnboardingPageComponent implements OnInit {
 
   get menuItemsArray(): FormArray {
     return this.form.get('menuItems') as FormArray;
+  }
+
+  backToLogin(): void {
+    this.session.clearSession();
+    void this.router.navigate(['/login']);
   }
 
   ngOnInit(): void {

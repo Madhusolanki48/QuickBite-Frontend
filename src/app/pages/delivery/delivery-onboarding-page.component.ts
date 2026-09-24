@@ -13,129 +13,139 @@ import { SessionService } from '../../services/session.service';
   imports: [CommonModule, NgIf, ReactiveFormsModule],
   template: `
     <div class="onboard-container">
-      <div class="onboard-card">
-        <header class="onboard-head">
-          <div class="badge">Driver KYC & Onboarding</div>
-          <h1>Delivery Partner Verification</h1>
-          <p>Register your vehicle and delivery credentials to start earning on the QuickBite delivery fleet.</p>
-        </header>
-
-        <!-- Rejection Notice if resubmitting -->
-        <div *ngIf="user()?.approvalStatus === 'REJECTED'" class="rejection-alert">
-          <div class="alert-icon">⚠️</div>
-          <div>
-            <strong>Application Needs Revision</strong>
-            <p>Admin feedback: {{ user()?.rejectionReason || 'Please verify your license/vehicle details and resubmit.' }}</p>
-          </div>
+      <div class="onboard-shell">
+        <div class="onboard-top-nav">
+          <button type="button" class="back-link-btn" (click)="backToLogin()" title="Return to Sign In">
+            <span class="back-arrow">←</span>
+            <span>Back to Sign In</span>
+          </button>
+          <span class="top-nav-hint">Don't want to finish right now? You can sign back in later to complete verification.</span>
         </div>
 
-        <form [formGroup]="form" (ngSubmit)="submit()" class="onboard-form" autocomplete="off">
-          <section class="form-section">
-            <h3 class="section-title">1. Personal & Contact Information</h3>
+        <div class="onboard-card">
+          <header class="onboard-head">
+            <div class="badge">Driver KYC & Onboarding</div>
+            <h1>Delivery Partner Verification</h1>
+            <p>Register your vehicle and delivery credentials to start earning on the QuickBite delivery fleet.</p>
+          </header>
 
-            <div class="form-row">
-              <label>
-                Full Name *
-                <input formControlName="fullName" placeholder="Full legal name" />
-                <small *ngIf="isTouchedAndInvalid('fullName')" class="err">Full name is required.</small>
-              </label>
-
-              <label>
-                Phone Number *
-                <input formControlName="phoneNumber" placeholder="10-digit mobile number" />
-                <small *ngIf="isTouchedAndInvalid('phoneNumber')" class="err">Valid phone number required.</small>
-              </label>
+          <!-- Rejection Notice if resubmitting -->
+          <div *ngIf="user()?.approvalStatus === 'REJECTED'" class="rejection-alert">
+            <div class="alert-icon">⚠️</div>
+            <div>
+              <strong>Application Needs Revision</strong>
+              <p>Admin feedback: {{ user()?.rejectionReason || 'Please verify your license/vehicle details and resubmit.' }}</p>
             </div>
-
-            <div class="form-row">
-              <label>
-                Residential Address *
-                <input formControlName="address" placeholder="Current residential address & city" />
-                <small *ngIf="isTouchedAndInvalid('address')" class="err">Address is required.</small>
-              </label>
-
-              <label>
-                Preferred Delivery Zone *
-                <select formControlName="zone">
-                  <option value="Central Zone">Central Zone (High Order Density)</option>
-                  <option value="North District">North District</option>
-                  <option value="South Suburbs">South Suburbs</option>
-                  <option value="Tech Park & IT Hub">Tech Park & IT Hub</option>
-                  <option value="West Bay">West Bay</option>
-                </select>
-              </label>
-            </div>
-          </section>
-
-          <section class="form-section">
-            <h3 class="section-title">2. Vehicle & Driving Credentials</h3>
-
-            <div class="form-row">
-              <label>
-                Vehicle Type *
-                <select formControlName="vehicleType">
-                  <option value="Electric Scooter">Electric Scooter (EV Partner)</option>
-                  <option value="Motorcycle">Motorcycle / Bike</option>
-                  <option value="Scooter">Scooter / Moped</option>
-                  <option value="Bicycle">Bicycle / E-Bike</option>
-                  <option value="Car">Car</option>
-                </select>
-              </label>
-
-              <label>
-                Vehicle Registration Number *
-                <input
-                  formControlName="vehicleNumber"
-                  placeholder="e.g. MH 02 AB 1234"
-                  style="text-transform: uppercase;"
-                />
-                <small *ngIf="isTouchedAndInvalid('vehicleNumber')" class="err">Vehicle registration number is required.</small>
-              </label>
-            </div>
-
-            <div class="form-row">
-              <label>
-                Driving License Number *
-                <input
-                  formControlName="drivingLicenseNumber"
-                  placeholder="e.g. DL-1420110012345"
-                  style="text-transform: uppercase;"
-                />
-                <small *ngIf="isTouchedAndInvalid('drivingLicenseNumber')" class="err">Valid driving license number is required.</small>
-              </label>
-
-              <label>
-                Payout UPI ID or Account *
-                <input formControlName="payoutAccount" placeholder="e.g. yourname@okhdfcbank" />
-                <small *ngIf="isTouchedAndInvalid('payoutAccount')" class="err">Payout UPI ID is required.</small>
-              </label>
-            </div>
-          </section>
-
-          <section class="form-section">
-            <h3 class="section-title">3. Document & Terms Acknowledgment</h3>
-            <div class="acknowledgment-box">
-              <label class="check-label">
-                <input type="checkbox" formControlName="acknowledged" />
-                <span>
-                  I confirm that all vehicle, license, and personal KYC information provided is authentic and up-to-date. I agree to uphold the QuickBite Partner Service Guidelines and safety standards.
-                </span>
-              </label>
-              <small *ngIf="isTouchedAndInvalid('acknowledged')" class="err">Please acknowledge the guidelines before proceeding.</small>
-            </div>
-          </section>
-
-          <div class="submit-actions">
-            <button
-              type="submit"
-              class="primary submit-btn"
-              [disabled]="loading"
-            >
-              {{ loading ? 'Submitting Application...' : 'Submit Profile for Admin Verification' }}
-            </button>
-            <p *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</p>
           </div>
-        </form>
+
+          <form [formGroup]="form" (ngSubmit)="submit()" class="onboard-form" autocomplete="off">
+            <section class="form-section">
+              <h3 class="section-title">1. Personal & Contact Information</h3>
+
+              <div class="form-row">
+                <label>
+                  Full Name *
+                  <input formControlName="fullName" placeholder="Full legal name" />
+                  <small *ngIf="isTouchedAndInvalid('fullName')" class="err">Full name is required.</small>
+                </label>
+
+                <label>
+                  Phone Number *
+                  <input formControlName="phoneNumber" placeholder="10-digit mobile number" />
+                  <small *ngIf="isTouchedAndInvalid('phoneNumber')" class="err">Valid phone number required.</small>
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label>
+                  Residential Address *
+                  <input formControlName="address" placeholder="Current residential address & city" />
+                  <small *ngIf="isTouchedAndInvalid('address')" class="err">Address is required.</small>
+                </label>
+
+                <label>
+                  Preferred Delivery Zone *
+                  <select formControlName="zone">
+                    <option value="Central Zone">Central Zone (High Order Density)</option>
+                    <option value="North District">North District</option>
+                    <option value="South Suburbs">South Suburbs</option>
+                    <option value="Tech Park & IT Hub">Tech Park & IT Hub</option>
+                    <option value="West Bay">West Bay</option>
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <section class="form-section">
+              <h3 class="section-title">2. Vehicle & Driving Credentials</h3>
+
+              <div class="form-row">
+                <label>
+                  Vehicle Type *
+                  <select formControlName="vehicleType">
+                    <option value="Electric Scooter">Electric Scooter (EV Partner)</option>
+                    <option value="Motorcycle">Motorcycle / Bike</option>
+                    <option value="Scooter">Scooter / Moped</option>
+                    <option value="Bicycle">Bicycle / E-Bike</option>
+                    <option value="Car">Car</option>
+                  </select>
+                </label>
+
+                <label>
+                  Vehicle Registration Number *
+                  <input
+                    formControlName="vehicleNumber"
+                    placeholder="e.g. MH 02 AB 1234"
+                    style="text-transform: uppercase;"
+                  />
+                  <small *ngIf="isTouchedAndInvalid('vehicleNumber')" class="err">Vehicle registration number is required.</small>
+                </label>
+              </div>
+
+              <div class="form-row">
+                <label>
+                  Driving License Number *
+                  <input
+                    formControlName="drivingLicenseNumber"
+                    placeholder="e.g. DL-1420110012345"
+                    style="text-transform: uppercase;"
+                  />
+                  <small *ngIf="isTouchedAndInvalid('drivingLicenseNumber')" class="err">Valid driving license number is required.</small>
+                </label>
+
+                <label>
+                  Payout UPI ID or Account *
+                  <input formControlName="payoutAccount" placeholder="e.g. yourname@okhdfcbank" />
+                  <small *ngIf="isTouchedAndInvalid('payoutAccount')" class="err">Payout UPI ID is required.</small>
+                </label>
+              </div>
+            </section>
+
+            <section class="form-section">
+              <h3 class="section-title">3. Document & Terms Acknowledgment</h3>
+              <div class="acknowledgment-box">
+                <label class="check-label">
+                  <input type="checkbox" formControlName="acknowledged" />
+                  <span>
+                    I confirm that all vehicle, license, and personal KYC information provided is authentic and up-to-date. I agree to uphold the QuickBite Partner Service Guidelines and safety standards.
+                  </span>
+                </label>
+                <small *ngIf="isTouchedAndInvalid('acknowledged')" class="err">Please acknowledge the guidelines before proceeding.</small>
+              </div>
+            </section>
+
+            <div class="submit-actions">
+              <button
+                type="submit"
+                class="primary submit-btn"
+                [disabled]="loading"
+              >
+                {{ loading ? 'Submitting Application...' : 'Submit Profile for Admin Verification' }}
+              </button>
+              <p *ngIf="errorMessage" class="error-banner">{{ errorMessage }}</p>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   `,
@@ -143,10 +153,59 @@ import { SessionService } from '../../services/session.service';
     .onboard-container {
       min-height: 100vh;
       background: radial-gradient(circle at 90% 10%, rgba(255, 90, 0, 0.08), transparent 40%), #0c0d12;
-      padding: 3rem 1.5rem;
+      padding: clamp(1.25rem, 2.5vw, 2.5rem) clamp(1rem, 2vw, 2rem);
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
       color: #f3f4f6;
+    }
+    .onboard-shell {
+      max-width: 760px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .onboard-top-nav {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .back-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f3f4f6;
+      padding: 0.55rem 1.15rem;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+    }
+    .back-link-btn:hover {
+      background: rgba(255, 90, 0, 0.15);
+      border-color: rgba(255, 90, 0, 0.4);
+      color: #ff5a00;
+      transform: translateX(-3px);
+    }
+    .back-link-btn .back-arrow {
+      font-size: 1.2rem;
+      line-height: 1;
+      transition: transform 0.2s ease;
+    }
+    .back-link-btn:hover .back-arrow {
+      transform: translateX(-2px);
+    }
+    .top-nav-hint {
+      color: #9ca3af;
+      font-size: 0.85rem;
     }
     .onboard-card {
       max-width: 760px;
@@ -323,6 +382,11 @@ export class DeliveryOnboardingPageComponent implements OnInit {
     payoutAccount: ['', [Validators.required]],
     acknowledged: [false, [Validators.requiredTrue]],
   });
+
+  backToLogin(): void {
+    this.session.clearSession();
+    void this.router.navigate(['/login']);
+  }
 
   ngOnInit(): void {
     const u = this.user();

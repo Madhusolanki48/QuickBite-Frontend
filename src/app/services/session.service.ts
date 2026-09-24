@@ -55,8 +55,8 @@ export function isExistingRestaurantOwner(user: AuthUser | null | undefined): bo
   if (SEED_OWNER_RESTAURANTS[email]) {
     return true;
   }
-  // Has already been associated with a restaurant ID or name
-  if (user.restaurantId || user.restaurantName) {
+  // Has already completed onboarding and been associated with a restaurant
+  if ((user.restaurantId || user.restaurantName) && user.onboardingStatus === 'COMPLETED') {
     return true;
   }
   return false;
@@ -66,7 +66,11 @@ export function isExistingDeliveryPartner(user: AuthUser | null | undefined): bo
   if (!user || user.role !== 'DELIVERY_PARTNER') {
     return false;
   }
-  return SEED_DELIVERY_AGENT_EMAILS.has((user.email || '').toLowerCase().trim());
+  const email = (user.email || '').toLowerCase().trim();
+  if (SEED_DELIVERY_AGENT_EMAILS.has(email)) {
+    return true;
+  }
+  return user.onboardingStatus === 'COMPLETED';
 }
 
 @Injectable({ providedIn: 'root' })
