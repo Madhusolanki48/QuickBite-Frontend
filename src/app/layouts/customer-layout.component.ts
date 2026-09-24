@@ -102,15 +102,6 @@ import { ThemeService } from '../services/theme.service';
               ]"
               (logoutClick)="logout()"
             />
-            <button
-              type="button"
-              class="icon-button topbar-logout-btn"
-              (click)="logout()"
-              title="Log out of QuickBite"
-              aria-label="Log out"
-            >
-              <span class="topbar-logout-icon" aria-hidden="true">⏻</span>
-            </button>
           </div>
         </div>
       </header>

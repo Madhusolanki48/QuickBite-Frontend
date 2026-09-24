@@ -13,6 +13,7 @@ export interface AuthUser {
   approvalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   onboardingStatus?: 'NOT_STARTED' | 'IN_PROGRESS' | 'SUBMITTED' | 'COMPLETED';
   rejectionReason?: string;
+  createdAt?: string;
 }
 
 export interface AuthResponse {

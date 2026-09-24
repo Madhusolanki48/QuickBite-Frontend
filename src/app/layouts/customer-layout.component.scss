@@ -136,6 +136,10 @@
     padding: 4px 10px;
     font-size: 0.76rem;
   }
+
+  app-role-topbar-menu {
+    display: none !important;
+  }
 }
 
 .topbar-nav a {
@@ -262,25 +266,6 @@
   transition: all 0.2s ease;
 }
 
-.topbar-logout-btn {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.2);
-
-  &:hover {
-    background: #ef4444;
-    color: #ffffff;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
-  }
-}
-
-.topbar-logout-icon {
-  font-size: 1.15rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
 .customer-main {
   width: min(1600px, 96vw);
   margin: 0 auto;
@@ -364,17 +349,6 @@
     background: rgba(15, 23, 42, 0.65);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.2);
-  }
-
-  .topbar-logout-btn {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.35);
-    color: #f87171;
-
-    &:hover {
-      background: #ef4444;
-      color: #ffffff;
-    }
   }
 
   .topbar-diet-toggle {
