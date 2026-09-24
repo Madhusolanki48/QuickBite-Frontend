@@ -73,13 +73,13 @@ import { SessionService } from '../../services/session.service';
             type="password"
             formControlName="password"
             autocomplete="off"
-            placeholder="Min. 8 characters"
+            placeholder="Min. 8 chars (1 uppercase, 1 number, 1 special)"
           />
           <small *ngIf="hasError('password', 'required')" class="field-error">
             Password is required.
           </small>
-          <small *ngIf="hasError('password', 'minlength')" class="field-error">
-            Must be at least 8 characters.
+          <small *ngIf="hasError('password', 'pattern')" class="field-error">
+            Password must be at least 8 characters with 1 uppercase letter, 1 number, and 1 special character.
           </small>
         </label>
 
@@ -134,7 +134,13 @@ export class SignInPageComponent {
     name: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
     phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: [
+      '',
+      [
+        Validators.required,
+        Validators.pattern(/^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/),
+      ],
+    ],
     role: ['CUSTOMER' as AppRole, [Validators.required]],
   });
 
