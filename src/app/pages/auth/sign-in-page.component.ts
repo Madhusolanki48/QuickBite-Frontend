@@ -16,69 +16,31 @@ import { SessionService } from '../../services/session.service';
       <div class="auth-card__header">
         <p class="eyebrow">Create account</p>
         <h2>Join QuickBite today.</h2>
-        <p>Choose your role, fill in your details, and verify your email.</p>
+        <p>Choose your role, fill in your details, and get started.</p>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="form" autocomplete="off">
-        <div class="grid two">
-          <label>
-            First Name
-            <input
-              formControlName="firstName"
-              [readOnly]="firstNameLocked"
-              (focus)="firstNameLocked = false"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="e.g. Rahul"
-            />
-            <small *ngIf="hasError('firstName', 'required')" class="field-error">
-              First name is required.
-            </small>
-          </label>
-          <label>
-            Last Name
-            <input
-              formControlName="lastName"
-              [readOnly]="lastNameLocked"
-              (focus)="lastNameLocked = false"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="e.g. Sharma"
-            />
-            <small *ngIf="hasError('lastName', 'required')" class="field-error">
-              Last name is required.
-            </small>
-          </label>
-        </div>
-
         <label>
-          Username
+          Full Name
           <input
-            formControlName="username"
-            [readOnly]="usernameLocked"
-            (focus)="usernameLocked = false"
+            formControlName="name"
             autocomplete="off"
             spellcheck="false"
-            placeholder="Choose a unique username"
+            placeholder="e.g. Rahul Sharma"
           />
-          <small *ngIf="hasError('username', 'required')" class="field-error">
-            Username is required.
-          </small>
-          <small *ngIf="hasError('username', 'minlength')" class="field-error">
-            Username must be at least 3 characters.
+          <small *ngIf="hasError('name', 'required')" class="field-error">
+            Full name is required.
           </small>
         </label>
 
         <label>
-          Email Address
+          Email Address (Gmail)
           <input
             type="email"
             formControlName="email"
-            [readOnly]="emailLocked"
-            (focus)="emailLocked = false"
             autocomplete="off"
             spellcheck="false"
-            placeholder="you@example.com"
+            placeholder="you@gmail.com"
           />
           <small *ngIf="hasError('email', 'required')" class="field-error">
             Email is required.
@@ -93,8 +55,6 @@ import { SessionService } from '../../services/session.service';
           <input
             type="tel"
             formControlName="phoneNumber"
-            [readOnly]="phoneLocked"
-            (focus)="phoneLocked = false"
             autocomplete="off"
             spellcheck="false"
             placeholder="10-digit mobile number"
@@ -103,47 +63,25 @@ import { SessionService } from '../../services/session.service';
             Phone number is required.
           </small>
           <small *ngIf="hasError('phoneNumber', 'pattern')" class="field-error">
-            Enter a valid 10 to 15 digit phone number.
+            Enter a valid 10-digit phone number.
           </small>
         </label>
 
-        <div class="grid two">
-          <label>
-            Password
-            <input
-              type="password"
-              formControlName="password"
-              [readOnly]="passwordLocked"
-              (focus)="passwordLocked = false"
-              autocomplete="off"
-              placeholder="Min. 8 characters"
-            />
-            <small *ngIf="hasError('password', 'required')" class="field-error">
-              Password is required.
-            </small>
-            <small *ngIf="hasError('password', 'minlength')" class="field-error">
-              Must be at least 8 characters.
-            </small>
-          </label>
-
-          <label>
-            Confirm Password
-            <input
-              type="password"
-              formControlName="confirmPassword"
-              [readOnly]="confirmPasswordLocked"
-              (focus)="confirmPasswordLocked = false"
-              autocomplete="off"
-              placeholder="Re-enter password"
-            />
-            <small *ngIf="hasError('confirmPassword', 'required')" class="field-error">
-              Confirm your password.
-            </small>
-            <small *ngIf="form.touched && form.hasError('passwordMismatch')" class="field-error">
-              Passwords do not match.
-            </small>
-          </label>
-        </div>
+        <label>
+          Password
+          <input
+            type="password"
+            formControlName="password"
+            autocomplete="off"
+            placeholder="Min. 8 characters"
+          />
+          <small *ngIf="hasError('password', 'required')" class="field-error">
+            Password is required.
+          </small>
+          <small *ngIf="hasError('password', 'minlength')" class="field-error">
+            Must be at least 8 characters.
+          </small>
+        </label>
 
         <div>
           <span class="field-label">I am joining as</span>
@@ -185,13 +123,6 @@ export class SignInPageComponent {
 
   protected loading = false;
   protected message = '';
-  protected firstNameLocked = true;
-  protected lastNameLocked = true;
-  protected emailLocked = true;
-  protected usernameLocked = true;
-  protected phoneLocked = true;
-  protected passwordLocked = true;
-  protected confirmPasswordLocked = true;
 
   protected readonly roles: Array<{ label: string; value: AppRole; help: string }> = [
     { label: 'Customer', value: 'CUSTOMER', help: 'Order & enjoy food' },
@@ -199,25 +130,13 @@ export class SignInPageComponent {
     { label: 'Delivery Partner', value: 'DELIVERY_PARTNER', help: 'Deliver orders & earn' },
   ];
 
-  protected readonly form = this.fb.nonNullable.group(
-    {
-      firstName: ['', [Validators.required]],
-      lastName: ['', [Validators.required]],
-      username: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]],
-      role: ['CUSTOMER' as AppRole, [Validators.required]],
-    },
-    {
-      validators: (group) => {
-        const pass = group.get('password')?.value;
-        const confirm = group.get('confirmPassword')?.value;
-        return pass && confirm && pass !== confirm ? { passwordMismatch: true } : null;
-      },
-    },
-  );
+  protected readonly form = this.fb.nonNullable.group({
+    name: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.email]],
+    phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
+    role: ['CUSTOMER' as AppRole, [Validators.required]],
+  });
 
   protected hasError(controlName: keyof typeof this.form.controls, errorName: string): boolean {
     const control = this.form.controls[controlName];
@@ -233,31 +152,34 @@ export class SignInPageComponent {
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      if (this.form.hasError('passwordMismatch')) {
-        this.message = 'Passwords do not match. Please verify.';
-      } else {
-        this.message = 'Please fix the highlighted fields before creating your account.';
-      }
+      this.message = 'Please fix the highlighted fields before creating your account.';
       return;
     }
 
     this.loading = true;
     this.message = '';
     const raw = this.form.getRawValue();
-    const request = {
-      firstName: raw.firstName.trim(),
-      lastName: raw.lastName.trim(),
-      username: raw.username.trim(),
+
+    // Automatically split Full Name into first and last name for backend compatibility
+    const nameParts = raw.name.trim().split(/\s+/);
+    const firstName = nameParts[0] || 'User';
+    const lastName = nameParts.slice(1).join(' ') || firstName;
+    const baseUsername = raw.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
+    const username = (baseUsername || firstName).toLowerCase();
+
+    const request: RegisterRequest = {
+      firstName,
+      lastName,
+      username,
       email: raw.email.trim().toLowerCase(),
       phoneNumber: raw.phoneNumber.trim(),
       password: raw.password,
       role: raw.role,
-    } satisfies RegisterRequest;
+    };
 
     this.auth.register(request).subscribe({
-      next: (response) => {
+      next: () => {
         this.loading = false;
-        // Strict privacy: OTP is NEVER sent in query parameters or exposed in UI
         void this.router.navigate(['/verify-email'], {
           queryParams: {
             email: request.email,

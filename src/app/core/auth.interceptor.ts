@@ -7,15 +7,17 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const session = inject(SessionService);
   const token = session.token();
 
-  if (!token || !shouldAttachToken(request.url)) {
-    return next(request);
+  const headers: Record<string, string> = {
+    'ngrok-skip-browser-warning': 'true',
+  };
+
+  if (token && shouldAttachToken(request.url)) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   return next(
     request.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
+      setHeaders: headers,
     }),
   );
 };
