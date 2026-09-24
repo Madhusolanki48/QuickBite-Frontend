@@ -13,10 +13,8 @@ const AUTH_STORAGE_KEYS = [
   'quickbite.userRestaurantId',
   'quickbite.userRestaurantName',
   'quickbite.pendingRole',
-  // Cart
+  // Cart items
   'quickbite.cart.items',
-  'quickbite.selectedAddressId',
-  'quickbite.addresses',
 ];
 
 const PENDING_ROLE_KEY = 'quickbite.pendingRole';

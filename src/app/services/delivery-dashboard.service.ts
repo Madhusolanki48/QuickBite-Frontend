@@ -385,23 +385,25 @@ export class DeliveryDashboardService {
   }
 
   private matchesPeriod(createdAt: string, period: 'today' | 'week' | 'month'): boolean {
+    if (!createdAt) {
+      return true;
+    }
     const now = new Date();
     const date = new Date(createdAt);
-    const diffDays = Math.floor(
-      (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) -
-        Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())) /
-      86400000,
-    );
+    if (Number.isNaN(date.getTime())) {
+      return true;
+    }
+    const diffHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
     if (period === 'today') {
-      return diffDays === 0;
+      return diffHours >= -1 && diffHours <= 28;
     }
 
     if (period === 'week') {
-      return diffDays >= 0 && diffDays < 7;
+      return diffHours >= -1 && diffHours <= 24 * 7;
     }
 
-    return diffDays >= 0 && diffDays < 31;
+    return diffHours >= -1 && diffHours <= 24 * 31;
   }
 
   private money(amount: number): string {

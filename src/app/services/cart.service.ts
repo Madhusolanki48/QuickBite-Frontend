@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
 import { Address, CartItem, PaymentMethod } from '../core/app.models';
 import { BackendCartSummaryResponse, cartToFrontend } from './backend-mappers';
@@ -50,6 +50,13 @@ export class CartService {
 
   constructor() {
     this.refreshFromBackend();
+
+    // Whenever logged in user changes, reload their saved addresses immediately
+    effect(() => {
+      const user = this.session.user();
+      this.reloadAddressesForCurrentUser();
+      this.refreshFromBackend();
+    });
   }
 
   public readonly lastAddedItemSignal = signal<{ name: string; quantity: number; timestamp: number } | null>(null);
@@ -157,6 +164,9 @@ export class CartService {
 
   selectAddress(id: string): void {
     this.selectedAddressIdSignal.set(id);
+    const userKey = this.selectedAddressStorageKey();
+    localStorage.setItem(userKey, id);
+    localStorage.setItem(CART_SELECTED_ADDRESS_KEY, id);
   }
 
   setPaymentMethod(method: PaymentMethod): void {
@@ -189,6 +199,8 @@ export class CartService {
     );
     this.selectedAddressIdSignal.set(id);
     this.persistAddresses();
+    const userKey = this.selectedAddressStorageKey();
+    localStorage.setItem(userKey, id);
     localStorage.setItem(CART_SELECTED_ADDRESS_KEY, id);
   }
 
@@ -198,9 +210,12 @@ export class CartService {
     if (this.selectedAddressIdSignal() === id) {
       const fallback = this.addressesSignal()[0]?.id ?? '';
       this.selectedAddressIdSignal.set(fallback);
+      const userKey = this.selectedAddressStorageKey();
       if (fallback) {
+        localStorage.setItem(userKey, fallback);
         localStorage.setItem(CART_SELECTED_ADDRESS_KEY, fallback);
       } else {
+        localStorage.removeItem(userKey);
         localStorage.removeItem(CART_SELECTED_ADDRESS_KEY);
       }
     }
@@ -305,10 +320,31 @@ export class CartService {
     }
   }
 
+  private addressStorageKey(): string {
+    const email = this.session.user()?.email?.toLowerCase().trim();
+    return email ? `quickbite.addresses.${email}` : CART_ADDRESSES_KEY;
+  }
+
+  private selectedAddressStorageKey(): string {
+    const email = this.session.user()?.email?.toLowerCase().trim();
+    return email ? `quickbite.selectedAddressId.${email}` : CART_SELECTED_ADDRESS_KEY;
+  }
+
+  public reloadAddressesForCurrentUser(): void {
+    const addresses = this.readAddresses();
+    this.addressesSignal.set(addresses);
+    const selected = this.readSelectedAddressId();
+    this.selectedAddressIdSignal.set(selected);
+  }
+
   private readAddresses(): Address[] {
-    const raw = localStorage.getItem(CART_ADDRESSES_KEY);
+    const userKey = this.addressStorageKey();
+    let raw = localStorage.getItem(userKey);
+    if (!raw && userKey !== CART_ADDRESSES_KEY) {
+      raw = localStorage.getItem(CART_ADDRESSES_KEY);
+    }
     if (!raw) {
-      return [
+      const defaultAddresses = [
         this.createAddress({
           id: 'addr-1',
           title: 'Home',
@@ -329,6 +365,10 @@ export class CartService {
           pincode: '122002',
         }),
       ];
+      try {
+        localStorage.setItem(userKey, JSON.stringify(defaultAddresses));
+      } catch {}
+      return defaultAddresses;
     }
 
     try {
@@ -340,7 +380,9 @@ export class CartService {
   }
 
   private readSelectedAddressId(): string {
-    return localStorage.getItem(CART_SELECTED_ADDRESS_KEY) ?? this.readAddresses()[0]?.id ?? '';
+    const userKey = this.selectedAddressStorageKey();
+    const stored = localStorage.getItem(userKey) || localStorage.getItem(CART_SELECTED_ADDRESS_KEY);
+    return stored ?? this.readAddresses()[0]?.id ?? '';
   }
 
   private createAddress(address: Partial<Address> & Pick<Address, 'id' | 'title'>): Address {
@@ -387,6 +429,9 @@ export class CartService {
   }
 
   private persistAddresses(): void {
-    localStorage.setItem(CART_ADDRESSES_KEY, JSON.stringify(this.addressesSignal()));
+    const userKey = this.addressStorageKey();
+    const serialized = JSON.stringify(this.addressesSignal());
+    localStorage.setItem(userKey, serialized);
+    localStorage.setItem(CART_ADDRESSES_KEY, serialized);
   }
 }

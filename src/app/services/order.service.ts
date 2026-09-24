@@ -284,10 +284,21 @@ export class OrderService {
 
     const order = this.orders().find((o) => o.id === orderId);
     if (order) {
+      const riderId = seedAgent?.id || agent?.id || 1;
       const backendOrderId = order.backendId || Number(orderId.replace('ORD-', ''));
+
+      if (backendOrderId && !Number.isNaN(backendOrderId) && backendOrderId < 1000000) {
+        this.http.put(`${this.baseUrl}/orders/${backendOrderId}/assign-delivery`, {
+          riderId,
+        }).subscribe({
+          next: () => this.refreshFromBackend(),
+          error: (err) => console.warn('Order-service assign-delivery fallback:', err)
+        });
+      }
+
       const payload = {
         orderId: backendOrderId,
-        riderId: seedAgent?.id || agent?.id || 1,
+        riderId,
         riderName: name,
         riderPhone: phone,
         deliveryAddress: order.deliveryAddressLine || 'Customer address pending'
@@ -348,15 +359,11 @@ export class OrderService {
           return this.fromBackendOrder(order, existing);
         });
 
-        // Retain only genuine in-flight optimistic orders created recently (not seed orders)
-        const now = Date.now();
+        // Retain local orders permanently across refreshes so order history is never lost
         const pendingLocal = current.filter(
           (o) =>
-            !o.backendId &&
-            !orders.some((bo) => `ORD-${bo.id}` === o.id) &&
-            !['ORD-101', 'ORD-102'].includes(o.id) &&
-            o.createdAt &&
-            now - new Date(o.createdAt).getTime() < 120000,
+            !orders.some((bo) => bo.id === o.backendId || `ORD-${bo.id}` === o.id) &&
+            !['ORD-101', 'ORD-102'].includes(o.id),
         );
 
         this.ordersSignal.set([...pendingLocal, ...mappedBackend]);
@@ -530,6 +537,8 @@ export class OrderService {
       .post<BackendOrderResponse>(`${this.baseUrl}/orders`, {
         customerId,
         restaurantId: restaurant?.backendId ?? 1,
+        totalAmount: payload.total,
+        currency: 'INR',
         customerEmail: payload.customerEmail || customer?.email || 'customer@quickbite.com',
         customerName: payload.customerName || (customer ? `${customer.firstName} ${customer.lastName || ''}`.trim() : 'Customer'),
         customerPhone: payload.customerPhone || customer?.phoneNumber,
