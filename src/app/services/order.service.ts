@@ -194,6 +194,9 @@ export class OrderService {
         agent: agent ?? current[orderId]?.agent,
       },
     }));
+    this.ordersSignal.update((orders) =>
+      orders.map((o) => (o.id === orderId ? { ...o, status, ...(agent ? { agent, deliveryAgentName: agent } : {}) } : o))
+    );
     this.persistLocalState();
 
     const order = this.orders().find((item) => item.id === orderId);
@@ -221,7 +224,11 @@ export class OrderService {
         },
       });
 
-    const delivery = this.deliveriesSignal().find((d) => String(d.orderId) === String(order.backendId));
+    const delivery = this.deliveriesSignal().find((d) =>
+      String(d.orderId) === String(order.backendId) ||
+      String(d.orderId) === String(order.id).replace('ORD-', '') ||
+      String(d.orderId) === String(order.id)
+    );
     if (delivery) {
       const deliveryStatus = status === 'ON_THE_WAY' ? 'PICKED_UP' : status === 'DELIVERED' ? 'DELIVERED' : 'ASSIGNED';
       this.http.patch(`${this.baseUrl}/deliveries/${delivery.id}/status`, null, {
@@ -256,6 +263,23 @@ export class OrderService {
         deliveryAgentEarnings: 45,
       },
     }));
+    this.ordersSignal.update((orders) =>
+      orders.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              agent: name,
+              deliveryAgentName: name,
+              deliveryAgentEmail: agentEmail,
+              deliveryAgentPhone: phone,
+              deliveryAgentStatus: 'ASSIGNED',
+              deliveryAgentEtaMinutes: 12,
+              deliveryAgentDistanceKm: 2.4,
+              deliveryAgentEarnings: 45,
+            }
+          : o
+      )
+    );
     this.persistLocalState();
 
     const order = this.orders().find((o) => o.id === orderId);
@@ -557,7 +581,13 @@ export class OrderService {
     return base
       .filter((order) => !hidden.includes(order.id))
       .map((order) => {
-        const delivery = deliveries.find((d) => String(d.orderId) === String(order.backendId));
+        const orderCleanId = String(order.id).replace('ORD-', '');
+        const delivery = deliveries.find(
+          (d) =>
+            (order.backendId && String(d.orderId) === String(order.backendId)) ||
+            String(d.orderId) === orderCleanId ||
+            String(d.orderId) === String(order.id)
+        );
         
         let dbOverrides: Partial<Order> = {};
         if (delivery) {
@@ -572,12 +602,15 @@ export class OrderService {
             a.name.toLowerCase() === delivery.riderName.toLowerCase() ||
             a.phone === delivery.riderPhone
           );
+          const resolvedAgentName = seedAgent?.name ?? delivery.riderName;
+          const resolvedAgentEmail = seedAgent?.email ?? agentEntry?.email ?? (delivery.riderName.toLowerCase().includes('jackson') ? 'agent1@quickbite.com' : undefined);
+          const resolvedAgentPhone = seedAgent?.phone ?? delivery.riderPhone;
           dbOverrides = {
-            deliveryAgentName: seedAgent?.name ?? delivery.riderName,
-            deliveryAgentPhone: seedAgent?.phone ?? delivery.riderPhone,
-            deliveryAgentEmail: seedAgent?.email ?? agentEntry?.email ?? undefined,
+            deliveryAgentName: resolvedAgentName,
+            deliveryAgentPhone: resolvedAgentPhone,
+            deliveryAgentEmail: resolvedAgentEmail,
             deliveryAgentStatus: delivery.deliveryStatus,
-            agent: seedAgent?.name ?? delivery.riderName,
+            agent: resolvedAgentName,
             deliveryAgentEtaMinutes: 12,
             deliveryAgentDistanceKm: 2.4,
             deliveryAgentEarnings: 45,

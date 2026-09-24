@@ -230,7 +230,7 @@ import { OrderService } from '../../services/order.service';
               *ngIf="order.status === 'READY'"
               class="action-btn primary"
               type="button"
-              (click)="dashboard.confirmHandover(order.id)"
+              (click)="handoverToRider(order.id)"
             >
               Handover to Rider
             </button>
@@ -448,6 +448,11 @@ export class LiveOrdersPageComponent implements OnInit {
   prepareAndAssign(orderId: string): void {
     this.dashboard.startPreparing(orderId);
     this.expanded.update((state) => ({ ...state, [orderId]: true }));
+  }
+
+  handoverToRider(orderId: string): void {
+    this.dashboard.confirmHandover(orderId);
+    this.selectedTab.set('ON_THE_WAY');
   }
 
   cancelOrder(orderId: string): void {

@@ -17,10 +17,6 @@ const AUTH_STORAGE_KEYS = [
   'quickbite.cart.items',
   'quickbite.selectedAddressId',
   'quickbite.addresses',
-  // Orders
-  'quickbite.orders.local',
-  'quickbite.order.overrides',
-  'quickbite.order.hidden',
 ];
 
 const PENDING_ROLE_KEY = 'quickbite.pendingRole';
