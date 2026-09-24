@@ -91,6 +91,19 @@ export class DeliveryAgentDirectoryService {
     );
   }
 
+  upsertAgent(agent: DeliveryAgentDirectoryEntry): void {
+    this.agentsSignal.update((agents) => {
+      const idx = agents.findIndex((a) => a.email.toLowerCase() === agent.email.toLowerCase());
+      if (idx >= 0) {
+        const copy = [...agents];
+        copy[idx] = { ...copy[idx], ...agent };
+        return copy;
+      }
+      return [agent, ...agents];
+    });
+    this.persist();
+  }
+
   private readAgents(): DeliveryAgentDirectoryEntry[] {
     const raw = localStorage.getItem(DIRECTORY_KEY);
     if (!raw) {
@@ -99,7 +112,6 @@ export class DeliveryAgentDirectoryService {
 
     try {
       const parsed = (JSON.parse(raw) as DeliveryAgentDirectoryEntry[])
-        .filter((agent) => ALLOWED_AGENT_EMAILS.has(agent.email.toLowerCase()))
         .map((agent) => this.canonicalizeSeedAgent(agent));
       if (!Array.isArray(parsed) || parsed.length === 0) {
         return [...DELIVERY_AGENT_SEEDS];
@@ -148,7 +160,6 @@ export class DeliveryAgentDirectoryService {
     this.http.get<Array<{ userId: number; fullName: string; email: string; phoneNumber: string; vehicleType?: string; vehicleNumber?: string; vehicleModel?: string; licenseNumber?: string; serviceArea?: string; active: boolean }>>(`${this.baseUrl}/delivery-agents`).subscribe({
       next: (agents) => {
         const mapped = agents
-          .filter((agent) => ALLOWED_AGENT_EMAILS.has(agent.email.toLowerCase()))
           .map((agent) => {
             const seed = DELIVERY_AGENT_SEEDS.find(
               (item) => item.email.toLowerCase() === agent.email.toLowerCase(),

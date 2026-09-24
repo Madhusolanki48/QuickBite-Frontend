@@ -364,6 +364,20 @@ export class DeliveryOnboardingPageComponent implements OnInit {
       notes: `Zone: ${raw.zone} | Payout: ${raw.payoutAccount}`,
     }).subscribe({
       next: () => {
+        // Register in delivery agent directory
+        this.agents.upsertAgent({
+          name: raw.fullName.trim(),
+          email: this.user()?.email || '',
+          phone: raw.phoneNumber.trim(),
+          zone: raw.zone,
+          rating: '5.0 - New Partner',
+          role: `${raw.vehicleType} - Delivery Partner`,
+          initial: raw.fullName.trim().charAt(0).toUpperCase() || 'D',
+          online: false,
+          available: false,
+          location: { lat: 28.5355, lng: 77.241, accuracy: 15 },
+        });
+
         // 2. Refresh session user
         this.auth.getCurrentUser().subscribe({
           next: (updatedUser) => {

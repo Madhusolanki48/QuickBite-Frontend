@@ -13,7 +13,6 @@ const ADMIN_REFUNDS_KEY = 'quickbite.admin.refunds';
 const ADMIN_SUPPORT_KEY = 'quickbite.admin.support_tickets';
 const ADMIN_REVIEWS_KEY = 'quickbite.admin.reviews';
 const ADMIN_AUDIT_KEY = 'quickbite.admin.audit_logs';
-const ALLOWED_DELIVERY_AGENT_IDS = new Set(['AGT-101', 'AGT-102', 'AGT-103', 'AGT-104']);
 
 export interface AdminSettings {
   platformName: string;
@@ -759,19 +758,12 @@ export class AdminDashboardService {
     if (!raw) return fallback;
     try {
       const saved = JSON.parse(raw) as AdminDeliveryAgent[];
-      if (!Array.isArray(saved)) {
+      if (!Array.isArray(saved) || saved.length === 0) {
         return fallback;
       }
-
-      return fallback.map((agent) => {
-        const savedAgent = saved.find(
-          (item) => item.id && ALLOWED_DELIVERY_AGENT_IDS.has(item.id) && item.id === agent.id,
-        );
-        return {
-          ...agent,
-          status: savedAgent?.status ?? agent.status,
-        };
-      });
+      const existingIds = new Set(saved.map((a) => a.id).filter(Boolean));
+      const missingSeeds = fallback.filter((f) => !existingIds.has(f.id));
+      return [...saved, ...missingSeeds];
     } catch {
       return fallback;
     }

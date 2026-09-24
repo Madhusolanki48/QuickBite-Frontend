@@ -103,11 +103,19 @@ import { SessionService } from '../../services/session.service';
           ℹ️ {{ form.value.role === 'RESTAURANT_OWNER' ? 'Restaurant Owner' : 'Delivery Partner' }} accounts complete a short onboarding and require admin approval before going live.
         </p>
 
+        <!-- Prominent Error Alert Banner -->
+        <div *ngIf="message" class="error-banner" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 10px; padding: 0.85rem 1rem; margin: 0.5rem 0; color: #fca5a5; font-size: 0.9rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;">
+            <span>⚠️ {{ message }}</span>
+            <a *ngIf="isAlreadyRegistered" routerLink="/login" [queryParams]="{ email: form.value.email }" style="color: #ff5a00; font-weight: 700; text-decoration: underline;">
+              Sign In Now →
+            </a>
+          </div>
+        </div>
+
         <button class="primary" type="submit" [disabled]="loading">
           {{ loading ? 'Creating account...' : 'Create account' }}
         </button>
-
-        <p *ngIf="message" class="message">{{ message }}</p>
 
         <p class="helper">Already have an account? <a routerLink="/login">Sign in</a></p>
       </form>
@@ -123,6 +131,7 @@ export class SignInPageComponent {
 
   protected loading = false;
   protected message = '';
+  protected isAlreadyRegistered = false;
 
   protected readonly roles: Array<{ label: string; value: AppRole; help: string }> = [
     { label: 'Customer', value: 'CUSTOMER', help: 'Order & enjoy food' },
@@ -152,6 +161,7 @@ export class SignInPageComponent {
   chooseRole(role: AppRole): void {
     this.session.setPendingRole(role);
     this.message = '';
+    this.isAlreadyRegistered = false;
     this.form.patchValue({ role });
   }
 
@@ -159,11 +169,13 @@ export class SignInPageComponent {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.message = 'Please fix the highlighted fields before creating your account.';
+      this.isAlreadyRegistered = false;
       return;
     }
 
     this.loading = true;
     this.message = '';
+    this.isAlreadyRegistered = false;
     const raw = this.form.getRawValue();
 
     // Automatically split Full Name into first and last name for backend compatibility
@@ -193,11 +205,13 @@ export class SignInPageComponent {
         });
       },
       error: (error) => {
-        this.message = this.auth.authErrorMessage(
+        this.loading = false;
+        const msg = this.auth.authErrorMessage(
           error,
           'Account creation failed. Please check your details and try again.',
         );
-        this.loading = false;
+        this.message = msg;
+        this.isAlreadyRegistered = msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('log in instead');
       },
     });
   }

@@ -717,6 +717,8 @@ export class RestaurantOnboardingPageComponent implements OnInit {
     const cleanName = (raw.name || '').trim();
     const slug = cleanName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
 
+    const u = this.user();
+
     // 1. Submit onboarding state to backend auth service
     this.auth.submitOnboarding({
       restaurantName: cleanName,
@@ -738,6 +740,10 @@ export class RestaurantOnboardingPageComponent implements OnInit {
           heroEmoji: '🍽️',
           description: raw.description || 'Artisanal kitchen offering gourmet comfort dining.',
           imageUrl: raw.imageUrl || undefined,
+        }, {
+          ownerId: u?.id,
+          ownerEmail: u?.email,
+          ownerName: `${u?.firstName || ''} ${u?.lastName || ''}`.trim() || cleanName,
         });
 
         // 3. Add initial menu items if defined
