@@ -23,20 +23,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
 };
 
 function shouldAttachToken(url: string): boolean {
-  if (isPublicAuthEndpoint(url)) {
-    return false;
-  }
-
-  if (!url.startsWith('http')) {
-    return true;
-  }
-
-  try {
-    const requestUrl = new URL(url);
-    return requestUrl.origin === window.location.origin;
-  } catch {
-    return false;
-  }
+  return !isPublicAuthEndpoint(url);
 }
 
 function isPublicAuthEndpoint(url: string): boolean {
