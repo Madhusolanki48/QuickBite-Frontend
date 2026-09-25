@@ -233,11 +233,13 @@ export interface Order {
     | 'REJECTED'
     | 'ASSIGNED'
     | 'PICKED_UP'
-    | 'DELIVERED';
+    | 'DELIVERED'
+    | 'CANCELLED';
   deliveryAgentEtaMinutes?: number;
   deliveryAgentDistanceKm?: number;
   deliveryAgentEarnings?: number;
   deliveryAgentLocation?: GeoPoint;
+  cancellationReason?: string;
 }
 
 export interface GeoPoint {

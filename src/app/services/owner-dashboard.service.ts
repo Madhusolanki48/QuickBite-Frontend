@@ -198,13 +198,14 @@ export class OwnerDashboardService {
     this.notifyOrderUpdate(order, 'PREPARING');
   }
 
-  cancelOrder(orderId: string): void {
+  cancelOrder(orderId: string, reason?: string): void {
     const order = this.orderService.orders().find((item) => item.id === orderId);
     if (!order || order.status === 'DELIVERED' || order.status === 'CANCELLED' || order.status === 'ON_THE_WAY') {
       return;
     }
-    this.orderService.updateOrderStatus(orderId, 'CANCELLED');
-    this.notifyOrderUpdate(order, 'CANCELLED');
+    const cancellationReason = reason || 'Kitchen at capacity / Ingredients unavailable';
+    this.orderService.updateOrderStatus(orderId, 'CANCELLED', undefined, cancellationReason);
+    this.notifyOrderUpdate({ ...order, cancellationReason }, 'CANCELLED');
   }
 
   updateRestaurantOpen(open: boolean): void {
@@ -464,7 +465,7 @@ export class OwnerDashboardService {
   }
 
   private notifyOrderUpdate(
-    order: { customerEmail?: string; restaurantName: string } | undefined,
+    order: { customerEmail?: string; restaurantName: string; cancellationReason?: string } | undefined,
     status: 'PLACED' | 'PREPARING' | 'READY' | 'ON_THE_WAY' | 'DELIVERED' | 'CONFIRMED' | 'CANCELLED',
   ): void {
     if (!order?.customerEmail) {
@@ -501,7 +502,7 @@ export class OwnerDashboardService {
                 : status === 'DELIVERED'
                   ? `${order.restaurantName} order has been delivered.`
                   : status === 'CANCELLED'
-                    ? `${order.restaurantName} has cancelled your order.`
+                    ? `${order.restaurantName} has cancelled your order: ${(order as any).cancellationReason || 'Kitchen at capacity / Ingredients unavailable'}.`
                     : `${order.restaurantName} has confirmed your order.`;
 
     this.notifications

@@ -241,7 +241,7 @@ import { OrderService } from '../../services/order.service';
               ✅ Delivered · {{ order.deliveryAgentName ? 'by ' + order.deliveryAgentName : '' }}
             </span>
             <span *ngIf="order.status === 'CANCELLED'" class="status-chip status-danger" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">
-              ✕ Cancelled
+              ✕ Cancelled{{ order.cancellationReason ? ': ' + order.cancellationReason : '' }}
             </span>
             <button
               class="ghost-btn"
@@ -288,6 +288,9 @@ import { OrderService } from '../../services/order.service';
 
             <p class="note-highlight" *ngIf="order.note">
               <strong>Order notes:</strong> {{ order.note }}
+            </p>
+            <p class="note-highlight" *ngIf="order.status === 'CANCELLED' && order.cancellationReason" style="background: #fff5f5; color: #dc3545; border-color: rgba(220,53,69,0.2);">
+              <strong>Cancellation Reason:</strong> {{ order.cancellationReason }}
             </p>
 
             <div
@@ -462,8 +465,9 @@ export class LiveOrdersPageComponent implements OnInit {
   }
 
   cancelOrder(orderId: string): void {
-    if (confirm('Are you sure you want to cancel this order?')) {
-      this.dashboard.cancelOrder(orderId);
+    const reason = prompt('Please enter a cancellation reason for the customer:', 'Kitchen at capacity / Ingredients unavailable');
+    if (reason !== null) {
+      this.dashboard.cancelOrder(orderId, reason.trim() || 'Kitchen at capacity / Ingredients unavailable');
     }
   }
 

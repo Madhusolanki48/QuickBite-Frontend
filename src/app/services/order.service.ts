@@ -52,7 +52,7 @@ const RESTAURANT_LOCATIONS: Record<string, GeoPoint> = {
 };
 
 const ORDER_DATA_VERSION_KEY = 'quickbite.order.version';
-const CURRENT_ORDER_DATA_VERSION = '2026-09-25-order-reset-v1';
+const CURRENT_ORDER_DATA_VERSION = '2026-09-25-order-reset-v2';
 
 function purgeLegacyOrderStorage(): void {
   if (typeof localStorage === 'undefined') return;
@@ -177,17 +177,28 @@ export class OrderService {
     });
   }
 
-  updateOrderStatus(orderId: string, status: Order['status'], agent?: string): void {
+  updateOrderStatus(orderId: string, status: Order['status'], agent?: string, reason?: string): void {
+    const effectiveReason = reason || (status === 'CANCELLED' ? 'Kitchen capacity / Ingredients unavailable' : undefined);
     this.overridesSignal.update((current) => ({
       ...current,
       [orderId]: {
         ...(current[orderId] ?? {}),
         status,
         agent: agent ?? current[orderId]?.agent,
+        cancellationReason: effectiveReason ?? current[orderId]?.cancellationReason,
       },
     }));
     this.ordersSignal.update((orders) =>
-      orders.map((o) => (o.id === orderId ? { ...o, status, ...(agent ? { agent, deliveryAgentName: agent } : {}) } : o))
+      orders.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              status,
+              ...(agent ? { agent, deliveryAgentName: agent } : {}),
+              ...(effectiveReason ? { cancellationReason: effectiveReason } : {}),
+            }
+          : o
+      )
     );
     this.persistLocalState();
 
@@ -196,9 +207,14 @@ export class OrderService {
       return;
     }
 
+    const patchParams: Record<string, string> = { status: orderStatusToBackend(status) };
+    if (reason) {
+      patchParams['reason'] = reason;
+    }
+
     this.http
       .patch<BackendOrderResponse>(`${this.baseUrl}/orders/${order.backendId}/status`, null, {
-        params: { status: orderStatusToBackend(status) },
+        params: patchParams,
       })
       .subscribe({
         next: (response) => {
@@ -226,7 +242,13 @@ export class OrderService {
       String(d.orderId) === String(order.id)
     );
     if (delivery) {
-      const deliveryStatus = status === 'ON_THE_WAY' ? 'PICKED_UP' : status === 'DELIVERED' ? 'DELIVERED' : 'ASSIGNED';
+      const deliveryStatus = status === 'ON_THE_WAY'
+        ? 'PICKED_UP'
+        : status === 'DELIVERED'
+          ? 'DELIVERED'
+          : status === 'CANCELLED'
+            ? 'CANCELLED'
+            : 'ASSIGNED';
       this.http.patch(`${this.baseUrl}/deliveries/${delivery.id}/status`, null, {
         params: { status: deliveryStatus }
       }).subscribe({
@@ -236,13 +258,10 @@ export class OrderService {
         },
         error: (err) => {
           console.error('Failed to update delivery assignment status in DB', err);
-          // Even if backend update fails, sync local state cross-tabs
           this.sync.publish('orders');
         }
       });
     } else {
-      // No delivery record in DB yet — still publish cross-tab sync
-      // so that customer/owner in same browser see the status update
       this.sync.publish('orders');
     }
   }
@@ -473,6 +492,9 @@ export class OrderService {
       time: fallback?.time ?? this.currentTime(),
       createdAt: response.createdAt,
       note: response.note || fallback?.note,
+      cancellationReason: response.orderStatus === 'CANCELLED'
+        ? (response.note ? response.note.replace(/^Cancelled:\s*/i, '') : fallback?.cancellationReason || 'Kitchen capacity / Ingredients unavailable')
+        : fallback?.cancellationReason,
       customerDistanceKm: fallback?.customerDistanceKm ?? 2.5,
       deliveryAddressLine: response.deliveryAddress || fallback?.deliveryAddressLine || 'Delivery address registered at checkout',
       deliveryLocation: fallback?.deliveryLocation,
@@ -674,9 +696,15 @@ export class OrderService {
         }
 
         const itemOverride = overrides[order.id] || {};
+        let effectiveOverride = { ...itemOverride };
+        if (order.status === 'DELIVERED' || order.status === 'CANCELLED') {
+          if (effectiveOverride.status && effectiveOverride.status !== order.status) {
+            delete effectiveOverride.status;
+          }
+        }
         let merged: Order = { 
           ...order, 
-          ...itemOverride,
+          ...effectiveOverride,
           ...dbOverrides 
         } as Order;
 
@@ -689,10 +717,15 @@ export class OrderService {
         }
 
         if (delivery) {
-          if (delivery.deliveryStatus === 'PICKED_UP' && (merged.status === 'READY' || merged.status === 'PREPARING' || merged.status === 'CONFIRMED')) {
-            merged.status = 'ON_THE_WAY';
+          if (delivery.deliveryStatus === 'CANCELLED' || order.status === 'CANCELLED') {
+            merged.status = 'CANCELLED';
+            merged.deliveryAgentStatus = 'CANCELLED';
           } else if (delivery.deliveryStatus === 'DELIVERED') {
             merged.status = 'DELIVERED';
+            merged.deliveryAgentStatus = 'DELIVERED';
+          } else if (delivery.deliveryStatus === 'PICKED_UP' && (merged.status === 'READY' || merged.status === 'PREPARING' || merged.status === 'CONFIRMED')) {
+            merged.status = 'ON_THE_WAY';
+            merged.deliveryAgentStatus = 'PICKED_UP';
           }
         }
 

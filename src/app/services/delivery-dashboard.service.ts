@@ -119,7 +119,7 @@ export class DeliveryDashboardService {
       return;
     }
     const order = this.orderService.orders().find((o) => o.id === orderId) ?? this.assignedOrder(orderId);
-    if (!order || order.status === 'ON_THE_WAY' || order.status === 'DELIVERED') {
+    if (!order || order.status === 'ON_THE_WAY' || order.status === 'DELIVERED' || order.status === 'CANCELLED') {
       return;
     }
 
@@ -131,7 +131,7 @@ export class DeliveryDashboardService {
       return;
     }
     const order = this.orderService.orders().find((o) => o.id === orderId) ?? this.assignedOrder(orderId);
-    if (!order || order.status === 'DELIVERED') {
+    if (!order || order.status === 'DELIVERED' || order.status === 'CANCELLED') {
       return;
     }
 
@@ -177,7 +177,7 @@ export class DeliveryDashboardService {
     return this.orderService
       .orders()
       .filter((order) => this.isAssignedToCurrentAgent(order, agentEmail))
-      .filter((order) => order.status !== 'DELIVERED' && order.status !== 'CANCELLED')
+      .filter((order) => order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && order.deliveryAgentStatus !== 'CANCELLED')
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .map((order) => this.toDeliverySummary(order));
   }
@@ -194,7 +194,7 @@ export class DeliveryDashboardService {
     return this.orderService
       .orders()
       .filter((order) => this.isAssignedToCurrentAgent(order, agentEmail))
-      .filter((order) => order.status === 'DELIVERED' || order.status === 'CANCELLED')
+      .filter((order) => order.status === 'DELIVERED')
       .filter((order) => this.matchesHistoryPeriod(order.createdAt))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .map((order) => ({
@@ -354,26 +354,18 @@ export class DeliveryDashboardService {
   }
 
   private isAssignedToCurrentAgent(order: Order, agentEmail: string): boolean {
-    const normalized = agentEmail.toLowerCase().trim();
+    const normalized = (agentEmail || this.session.user()?.email || '').toLowerCase().trim();
     const assignedEmail = (order.deliveryAgentEmail ?? '').toLowerCase().trim();
-    if (Boolean(normalized) && assignedEmail === normalized) {
-      return true;
+    if (Boolean(normalized) && Boolean(assignedEmail)) {
+      return normalized === assignedEmail;
     }
     const user = this.session.user();
     const firstName = user?.firstName?.toLowerCase()?.trim() || '';
     const lastName = user?.lastName?.toLowerCase()?.trim() || '';
     const fullName = [firstName, lastName].filter(Boolean).join(' ');
     const assignedName = (order.deliveryAgentName ?? order.agent ?? '').toLowerCase().trim();
-    if (fullName && (assignedName.includes(fullName) || fullName.includes(assignedName))) {
-      return true;
-    }
-    if (firstName && (assignedName.includes(firstName) || firstName.includes(assignedName))) {
-      return true;
-    }
-    if (normalized.includes('agent1') || fullName.includes('jackson') || firstName.includes('jackson')) {
-      if (assignedName.includes('jackson') || assignedEmail.includes('agent1')) {
-        return true;
-      }
+    if (fullName && assignedName) {
+      return fullName === assignedName || assignedName.includes(fullName);
     }
     return false;
   }

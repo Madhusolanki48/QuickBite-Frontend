@@ -217,6 +217,10 @@ import { CartService } from '../../services/cart.service';
           </div>
         </div>
 
+        <div *ngIf="order.status === 'CANCELLED' && (order.cancellationReason || order.note)" class="past-order-reason" style="margin: 0.5rem 0 0.25rem; font-size: 0.85rem; color: #dc3545; background: #fff5f5; padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid rgba(220, 53, 69, 0.15);">
+          <strong>Cancellation Reason:</strong> {{ order.cancellationReason || order.note }}
+        </div>
+
         <div class="past-order-footer">
           <small class="address-text">📍 {{ order.deliveryAddressLine || 'Delivered to your address' }}</small>
           <div class="past-actions">

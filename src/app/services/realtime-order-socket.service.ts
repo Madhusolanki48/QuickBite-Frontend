@@ -42,17 +42,20 @@ export class RealtimeOrderSocketService implements OnDestroy {
   private initStompClient(): void {
     if (typeof window === 'undefined') return;
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // Use the configured apiBaseUrl host or current window host
-    let host = window.location.host;
-    if (environment.apiBaseUrl && environment.apiBaseUrl.startsWith('http')) {
-      try {
-        const url = new URL(environment.apiBaseUrl);
-        host = url.host;
-      } catch {}
+    let brokerURL: string;
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      brokerURL = `ws://localhost:8080/api/orders/ws`;
+    } else if (environment.apiBaseUrl && environment.apiBaseUrl.startsWith('https://')) {
+      const url = new URL(environment.apiBaseUrl);
+      brokerURL = `wss://${url.host}/api/orders/ws`;
+    } else if (environment.apiBaseUrl && environment.apiBaseUrl.startsWith('http://')) {
+      const url = new URL(environment.apiBaseUrl);
+      brokerURL = `ws://${url.host}/api/orders/ws`;
+    } else {
+      const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = typeof window !== 'undefined' ? window.location.host : 'localhost:8080';
+      brokerURL = `${protocol}//${host}/api/orders/ws`;
     }
-
-    const brokerURL = `${protocol}//${host}/api/orders/ws`;
 
     this.client = new Client({
       brokerURL,
