@@ -200,6 +200,9 @@ export class OwnerDashboardService {
 
   cancelOrder(orderId: string): void {
     const order = this.orderService.orders().find((item) => item.id === orderId);
+    if (!order || order.status === 'DELIVERED' || order.status === 'CANCELLED' || order.status === 'ON_THE_WAY') {
+      return;
+    }
     this.orderService.updateOrderStatus(orderId, 'CANCELLED');
     this.notifyOrderUpdate(order, 'CANCELLED');
   }

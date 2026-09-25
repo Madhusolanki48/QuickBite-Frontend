@@ -14,13 +14,14 @@ import {
 import { CatalogService } from './catalog.service';
 import { SessionService } from './session.service';
 import { RealtimeSyncService } from './realtime-sync.service';
+import { RealtimeOrderSocketService } from './realtime-order-socket.service';
 import { DeliveryAgentDirectoryService } from './delivery-agent-directory.service';
 import { environment } from '../../environments/environment';
 import { DELIVERY_AGENT_SEEDS } from './delivery-agents.data';
 
 const ORDER_OVERRIDES_KEY = 'quickbite.order.overrides';
 const HIDDEN_ORDERS_KEY = 'quickbite.order.hidden';
-const ORDER_REFRESH_INTERVAL_MS = 2000;
+const ORDER_REFRESH_INTERVAL_MS = 10000;
 const NUMERIC_RESTAURANT_IDS: Record<string, number> = {
   '1': 1,
   '2': 2,
@@ -51,7 +52,7 @@ const RESTAURANT_LOCATIONS: Record<string, GeoPoint> = {
 };
 
 const ORDER_DATA_VERSION_KEY = 'quickbite.order.version';
-const CURRENT_ORDER_DATA_VERSION = '2026-09-24-clean-v2';
+const CURRENT_ORDER_DATA_VERSION = '2026-09-25-order-reset-v1';
 
 function purgeLegacyOrderStorage(): void {
   if (typeof localStorage === 'undefined') return;
@@ -75,6 +76,7 @@ export class OrderService {
   private readonly catalog = inject(CatalogService);
   private readonly cart = inject(CartService);
   private readonly sync = inject(RealtimeSyncService);
+  private readonly socket = inject(RealtimeOrderSocketService);
   private readonly agents = inject(DeliveryAgentDirectoryService);
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly ordersSignal = signal<Order[]>(this.readLocalOrders());
@@ -90,14 +92,27 @@ export class OrderService {
   }
 
   private setupSyncAndPolling(): void {
-    // Listen to cross-tab updates
+    // 1. Listen to real-time STOMP WebSocket push events from RabbitMQ
+    this.socket.events$.subscribe((event) => {
+      console.log('[OrderService] Live WebSocket order event:', event.eventType, 'for order', event.orderId);
+      if (event.order) {
+        const mapped = this.fromBackendOrder(event.order);
+        this.upsertOrder(mapped);
+        this.persistLocalState();
+        this.sync.publish('orders');
+      } else {
+        this.refreshFromBackend();
+      }
+    });
+
+    // 2. Listen to cross-tab updates within same browser session
     this.sync.on('orders', () => {
       this.ordersSignal.set(this.readLocalOrders());
       this.overridesSignal.set(this.readOverrides());
       this.hiddenOrdersSignal.set(this.readHiddenOrders());
     });
 
-    // Periodic database polling keeps Edge/Chrome dashboards in sync via the backend.
+    // 3. Periodic fallback reconciliation polling (every 10s)
     if (typeof window !== 'undefined') {
       setInterval(() => {
         this.refreshFromBackend();
@@ -197,7 +212,11 @@ export class OrderService {
           });
           this.upsertOrder(this.fromBackendOrder(response, order));
           this.persistLocalState();
-          this.refreshFromBackend();
+          this.sync.publish('orders');
+        },
+        error: (err) => {
+          console.warn('Backend patch order status error, keeping optimistic state:', err);
+          this.sync.publish('orders');
         },
       });
 
@@ -274,10 +293,14 @@ export class OrderService {
       const backendOrderId = order.backendId || Number(orderId.replace('ORD-', ''));
 
       if (backendOrderId && !Number.isNaN(backendOrderId) && backendOrderId < 1000000) {
-        this.http.put(`${this.baseUrl}/orders/${backendOrderId}/assign-delivery`, {
+        this.http.put<BackendOrderResponse>(`${this.baseUrl}/orders/${backendOrderId}/assign-delivery`, {
           riderId,
         }).subscribe({
-          next: () => this.refreshFromBackend(),
+          next: (res) => {
+            this.upsertOrder(this.fromBackendOrder(res, order));
+            this.persistLocalState();
+            this.sync.publish('orders');
+          },
           error: (err) => console.warn('Order-service assign-delivery fallback:', err)
         });
       }
@@ -397,6 +420,16 @@ export class OrderService {
 
 
   private fromBackendOrder(response: BackendOrderResponse, fallback?: Order): Order {
+    const STATIC_RESTAURANTS: Record<number, { id: string; name: string }> = {
+      1: { id: 'urban-bites', name: 'Urban Bites' },
+      2: { id: 'crust-and-co', name: 'Crust & Co.' },
+      3: { id: 'royal-tadka', name: 'Royal Tadka' },
+      4: { id: 'wok-and-bowl', name: 'Wok & Bowl' },
+      5: { id: 'green-spoon', name: 'Green Spoon' },
+      6: { id: 'the-food-yard', name: 'The Food Yard' },
+    };
+    const staticInfo = STATIC_RESTAURANTS[response.restaurantId];
+
     // Map numeric backendRestaurantId -> frontend restaurant entry
     let restaurant = this.catalog
       .restaurantList()
@@ -417,9 +450,9 @@ export class OrderService {
       }
     }
 
-    const restaurantName = fallback?.restaurantName ?? restaurant?.name ?? `Restaurant ${response.restaurantId}`;
+    const restaurantName = fallback?.restaurantName ?? staticInfo?.name ?? restaurant?.name ?? `Restaurant ${response.restaurantId}`;
     // Determine the frontend slug-id — critical for owner dashboard filtering
-    const resolvedRestaurantId = restaurant?.id ?? fallback?.restaurantId ?? slugify(restaurantName);
+    const resolvedRestaurantId = staticInfo?.id ?? restaurant?.id ?? fallback?.restaurantId ?? slugify(restaurantName);
     return {
       id: `ORD-${response.id}`,
       backendId: response.id,
