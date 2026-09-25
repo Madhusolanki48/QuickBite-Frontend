@@ -21,7 +21,7 @@ import { DELIVERY_AGENT_SEEDS } from './delivery-agents.data';
 
 const ORDER_OVERRIDES_KEY = 'quickbite.order.overrides';
 const HIDDEN_ORDERS_KEY = 'quickbite.order.hidden';
-const ORDER_REFRESH_INTERVAL_MS = 10000;
+const ORDER_REFRESH_INTERVAL_MS = 2000;
 const NUMERIC_RESTAURANT_IDS: Record<string, number> = {
   '1': 1,
   '2': 2,
@@ -52,7 +52,7 @@ const RESTAURANT_LOCATIONS: Record<string, GeoPoint> = {
 };
 
 const ORDER_DATA_VERSION_KEY = 'quickbite.order.version';
-const CURRENT_ORDER_DATA_VERSION = '2026-09-25-order-reset-v2';
+const CURRENT_ORDER_DATA_VERSION = '2026-09-26-order-sync-v3';
 
 function purgeLegacyOrderStorage(): void {
   if (typeof localStorage === 'undefined') return;
@@ -365,14 +365,7 @@ export class OrderService {
   }
 
   public refreshFromBackend(): void {
-    const user = this.session.user();
-    let ordersUrl = `${this.baseUrl}/orders`;
-    if (user?.role === 'RESTAURANT_OWNER') {
-      const restaurantBackendId = this.resolveBackendRestaurantId(user.restaurantId, user.restaurantName);
-      if (restaurantBackendId) {
-        ordersUrl = `${this.baseUrl}/orders?restaurantId=${restaurantBackendId}`;
-      }
-    }
+    const ordersUrl = `${this.baseUrl}/orders`;
 
     this.http.get<BackendOrderResponse[]>(ordersUrl).subscribe({
       next: (orders) => {
@@ -669,6 +662,18 @@ export class OrderService {
         
         let dbOverrides: Partial<Order> = {};
         if (delivery) {
+          const riderIdNum = Number(delivery.riderId);
+          const mappedRiderEmail =
+            riderIdNum === 1 || riderIdNum === 165
+              ? 'agent1@quickbite.com'
+              : riderIdNum === 2 || riderIdNum === 166
+                ? 'agent2@quickbite.com'
+                : riderIdNum === 3 || riderIdNum === 167
+                  ? 'agent3@quickbite.com'
+                  : riderIdNum === 4 || riderIdNum === 168
+                    ? 'agent4@quickbite.com'
+                    : undefined;
+
           const seedAgent = DELIVERY_AGENT_SEEDS.find((a) =>
             String(a.id) === String(delivery.riderId) ||
             a.name.toLowerCase() === delivery.riderName.toLowerCase() ||
@@ -681,7 +686,7 @@ export class OrderService {
             a.phone === delivery.riderPhone
           );
           const resolvedAgentName = seedAgent?.name ?? delivery.riderName;
-          const resolvedAgentEmail = seedAgent?.email ?? agentEntry?.email ?? (delivery.riderName.toLowerCase().includes('jackson') ? 'agent1@quickbite.com' : undefined);
+          const resolvedAgentEmail = mappedRiderEmail ?? seedAgent?.email ?? agentEntry?.email ?? (delivery.riderName?.toLowerCase().includes('jackson') ? 'agent1@quickbite.com' : undefined);
           const resolvedAgentPhone = seedAgent?.phone ?? delivery.riderPhone;
           dbOverrides = {
             deliveryAgentName: resolvedAgentName,

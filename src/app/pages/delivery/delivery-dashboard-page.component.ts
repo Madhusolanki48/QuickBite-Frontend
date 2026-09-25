@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { NgClass, NgFor } from '@angular/common';
 
 import { LiveRouteMapComponent } from '../../components/live-route-map.component';
 import { DeliveryDashboardService } from '../../services/delivery-dashboard.service';
 import { SessionService } from '../../services/session.service';
+import { OrderService } from '../../services/order.service';
 
 interface DashboardMetric {
   label: string;
@@ -257,11 +258,16 @@ interface QuickOrder {
   `,
   styleUrl: './delivery-pages.scss',
 })
-export class DeliveryDashboardPageComponent {
+export class DeliveryDashboardPageComponent implements OnInit {
   protected readonly dashboard = inject(DeliveryDashboardService);
   protected readonly session = inject(SessionService);
+  private readonly orderService = inject(OrderService);
   protected readonly rupeeSymbol = '\u20B9';
   protected readonly completedSteps = ['Order Assigned', 'Reached Restaurant', 'Picked Up'];
+
+  ngOnInit(): void {
+    this.orderService.refreshFromBackend();
+  }
 
   get liveMetrics(): DashboardMetric[] {
     const active = this.dashboard.activeDeliveries().length;
