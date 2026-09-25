@@ -232,11 +232,11 @@ export class CartService {
       return 'Address not provided';
     }
     const parts = [
-      address.pincode,
       address.street,
       address.landmark,
       address.city,
       address.state,
+      address.pincode,
     ].filter(Boolean);
     return parts.join(', ') || address.addressLine || 'Address not provided';
   }
@@ -338,8 +338,13 @@ export class CartService {
   }
 
   private readAddresses(): Address[] {
+    const email = this.session.user()?.email?.toLowerCase().trim();
     const userKey = this.addressStorageKey();
+
     let raw = localStorage.getItem(userKey);
+    if (!raw && email) {
+      raw = localStorage.getItem(`quickbite.custom_user_addresses.${email}`);
+    }
     if (!raw && userKey !== CART_ADDRESSES_KEY) {
       raw = localStorage.getItem(CART_ADDRESSES_KEY);
     }
@@ -386,17 +391,22 @@ export class CartService {
   }
 
   private createAddress(address: Partial<Address> & Pick<Address, 'id' | 'title'>): Address {
-    const parsed = this.parseAddressLine(address.addressLine);
+    const hasExplicitFields = Boolean(address.street || address.city || address.pincode);
+    const parsed = hasExplicitFields
+      ? { street: '', landmark: '', city: '', state: '', pincode: '' }
+      : this.parseAddressLine(address.addressLine);
     const normalized = {
-      street: address.street?.trim() || parsed.street,
-      landmark: address.landmark?.trim() || parsed.landmark,
-      city: address.city?.trim() || parsed.city,
-      state: address.state?.trim() || parsed.state,
-      pincode: address.pincode?.trim() || parsed.pincode,
+      street: (address.street ?? parsed.street ?? '').trim(),
+      landmark: (address.landmark ?? parsed.landmark ?? '').trim(),
+      city: (address.city ?? parsed.city ?? '').trim(),
+      state: (address.state ?? parsed.state ?? '').trim(),
+      pincode: (address.pincode ?? parsed.pincode ?? '').trim(),
     };
     return {
-      ...address,
+      id: address.id,
+      title: address.title || 'Saved Address',
       ...normalized,
+      isDefault: Boolean(address.isDefault),
       addressLine: address.addressLine || this.formatAddress(normalized),
     };
   }
@@ -429,9 +439,13 @@ export class CartService {
   }
 
   private persistAddresses(): void {
+    const email = this.session.user()?.email?.toLowerCase().trim();
     const userKey = this.addressStorageKey();
     const serialized = JSON.stringify(this.addressesSignal());
     localStorage.setItem(userKey, serialized);
     localStorage.setItem(CART_ADDRESSES_KEY, serialized);
+    if (email) {
+      localStorage.setItem(`quickbite.custom_user_addresses.${email}`, serialized);
+    }
   }
 }

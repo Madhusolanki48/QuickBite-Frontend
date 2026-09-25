@@ -52,7 +52,7 @@ const RESTAURANT_LOCATIONS: Record<string, GeoPoint> = {
 };
 
 const ORDER_DATA_VERSION_KEY = 'quickbite.order.version';
-const CURRENT_ORDER_DATA_VERSION = '2026-09-26-order-sync-v3';
+const CURRENT_ORDER_DATA_VERSION = '2026-09-26-order-sync-v4';
 
 function purgeLegacyOrderStorage(): void {
   if (typeof localStorage === 'undefined') return;
